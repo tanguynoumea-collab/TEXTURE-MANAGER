@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 5 context gathered
-last_updated: "2026-04-11T12:23:57.792Z"
+status: executing
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-04-11T12:46:11.351Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 14
+  completed_plans: 13
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** L'architecte peut appliquer rapidement un materiau preset aux couches ou parametres materiaux de n'importe quel type Revit visible en 3D, en quelques clics depuis un editeur visuel unifie.
-**Current focus:** Phase 04 — material-editing-and-3d-pick
+**Current focus:** Phase 05 — polish-and-installer
 
 ## Current Position
 
-Phase: 5
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 05 (polish-and-installer) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-04-11
 
 Progress: [..............] 0%
@@ -64,6 +64,7 @@ Progress: [..............] 0%
 | Phase 04 P01 | 3min | 2 tasks | 9 files |
 | Phase 04 P03 | 2min | 2 tasks | 2 files |
 | Phase 04 P02 | 3min | 2 tasks | 3 files |
+| Phase 05 P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - [Phase 04]: _isFetching flag pattern to suppress auto-edit during FetchMaterialDetails property population
 - [Phase 04]: Sub-VM composition: MaterialEditorVM created inside RightPanelVM constructor, XAML binds via ParentVM.ChildVM.Property
 - [Phase 04]: LostFocus EventTrigger pattern for edit commands to avoid per-keystroke Revit Transactions
+- [Phase 05]: MenuItem hover uses AccentBrush background with BackgroundBrush foreground for strong contrast
+- [Phase 05]: CheckBox uses 18x18 box with Path checkmark (M 2 6 L 6 10 L 14 2) matching Olympe accent
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T12:23:57.788Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-polish-and-installer/05-CONTEXT.md
+Last session: 2026-04-11T12:46:11.347Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None

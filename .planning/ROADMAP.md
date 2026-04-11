@@ -104,7 +104,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md -- Complete Olympe dark theme with missing control styles (ContextMenu, MenuItem, ToolTip, CheckBox, etc.) and View audit
+- [x] 05-01-PLAN.md -- Complete Olympe dark theme with missing control styles (ContextMenu, MenuItem, ToolTip, CheckBox, etc.) and View audit
 - [ ] 05-02-PLAN.md -- WiX v5 installer project with Burn Bundle, MSI Features, registry detection, French UI, and build staging
 **UI hint**: yes
 

@@ -67,7 +67,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **UI-01**: La fenetre principale utilise un layout trois colonnes (familles | couches | materiaux)
 - [x] **UI-02**: Un theme sombre Olympe est applique via ResourceDictionary (fond ~#1E1E1E, accent ambre/orange)
-- [ ] **UI-03**: Tous les controles WPF sont styles de maniere coherente (boutons, listes, TreeView, scrollbars)
+- [x] **UI-03**: Tous les controles WPF sont styles de maniere coherente (boutons, listes, TreeView, scrollbars)
 - [x] **UI-04**: L'interface est entierement en francais
 - [x] **UI-05**: Le bouton Set Mat est visuellement proemirent et centre entre les panneaux centre et droit
 
@@ -166,7 +166,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATEDIT-08 | Phase 4 | Complete |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
-| UI-03 | Phase 5 | Pending |
+| UI-03 | Phase 5 | Complete |
 | UI-04 | Phase 1 | Complete |
 | UI-05 | Phase 3 | Complete |
 | DEPLOY-01 | Phase 5 | Pending |
