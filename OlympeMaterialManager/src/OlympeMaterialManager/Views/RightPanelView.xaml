@@ -75,15 +75,34 @@
                                    Foreground="{StaticResource AccentBrush}"
                                    Margin="0,0,0,8" />
 
-                        <!-- Preview couleur (D-18, MATEDIT-06) -->
-                        <Rectangle Width="60" Height="60"
-                                   RadiusX="4" RadiusY="4"
-                                   HorizontalAlignment="Left"
-                                   Margin="0,0,0,8">
-                            <Rectangle.Fill>
-                                <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
-                            </Rectangle.Fill>
-                        </Rectangle>
+                        <!-- Preview couleur + image de rendu (D-18, MATEDIT-06) -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <!-- Carre couleur de surface -->
+                            <Rectangle Width="60" Height="60"
+                                       RadiusX="4" RadiusY="4"
+                                       Margin="0,0,8,0">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <!-- Image de rendu sphere (thumbnail AppearanceAsset) ou placeholder gris -->
+                            <Border Width="60" Height="60"
+                                    CornerRadius="4"
+                                    Background="{StaticResource SurfaceBrush}"
+                                    BorderBrush="{StaticResource BorderBrush}"
+                                    BorderThickness="1"
+                                    ClipToBounds="True">
+                                <Grid>
+                                    <TextBlock Text="Rendu"
+                                               FontSize="10"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                    <Image Source="{Binding MaterialEditorVM.RenderPreviewImageSource}"
+                                           Stretch="UniformToFill" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
 
                         <!-- Nom (D-02, MATEDIT-02) -->
                         <TextBlock Text="Nom :"

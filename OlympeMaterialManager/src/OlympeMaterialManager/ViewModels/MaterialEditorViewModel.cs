@@ -1,3 +1,6 @@
+using System.IO;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -64,6 +67,13 @@ public partial class MaterialEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private string? _thumbnailPath;
+
+    /// <summary>
+    /// Image de rendu (thumbnail de l'AppearanceAsset) pour la preview sphere.
+    /// Placeholder gris si aucun thumbnail n'est disponible.
+    /// </summary>
+    [ObservableProperty]
+    private ImageSource? _renderPreviewImageSource;
 
     // ---- Constructeurs ----
 
@@ -136,6 +146,7 @@ public partial class MaterialEditorViewModel : ObservableObject
                 PatternName = dto.PatternName;
                 HasAppearanceAsset = dto.HasAppearanceAsset;
                 ThumbnailPath = dto.ThumbnailPath;
+                RenderPreviewImageSource = LoadRenderPreview(dto.ThumbnailPath);
 
                 // Extraire les composantes RGB de la couleur de surface
                 ColorR = (byte)((dto.ColorArgb >> 16) & 0xFF);
@@ -265,6 +276,43 @@ public partial class MaterialEditorViewModel : ObservableObject
         if (!_isFetching && _currentMaterialIdValue >= 0 && HasAppearanceAsset)
         {
             EditTintCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
+    /// Charge l'image de rendu depuis le chemin du thumbnail.
+    /// Retourne null si le chemin est invalide ou le fichier introuvable (le XAML affichera le placeholder).
+    /// </summary>
+    private static ImageSource? LoadRenderPreview(string? thumbnailPath)
+    {
+        if (string.IsNullOrEmpty(thumbnailPath)) return null;
+
+        try
+        {
+            // Le chemin peut etre absolu ou relatif au dossier materiaux Revit
+            string fullPath = thumbnailPath;
+            if (!Path.IsPathRooted(fullPath))
+            {
+                // Tenter de resoudre via les chemins materiaux Revit standards
+                string revitMaterialPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                    "Autodesk", "Revit", "Addins");
+                fullPath = Path.Combine(revitMaterialPath, thumbnailPath);
+            }
+
+            if (!File.Exists(fullPath)) return null;
+
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.UriSource = new Uri(fullPath);
+            bitmap.EndInit();
+            bitmap.Freeze();
+            return bitmap;
+        }
+        catch
+        {
+            return null;
         }
     }
 }

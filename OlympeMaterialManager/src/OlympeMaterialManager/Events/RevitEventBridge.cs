@@ -609,7 +609,25 @@ public class RevitEventBridge : IExternalEventHandler
                 }
 
                 // D-18 : tentative de lecture du chemin thumbnail (best-effort)
-                // Le ThumbnailFile peut etre null, relatif ou pointer vers un fichier inexistant
+                // Parcours les proprietes de l'asset pour trouver un chemin de texture bitmap
+                try
+                {
+                    for (int pi = 0; pi < renderAsset.Size; pi++)
+                    {
+                        var prop = renderAsset.Get(pi);
+                        if (prop is AssetPropertyString strProp &&
+                            strProp.Name.Contains("Bitmap", StringComparison.OrdinalIgnoreCase) &&
+                            !string.IsNullOrEmpty(strProp.Value))
+                        {
+                            dto.ThumbnailPath = strProp.Value;
+                            break;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Best-effort : ignorer les erreurs de lecture du thumbnail
+                }
             }
         }
 
