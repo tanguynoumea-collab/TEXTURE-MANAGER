@@ -49,6 +49,13 @@ public partial class CenterPanelViewModel : ObservableObject
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
+    /// <summary>
+    /// Indique qu'un type composite est selectionne (pas un sous-type).
+    /// Affiche un message invitant a selectionner un sous-type.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showCompositeMessage;
+
     [ObservableProperty]
     private IList? _selectedItems;
 
@@ -95,6 +102,7 @@ public partial class CenterPanelViewModel : ObservableObject
         MaterialParams.Clear();
         ErrorMessage = string.Empty;
         SelectedItems = null;
+        ShowCompositeMessage = false;
 
         if (type == null)
         {
@@ -110,6 +118,16 @@ public partial class CenterPanelViewModel : ObservableObject
         ShowPlaceholder = false;
         SelectedTypeName = $"{type.FamilyName} : {type.TypeName}";
         CurrentTypeIdValue = type.ElementIdValue;
+
+        // Type composite : afficher un message invitant a selectionner un sous-type
+        if (type.IsComposite)
+        {
+            ShowLayers = false;
+            ShowParameters = false;
+            ShowCompositeMessage = true;
+            ModeLabel = "Type compose";
+            return;
+        }
 
         if (type.HasCompoundStructure)
         {

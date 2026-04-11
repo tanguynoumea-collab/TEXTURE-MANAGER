@@ -61,6 +61,15 @@
                        Foreground="{StaticResource TextSecondaryBrush}"
                        Visibility="{Binding ShowPlaceholder, Converter={StaticResource BoolToVis}}" />
 
+            <!-- Section 4b : Message type compose -->
+            <TextBlock DockPanel.Dock="Top"
+                       Text="Type compose — selectionnez un sous-type pour editer ses couches"
+                       Foreground="{StaticResource AccentBrush}"
+                       FontStyle="Italic"
+                       TextWrapping="Wrap"
+                       Margin="0,8,0,0"
+                       Visibility="{Binding ShowCompositeMessage, Converter={StaticResource BoolToVis}}" />
+
             <!-- Section 5 : Indicateur de chargement -->
             <TextBlock DockPanel.Dock="Top"
                        Text="Chargement..."
@@ -86,114 +95,153 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <!-- Section 7 : ListBox des couches CompoundStructure (D-12, D-17, LAYER-01, LAYER-02, LAYER-04, LAYER-05) -->
+            <!-- Grid conteneur pour les deux ListBox : remplit l'espace restant du DockPanel -->
+            <Grid>
+
+            <!-- Section 7 : ListBox des couches CompoundStructure -->
             <ListBox ItemsSource="{Binding Layers}"
                      SelectionMode="Extended"
-                     Background="{StaticResource SurfaceBrush}"
-                     Foreground="{StaticResource TextPrimaryBrush}"
+                     Background="{StaticResource BackgroundBrush}"
                      BorderThickness="0"
-                     Visibility="{Binding ShowLayers, Converter={StaticResource BoolToVis}}">
+                     Visibility="{Binding ShowLayers, Converter={StaticResource BoolToVis}}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <b:Interaction.Triggers>
                     <b:EventTrigger EventName="SelectionChanged">
                         <b:InvokeCommandAction Command="{Binding SelectionChangedCommand}"
                                                CommandParameter="{Binding SelectedItems, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="{StaticResource SurfaceBrush}"
-                                CornerRadius="4"
-                                Padding="10"
-                                Margin="2,4">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-
-                                <!-- Fonction de la couche (en-tete) -->
-                                <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
-                                           Text="{Binding Function}"
-                                           Foreground="{StaticResource AccentBrush}"
-                                           FontWeight="SemiBold"
-                                           FontSize="13"
-                                           Margin="0,0,0,4" />
-
-                                <!-- Epaisseur -->
-                                <TextBlock Grid.Column="2" Grid.Row="0"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           HorizontalAlignment="Right">
-                                    <Run Text="{Binding Width, StringFormat={}{0:F1}}" />
-                                    <Run Text=" mm" />
-                                </TextBlock>
-
-                                <!-- Nom du materiau -->
-                                <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
-                                           Text="{Binding MaterialName}"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontSize="12" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-                <!-- UI-03: BasedOn added for theme consistency -->
                 <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}" />
-                            </Trigger>
-                        </Style.Triggers>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0,3" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Card"
+                                            Background="#FF383850"
+                                            CornerRadius="6"
+                                            Padding="12,10"
+                                            BorderThickness="2"
+                                            BorderBrush="Transparent"
+                                            Cursor="Hand">
+                                        <ContentPresenter />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                            <Setter TargetName="Card" Property="Background" Value="#FF424260" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Card" Property="Background" Value="#FF3E3E56" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Column="0" Grid.Row="0"
+                                       Text="{Binding Function}"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="14" />
+                            <TextBlock Grid.Column="1" Grid.Row="0"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Right"
+                                       FontSize="13">
+                                <Run Text="{Binding Width, StringFormat={}{0:F1}}" />
+                                <Run Text=" mm" />
+                            </TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
+                                       Text="{Binding MaterialName}"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       FontSize="12"
+                                       Margin="0,4,0,0" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
 
-            <!-- Section 8 : ListBox des parametres materiaux (D-15, D-17, LAYER-03, LAYER-04, LAYER-05) -->
+            <!-- Section 8 : Parametres materiaux (familles sans couches) -->
             <ListBox ItemsSource="{Binding MaterialParams}"
                      SelectionMode="Extended"
-                     Background="{StaticResource SurfaceBrush}"
-                     Foreground="{StaticResource TextPrimaryBrush}"
+                     Background="{StaticResource BackgroundBrush}"
                      BorderThickness="0"
-                     Visibility="{Binding ShowParameters, Converter={StaticResource BoolToVis}}">
+                     Visibility="{Binding ShowParameters, Converter={StaticResource BoolToVis}}"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <b:Interaction.Triggers>
                     <b:EventTrigger EventName="SelectionChanged">
                         <b:InvokeCommandAction Command="{Binding SelectionChangedCommand}"
                                                CommandParameter="{Binding SelectedItems, RelativeSource={RelativeSource AncestorType=ListBox}}" />
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="4,2">
-                            <TextBlock Text="{Binding ParameterName}"
-                                       Foreground="{StaticResource AccentBrush}"
-                                       MinWidth="150" />
-                            <TextBlock Text=" -- " Foreground="{StaticResource TextSecondaryBrush}" />
-                            <TextBlock Text="{Binding CurrentMaterialName}"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-                <!-- UI-03: BasedOn added for theme consistency -->
                 <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-                        <Style.Triggers>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}" />
-                            </Trigger>
-                        </Style.Triggers>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0,3" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Card"
+                                            Background="#FF383850"
+                                            CornerRadius="6"
+                                            Padding="12,10"
+                                            BorderThickness="2"
+                                            BorderBrush="Transparent"
+                                            Cursor="Hand">
+                                        <ContentPresenter />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                            <Setter TargetName="Card" Property="Background" Value="#FF424260" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Card" Property="Background" Value="#FF3E3E56" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
                     </Style>
                 </ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="{Binding ParameterName}"
+                                       Foreground="{StaticResource AccentBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="14" />
+                            <TextBlock Grid.Row="1"
+                                       Text="{Binding CurrentMaterialName}"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       FontSize="12"
+                                       Margin="0,4,0,0" />
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
 
+            </Grid>
         </DockPanel>
     </Border>
 

@@ -145,6 +145,30 @@ public partial class LeftPanelViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Supprime la scene active et son fichier JSON.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSupprimerScene))]
+    private void SupprimerScene()
+    {
+        if (ActiveScene == null || _presetService == null) return;
+
+        var result = System.Windows.MessageBox.Show(
+            $"Supprimer la scene \"{ActiveScene.Name}\" ?",
+            "Supprimer la scene",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        var name = ActiveScene.Name;
+        Scenes.Remove(ActiveScene);
+        _presetService.DeleteScene(name);
+        ActiveScene = Scenes.Count > 0 ? Scenes[0] : null;
+    }
+
+    private bool CanSupprimerScene() => ActiveScene != null;
+
+    /// <summary>
     /// Cree une nouvelle scene via un dialog de saisie (SCENE-01, D-03).
     /// </summary>
     [RelayCommand]
@@ -183,33 +207,20 @@ public partial class LeftPanelViewModel : ObservableObject
         try
         {
             var sourcePath = dialog.FileName;
-            var scenesPath = _presetService.GetScenesPath();
-            var destDir = Path.GetDirectoryName(scenesPath)!;
-            Directory.CreateDirectory(destDir);
+            var destDir = _presetService.GetScenesDirectory();
+            var sceneName = Path.GetFileNameWithoutExtension(sourcePath);
+            var destPath = Path.Combine(destDir, sceneName + ".json");
 
-            // Lire le contenu du fichier externe
-            var json = File.ReadAllText(sourcePath);
-            var importedCollection = System.Text.Json.JsonSerializer.Deserialize<SceneCollectionDto>(json,
-                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase });
+            // Copier le fichier dans le dossier scenes
+            File.Copy(sourcePath, destPath, overwrite: true);
 
-            if (importedCollection?.Scenes != null)
-            {
-                // Ajouter les scenes importees a la collection existante
-                foreach (var scene in importedCollection.Scenes)
-                {
-                    Scenes.Add(scene);
-                }
+            // Charger la scene depuis le fichier copie
+            var scene = _presetService.LoadScene(sceneName);
+            if (string.IsNullOrEmpty(scene.Name))
+                scene.Name = sceneName;
 
-                if (importedCollection.Scenes.Count > 0)
-                    ActiveScene = importedCollection.Scenes[importedCollection.Scenes.Count - 1];
-
-                AutoSaveScenes();
-
-                // Copier le fichier source dans le dossier local pour reference
-                var destPath = Path.Combine(destDir, Path.GetFileName(sourcePath));
-                if (destPath != sourcePath)
-                    File.Copy(sourcePath, destPath, overwrite: true);
-            }
+            Scenes.Add(scene);
+            ActiveScene = scene;
         }
         catch (Exception ex)
         {
@@ -250,6 +261,13 @@ public partial class LeftPanelViewModel : ObservableObject
         }
 
         ActiveScene.Types.Add(SelectedFamilyType);
+
+        // Pour les types composites, charger les sous-types
+        if (SelectedFamilyType.IsComposite)
+        {
+            FetchCompositeSubTypes(SelectedFamilyType);
+        }
+
         AutoSaveScenes();
     }
 
@@ -291,6 +309,12 @@ public partial class LeftPanelViewModel : ObservableObject
                     {
                         ActiveScene.Types.Add(pickedType);
                         added++;
+
+                        // Pour les types composites, charger les sous-types
+                        if (pickedType.IsComposite)
+                        {
+                            FetchCompositeSubTypes(pickedType);
+                        }
                     }
                 }
 
@@ -352,6 +376,23 @@ public partial class LeftPanelViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Charge les sous-types d'un type composite via RevitEventBridge.
+    /// Peuple la collection SubTypes du SceneTypeDto composite.
+    /// </summary>
+    private void FetchCompositeSubTypes(SceneTypeDto compositeType)
+    {
+        if (_eventBridge == null || !compositeType.IsComposite) return;
+
+        _eventBridge.MakeRequest(RevitRequestType.GetCompositeSubTypes, compositeType.ElementIdValue, result =>
+        {
+            if (result is List<SceneTypeDto> subTypes && subTypes.Count > 0)
+            {
+                compositeType.SubTypes = new ObservableCollection<SceneTypeDto>(subTypes);
+            }
+        });
+    }
+
+    /// <summary>
     /// Configure le tri personnalise et le groupement sur la CollectionView des types actifs.
     /// </summary>
     private void SetupCustomSort()
@@ -387,6 +428,15 @@ public partial class LeftPanelViewModel : ObservableObject
         {
             ChargerFamillesCommand.Execute(null);
             SetupCustomSort();
+
+            // Recharger les sous-types pour les types composites deja dans la scene
+            foreach (var type in value.Types)
+            {
+                if (type.IsComposite && (type.SubTypes == null || type.SubTypes.Count == 0))
+                {
+                    FetchCompositeSubTypes(type);
+                }
+            }
         }
 
         // Notify CanExecute changes

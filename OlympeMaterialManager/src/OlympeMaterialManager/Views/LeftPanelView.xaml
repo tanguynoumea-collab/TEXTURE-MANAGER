@@ -54,6 +54,14 @@
                         FontSize="16"
                         FontWeight="Bold"
                         Margin="4,0,0,0" />
+                <Button Content="-"
+                        Command="{Binding SupprimerSceneCommand}"
+                        ToolTip="Supprimer la scene active"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
                 <Button Content="..."
                         Command="{Binding ChargerSceneExterneCommand}"
                         ToolTip="Charger une scene depuis un fichier externe"
@@ -124,15 +132,43 @@
                     </GroupStyle>
                 </TreeView.GroupStyle>
 
-                <!-- ItemTemplate : affichage FamilyName : TypeName (D-06) -->
+                <!-- ItemTemplate : affichage FamilyName : TypeName avec support hierarchique composites (D-06) -->
                 <TreeView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock>
-                            <Run Text="{Binding FamilyName, Mode=OneWay}" />
-                            <Run Text=" : " />
-                            <Run Text="{Binding TypeName, Mode=OneWay}" />
-                        </TextBlock>
-                    </DataTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding SubTypes}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock>
+                                <Run Text="{Binding FamilyName, Mode=OneWay}" />
+                                <Run Text=" : " />
+                                <Run Text="{Binding TypeName, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Text="  [Compose]"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontStyle="Italic"
+                                       FontSize="11">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsComposite}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                        <!-- Sous-types d'un type composite -->
+                        <HierarchicalDataTemplate.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Foreground="{StaticResource TextPrimaryBrush}">
+                                    <Run Text="  " />
+                                    <Run Text="{Binding FamilyName, Mode=OneWay}" />
+                                    <Run Text=" : " />
+                                    <Run Text="{Binding TypeName, Mode=OneWay}" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </HierarchicalDataTemplate.ItemTemplate>
+                    </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
 
                 <!-- Style TreeViewItem avec menu contextuel Supprimer -->

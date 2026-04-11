@@ -4,6 +4,7 @@ using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
 using Olympe.MaterialManager.Helpers;
 using Olympe.MaterialManager.Models;
+using Olympe.MaterialManager.Services;
 
 namespace Olympe.MaterialManager.Events;
 
@@ -14,32 +15,32 @@ namespace Olympe.MaterialManager.Events;
 /// </summary>
 public class RevitEventBridge : IExternalEventHandler
 {
-    private volatile RevitRequestType _requestType = RevitRequestType.None;
-    private volatile object? _requestData;
-    private Action<object?>? _resultCallback;
-    private readonly object _lock = new();
+    private record struct RequestEntry(RevitRequestType Type, object? Data, Action<object?> Callback);
+    private readonly System.Collections.Concurrent.ConcurrentQueue<RequestEntry> _queue = new();
 
     /// <summary>
     /// Envoie une requete au thread Revit via ExternalEvent.
-    /// Appele depuis le thread UI (ViewModel).
+    /// Utilise une file d'attente pour supporter plusieurs requetes simultanees.
     /// </summary>
     public void MakeRequest(RevitRequestType type, object? data, Action<object?> callback)
     {
-        lock (_lock)
-        {
-            _requestType = type;
-            _requestData = data;
-            _resultCallback = callback;
-        }
-        App.RevitEvent.Raise();
+        LogService.Log($"MakeRequest: {type}, data={data?.GetType().Name ?? "null"}");
+        _queue.Enqueue(new RequestEntry(type, data, callback));
+        var raiseResult = App.RevitEvent.Raise();
+        LogService.Log($"MakeRequest: Raise() returned {raiseResult}, queue size={_queue.Count}");
     }
 
     /// <summary>
     /// IExternalEventHandler.Execute — appele par Revit quand l'ExternalEvent est leve.
+    /// Traite TOUTES les requetes en attente dans la queue.
     /// </summary>
     public void Execute(UIApplication app)
     {
-        ProcessRequest(app);
+        LogService.Log($"Execute() called by Revit, queue size={_queue.Count}");
+        while (_queue.TryDequeue(out var entry))
+        {
+            ProcessSingleRequest(app, entry.Type, entry.Data, entry.Callback);
+        }
     }
 
     /// <summary>
@@ -48,27 +49,17 @@ public class RevitEventBridge : IExternalEventHandler
     public string GetName() => "Olympe MaterialManager Bridge";
 
     /// <summary>
-    /// Traite la requete sur le thread Revit.
+    /// Traite une seule requete sur le thread Revit.
     /// </summary>
-    public void ProcessRequest(UIApplication uiApp)
+    private void ProcessSingleRequest(UIApplication uiApp, RevitRequestType type, object? data, Action<object?> callback)
     {
-        RevitRequestType type;
-        object? data;
-        Action<object?>? callback;
-
-        lock (_lock)
+        if (type == RevitRequestType.None)
         {
-            type = _requestType;
-            data = _requestData;
-            callback = _resultCallback;
-            _requestType = RevitRequestType.None;
-            _requestData = null;
-            _resultCallback = null;
+            LogService.Log("ProcessSingleRequest: skipped (type=None)");
+            return;
         }
 
-        if (type == RevitRequestType.None || callback == null)
-            return;
-
+        LogService.Log($"ProcessSingleRequest: dispatching {type}");
         object? result = null;
         try
         {
@@ -126,15 +117,54 @@ public class RevitEventBridge : IExternalEventHandler
                 case RevitRequestType.HighlightElementsByType:
                     HandleHighlightElementsByType(uiApp, (long)data!);
                     break;
+                case RevitRequestType.RenderMaterialPreview:
+                    result = HandleRenderMaterialPreview(uiApp, (long)data!);
+                    break;
+                case RevitRequestType.GetCompositeSubTypes:
+                    result = HandleGetCompositeSubTypes(uiApp, (long)data!);
+                    break;
             }
         }
         catch (Exception ex)
         {
+            LogService.Error($"ProcessRequest: handler {type} threw", ex);
             result = ex;
         }
 
-        // Marshaller le resultat vers le thread UI WPF
-        System.Windows.Application.Current.Dispatcher.Invoke(() => callback(result));
+        LogService.Log($"ProcessRequest: {type} done, result={result?.GetType().Name ?? "null"}");
+
+        // Marshaller le resultat vers le thread UI WPF (BeginInvoke pour eviter deadlock)
+        try
+        {
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher != null)
+            {
+                LogService.Log($"ProcessRequest: BeginInvoke callback for {type}");
+                dispatcher.BeginInvoke(new Action(() =>
+                {
+                    LogService.Log($"Callback: executing for {type}");
+                    try
+                    {
+                        callback(result);
+                        LogService.Log($"Callback: completed for {type}");
+                    }
+                    catch (Exception cbEx)
+                    {
+                        LogService.Error($"Callback: failed for {type}", cbEx);
+                    }
+                }));
+            }
+            else
+            {
+                LogService.Log($"ProcessRequest: Dispatcher is null! Calling callback directly for {type}");
+                callback(result);
+            }
+        }
+        catch (Exception dispEx)
+        {
+            LogService.Error($"ProcessRequest: Dispatcher.BeginInvoke failed for {type}", dispEx);
+            try { callback(result); } catch { }
+        }
     }
 
     private static RevitDocInfoDto HandleGetDocumentInfo(UIApplication uiApp)
@@ -250,14 +280,34 @@ public class RevitEventBridge : IExternalEventHandler
 
             foreach (var et in types)
             {
-                bool hasCs = et is HostObjAttributes hoa && hoa.GetCompoundStructure() != null;
+                // Detecter si c'est un mur empile (stacked wall) : WallType sans CompoundStructure directe
+                bool isStackedWall = false;
+                if (et is WallType wt && wt.GetCompoundStructure() == null)
+                {
+                    // Verifier s'il existe une instance Wall de ce type avec des sous-murs empiles
+                    var testInstance = new FilteredElementCollector(doc)
+                        .OfClass(typeof(Wall))
+                        .Cast<Wall>()
+                        .FirstOrDefault(w => w.GetTypeId() == et.Id);
+                    if (testInstance != null)
+                    {
+                        var stackedIds = testInstance.GetStackedWallMemberIds();
+                        isStackedWall = stackedIds != null && stackedIds.Count > 0;
+                    }
+                }
+
+                // Detecter CompoundStructure : inclut les murs empiles (WallType sans CS directe mais avec sous-murs)
+                bool hasCs = et is HostObjAttributes hoa &&
+                    (hoa.GetCompoundStructure() != null || et is WallType);
+
                 result.Add(new SceneTypeDto
                 {
                     ElementIdValue = ElementIdHelper.GetValue(et.Id),
                     FamilyName = et.FamilyName,
                     TypeName = et.Name,
                     CategoryName = categoryName,
-                    HasCompoundStructure = hasCs
+                    HasCompoundStructure = hasCs,
+                    IsComposite = isStackedWall
                 });
             }
         }
@@ -298,20 +348,32 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static List<LayerDto> HandleGetLayersForType(UIApplication uiApp, long typeIdValue)
     {
+        LogService.Log($"HandleGetLayersForType: typeIdValue={typeIdValue}");
         var doc = uiApp.ActiveUIDocument?.Document;
-        if (doc == null) return new List<LayerDto>();
+        if (doc == null)
+        {
+            LogService.Log("HandleGetLayersForType: doc is null");
+            return new List<LayerDto>();
+        }
 
         var elementId = ElementIdHelper.FromValue(typeIdValue);
         var element = doc.GetElement(elementId);
+        LogService.Log($"HandleGetLayersForType: element={element?.GetType().Name ?? "null"}, name={element?.Name ?? "null"}");
 
         // HostObjAttributes est la classe de base commune a WallType, FloorType, RoofType, CeilingType
         // Tous ces types exposent CompoundStructure de maniere generique
         if (element is HostObjAttributes hostAttrs)
         {
+            LogService.Log($"HandleGetLayersForType: is HostObjAttributes, getting CompoundStructure");
             var cs = hostAttrs.GetCompoundStructure();
-            if (cs == null) return new List<LayerDto>();
+            if (cs == null)
+            {
+                LogService.Log("HandleGetLayersForType: CompoundStructure is null");
+                return new List<LayerDto>();
+            }
 
             var layers = cs.GetLayers();
+            LogService.Log($"HandleGetLayersForType: found {layers.Count} layers");
             var result = new List<LayerDto>(layers.Count);
 
             for (int i = 0; i < layers.Count; i++)
@@ -343,6 +405,78 @@ public class RevitEventBridge : IExternalEventHandler
             return result;
         }
 
+        // Support des murs empiles et autres types sans CompoundStructure directe
+        // Tenter de trouver une instance de ce type et lire ses couches via l'instance
+        LogService.Log($"HandleGetLayersForType: element {element?.GetType().Name} has no direct CompoundStructure, trying instance lookup");
+
+        var instance = new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .Where(e => e.GetTypeId() == elementId)
+            .FirstOrDefault();
+
+        if (instance != null)
+        {
+            LogService.Log($"HandleGetLayersForType: found instance {instance.Id}, type={instance.GetType().Name}");
+
+            // Pour les murs empiles, recuperer les sous-murs
+            if (instance is Wall wall)
+            {
+                var stackedIds = wall.GetStackedWallMemberIds();
+                if (stackedIds != null && stackedIds.Count > 0)
+                {
+                    LogService.Log($"HandleGetLayersForType: stacked wall with {stackedIds.Count} sub-walls");
+                    var allLayers = new List<LayerDto>();
+                    int globalIndex = 0;
+
+                    foreach (var subWallId in stackedIds)
+                    {
+                        var subWall = doc.GetElement(subWallId) as Wall;
+                        if (subWall == null) continue;
+
+                        var subType = doc.GetElement(subWall.GetTypeId()) as WallType;
+                        if (subType == null) continue;
+
+                        var subCs = subType.GetCompoundStructure();
+                        if (subCs == null) continue;
+
+                        string subName = subType.Name;
+                        var subLayers = subCs.GetLayers();
+                        LogService.Log($"HandleGetLayersForType: sub-wall '{subName}' has {subLayers.Count} layers");
+
+                        for (int i = 0; i < subLayers.Count; i++)
+                        {
+                            var layer = subLayers[i];
+                            var matId = layer.MaterialId;
+                            string matName = "< Par categorie >";
+                            long matIdValue = ElementIdHelper.GetValue(matId);
+
+                            if (matId != ElementId.InvalidElementId)
+                            {
+                                var mat = doc.GetElement(matId);
+                                matName = mat?.Name ?? "< Inconnu >";
+                            }
+
+                            double widthMm = UnitUtils.ConvertFromInternalUnits(
+                                layer.Width, UnitTypeId.Millimeters);
+
+                            allLayers.Add(new LayerDto
+                            {
+                                LayerIndex = globalIndex++,
+                                Function = $"[{subName}] {LayerFunctionMapper.ToFrench(layer.Function)}",
+                                Width = Math.Round(widthMm, 1),
+                                MaterialName = matName,
+                                MaterialElementIdValue = matIdValue
+                            });
+                        }
+                    }
+
+                    if (allLayers.Count > 0)
+                        return allLayers;
+                }
+            }
+        }
+
+        LogService.Log("HandleGetLayersForType: no layers found, returning empty list");
         return new List<LayerDto>();
     }
 
@@ -352,19 +486,76 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static List<MaterialParamDto> HandleGetMaterialParametersForType(UIApplication uiApp, long typeIdValue)
     {
+        LogService.Log($"HandleGetMaterialParametersForType: typeIdValue={typeIdValue}");
         var doc = uiApp.ActiveUIDocument?.Document;
         if (doc == null) return new List<MaterialParamDto>();
 
         var elementId = ElementIdHelper.FromValue(typeIdValue);
         var element = doc.GetElement(elementId);
-        if (element == null) return new List<MaterialParamDto>();
+        if (element == null)
+        {
+            LogService.Log("HandleGetMaterialParametersForType: element is null");
+            return new List<MaterialParamDto>();
+        }
+
+        LogService.Log($"HandleGetMaterialParametersForType: element type={element.GetType().Name}, name={element.Name}");
 
         var result = new List<MaterialParamDto>();
+        var seenParamNames = new HashSet<string>();
 
+        // Chercher les parametres Material dans le type
+        CollectMaterialParams(doc, element, result, seenParamNames, "Type");
+
+        // Si c'est un ElementType, chercher aussi dans une instance representative
+        if (element is ElementType elementType)
+        {
+            var instance = new FilteredElementCollector(doc)
+                .WhereElementIsNotElementType()
+                .Where(e => e.GetTypeId() == elementId)
+                .FirstOrDefault();
+            if (instance != null)
+            {
+                LogService.Log($"HandleGetMaterialParametersForType: found instance {instance.Id}, type={instance.GetType().Name}");
+                CollectMaterialParams(doc, instance, result, seenParamNames, "Instance");
+            }
+        }
+
+        // Si aucun parametre materiau trouve, ajouter une entree informative
+        if (result.Count == 0)
+        {
+            result.Add(new MaterialParamDto
+            {
+                ParameterName = element.Name,
+                ParameterDefinitionName = "",
+                CurrentMaterialName = "Aucun parametre materiau",
+                CurrentMaterialIdValue = -1
+            });
+        }
+
+        LogService.Log($"HandleGetMaterialParametersForType: found {result.Count} params");
+        return result;
+    }
+
+    /// <summary>
+    /// Extrait les parametres de type Material d'un element.
+    /// </summary>
+    private static void CollectMaterialParams(Document doc, Element element,
+        List<MaterialParamDto> result, HashSet<string> seenNames, string source)
+    {
         foreach (Parameter param in element.Parameters)
         {
             if (param.StorageType != StorageType.ElementId) continue;
-            if (param.Definition.GetDataType() != SpecTypeId.Reference.Material) continue;
+
+            // Verifier si c'est un parametre Material
+            bool isMaterialParam = false;
+            try { isMaterialParam = param.Definition.GetDataType() == SpecTypeId.Reference.Material; }
+            catch { continue; }
+
+            if (!isMaterialParam) continue;
+
+            string paramKey = $"{source}:{param.Definition.Name}";
+            if (seenNames.Contains(paramKey)) continue;
+            seenNames.Add(paramKey);
 
             var matId = param.AsElementId();
             string matName = "< Aucun >";
@@ -384,8 +575,6 @@ public class RevitEventBridge : IExternalEventHandler
                 CurrentMaterialIdValue = matIdValue
             });
         }
-
-        return result;
     }
 
     // =====================================================================
@@ -541,6 +730,53 @@ public class RevitEventBridge : IExternalEventHandler
     }
 
     /// <summary>
+    /// Cherche recursivement un chemin de texture bitmap dans un Asset Revit.
+    /// Parcourt les proprietes de type Asset (connectes) et String pour trouver
+    /// "unifiedbitmap_Bitmap" ou tout chemin finissant par une extension image.
+    /// </summary>
+    private static string? FindTexturePath(Asset asset)
+    {
+        if (asset == null) return null;
+
+        for (int i = 0; i < asset.Size; i++)
+        {
+            var prop = asset.Get(i);
+            if (prop == null) continue;
+
+            // Chercher dans les sous-assets connectes (ex: generic_diffuse -> unifiedbitmap)
+            if (prop.NumberOfConnectedProperties > 0)
+            {
+                for (int c = 0; c < prop.NumberOfConnectedProperties; c++)
+                {
+                    var connectedAsset = prop.GetConnectedProperty(c) as Asset;
+                    if (connectedAsset != null)
+                    {
+                        var found = FindTexturePath(connectedAsset);
+                        if (found != null) return found;
+                    }
+                }
+            }
+
+            // Chercher "unifiedbitmap_Bitmap" ou propriete String contenant un chemin image
+            if (prop is AssetPropertyString strProp && !string.IsNullOrEmpty(strProp.Value))
+            {
+                string val = strProp.Value;
+                if (strProp.Name == "unifiedbitmap_Bitmap" ||
+                    val.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
+                    val.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                    val.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
+                    val.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
+                    val.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
+                {
+                    return val;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Extrait la valeur ARGB (int) de la couleur d'un materiau Revit.
     /// Si la couleur est invalide, retourne le gris par defaut.
     /// </summary>
@@ -575,7 +811,10 @@ public class RevitEventBridge : IExternalEventHandler
             Name = material.Name,
             ColorArgb = ExtractColorArgb(material),
             PatternName = GetPatternName(doc, material),
-            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId
+            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId,
+            Transparency = material.Transparency,       // 0-100
+            Shininess = material.Shininess,             // 0-128
+            Smoothness = material.Smoothness            // 0-100
         };
 
         // Description via BuiltInParameter (D-08)
@@ -608,25 +847,16 @@ public class RevitEventBridge : IExternalEventHandler
                     }
                 }
 
-                // D-18 : tentative de lecture du chemin thumbnail (best-effort)
-                // Parcours les proprietes de l'asset pour trouver un chemin de texture bitmap
+                // Tentative de lecture du chemin texture bitmap (best-effort)
                 try
                 {
-                    for (int pi = 0; pi < renderAsset.Size; pi++)
-                    {
-                        var prop = renderAsset.Get(pi);
-                        if (prop is AssetPropertyString strProp &&
-                            strProp.Name.IndexOf("Bitmap", StringComparison.OrdinalIgnoreCase) >= 0 &&
-                            !string.IsNullOrEmpty(strProp.Value))
-                        {
-                            dto.ThumbnailPath = strProp.Value;
-                            break;
-                        }
-                    }
+                    var texPath = FindTexturePath(renderAsset);
+                    dto.ThumbnailPath = texPath;
+                    dto.TexturePath = texPath;
                 }
                 catch
                 {
-                    // Best-effort : ignorer les erreurs de lecture du thumbnail
+                    // Best-effort : ignorer les erreurs de lecture
                 }
             }
         }
@@ -846,7 +1076,16 @@ public class RevitEventBridge : IExternalEventHandler
                 if (elementType == null) continue;
 
                 bool hasCs = elementType is HostObjAttributes hoa
-                    && hoa.GetCompoundStructure() != null;
+                    && (hoa.GetCompoundStructure() != null || elementType is WallType);
+
+                // Detecter mur empile : WallType sans CompoundStructure directe mais avec sous-murs
+                bool isStackedWall = false;
+                if (elementType is WallType pickedWt && pickedWt.GetCompoundStructure() == null
+                    && element is Wall pickedWall)
+                {
+                    var stackedIds = pickedWall.GetStackedWallMemberIds();
+                    isStackedWall = stackedIds != null && stackedIds.Count > 0;
+                }
 
                 string catName = element.Category?.Name ?? "Autre";
 
@@ -856,7 +1095,8 @@ public class RevitEventBridge : IExternalEventHandler
                     FamilyName = elementType.FamilyName,
                     TypeName = elementType.Name,
                     CategoryName = catName,
-                    HasCompoundStructure = hasCs
+                    HasCompoundStructure = hasCs,
+                    IsComposite = isStackedWall
                 });
             }
         }
@@ -896,6 +1136,265 @@ public class RevitEventBridge : IExternalEventHandler
             .ToList();
 
         uiDoc.Selection.SetElementIds(elementIds);
+    }
+
+    /// <summary>
+    /// Retourne les sous-types d'un type composite (mur empile).
+    /// Trouve une instance du type, recupere les sous-murs via GetStackedWallMemberIds(),
+    /// et retourne leurs WallTypes comme List&lt;SceneTypeDto&gt;.
+    /// </summary>
+    private static List<SceneTypeDto> HandleGetCompositeSubTypes(UIApplication uiApp, long typeIdValue)
+    {
+        LogService.Log($"HandleGetCompositeSubTypes: typeIdValue={typeIdValue}");
+        var doc = uiApp.ActiveUIDocument?.Document;
+        if (doc == null) return new List<SceneTypeDto>();
+
+        var typeElementId = ElementIdHelper.FromValue(typeIdValue);
+        var result = new List<SceneTypeDto>();
+        var seenSubTypeIds = new HashSet<long>();
+
+        // Trouver une instance de ce type (Wall) pour acceder aux sous-murs
+        var wallInstance = new FilteredElementCollector(doc)
+            .OfClass(typeof(Wall))
+            .Cast<Wall>()
+            .FirstOrDefault(w => w.GetTypeId() == typeElementId);
+
+        if (wallInstance == null)
+        {
+            LogService.Log("HandleGetCompositeSubTypes: no wall instance found");
+            return result;
+        }
+
+        var stackedIds = wallInstance.GetStackedWallMemberIds();
+        if (stackedIds == null || stackedIds.Count == 0)
+        {
+            LogService.Log("HandleGetCompositeSubTypes: no stacked wall member ids");
+            return result;
+        }
+
+        LogService.Log($"HandleGetCompositeSubTypes: found {stackedIds.Count} sub-walls");
+
+        foreach (var subWallId in stackedIds)
+        {
+            var subWall = doc.GetElement(subWallId) as Wall;
+            if (subWall == null) continue;
+
+            var subTypeId = subWall.GetTypeId();
+            long subTypeIdValue = ElementIdHelper.GetValue(subTypeId);
+
+            // Eviter les doublons si plusieurs instances du meme sous-type
+            if (seenSubTypeIds.Contains(subTypeIdValue)) continue;
+            seenSubTypeIds.Add(subTypeIdValue);
+
+            var subType = doc.GetElement(subTypeId) as WallType;
+            if (subType == null) continue;
+
+            bool hasCs = subType.GetCompoundStructure() != null;
+            string catName = subWall.Category?.Name ?? "Murs";
+
+            result.Add(new SceneTypeDto
+            {
+                ElementIdValue = subTypeIdValue,
+                FamilyName = subType.FamilyName,
+                TypeName = subType.Name,
+                CategoryName = catName,
+                HasCompoundStructure = hasCs,
+                IsComposite = false
+            });
+        }
+
+        LogService.Log($"HandleGetCompositeSubTypes: returning {result.Count} sub-types");
+        return result;
+    }
+
+    /// <summary>
+    /// Genere un rendu du materiau en utilisant le moteur de rendu Revit.
+    /// Cree un DirectShape sphere temporaire, applique le materiau, exporte la vue, rollback.
+    /// Retourne les octets PNG de l'image rendue, ou null si echec.
+    /// </summary>
+    private static byte[]? HandleRenderMaterialPreview(UIApplication uiApp, long materialIdValue)
+    {
+        var doc = uiApp.ActiveUIDocument?.Document;
+        if (doc == null) return null;
+
+        var matId = ElementIdHelper.FromValue(materialIdValue);
+        var material = doc.GetElement(matId) as Material;
+        if (material == null) return null;
+
+        // Chemin temporaire pour l'export image
+        var tempDir = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), "OlympeMaterialPreview");
+        System.IO.Directory.CreateDirectory(tempDir);
+        var tempFileBase = System.IO.Path.Combine(tempDir, "preview");
+
+        byte[]? imageBytes = null;
+
+        using (var tx = new Transaction(doc, "Olympe - Rendu materiau"))
+        {
+            tx.Start();
+            try
+            {
+                // 1. Creer une sphere via DirectShape
+                var sphere = CreateSphereDirectShape(doc, matId);
+                if (sphere == null)
+                {
+                    tx.RollBack();
+                    return null;
+                }
+
+                // 2. Creer une vue 3D temporaire isolant uniquement la sphere
+                var view3d = CreateIsolatedView(doc, sphere.Id);
+                if (view3d == null)
+                {
+                    tx.RollBack();
+                    return null;
+                }
+
+                // Regenerer le document pour que la vue soit a jour
+                doc.Regenerate();
+
+                // 3. Exporter la vue en image
+                var exportOpts = new ImageExportOptions
+                {
+                    FilePath = tempFileBase,
+                    FitDirection = FitDirectionType.Horizontal,
+                    HLRandWFViewsFileType = ImageFileType.PNG,
+                    ImageResolution = ImageResolution.DPI_150,
+                    PixelSize = 256,
+                    ExportRange = ExportRange.SetOfViews,
+                    ZoomType = ZoomFitType.FitToPage,
+                    ShadowViewsFileType = ImageFileType.PNG
+                };
+                exportOpts.SetViewsAndSheets(new List<ElementId> { view3d.Id });
+
+                doc.ExportImage(exportOpts);
+
+                // 4. Lire l'image exportee
+                // Revit ajoute le nom de la vue au fichier
+                var pngFiles = System.IO.Directory.GetFiles(tempDir, "preview*.png");
+                if (pngFiles.Length > 0)
+                {
+                    imageBytes = System.IO.File.ReadAllBytes(pngFiles[0]);
+                    // Nettoyer les fichiers temporaires
+                    foreach (var f in pngFiles)
+                    {
+                        try { System.IO.File.Delete(f); } catch { }
+                    }
+                }
+            }
+            finally
+            {
+                // Rollback pour supprimer la sphere et la vue temporaires
+                if (tx.HasStarted() && !tx.HasEnded())
+                    tx.RollBack();
+            }
+        }
+
+        return imageBytes;
+    }
+
+    /// <summary>
+    /// Cree un DirectShape sphere avec le materiau specifie.
+    /// </summary>
+    private static DirectShape? CreateSphereDirectShape(Document doc, ElementId materialId)
+    {
+        // Creer un solide sphere via BRep
+        var center = XYZ.Zero;
+        double radius = 1.0; // 1 pied
+
+        // Utiliser un Frame pour definir le plan de la sphere
+        var frame = new Frame(center, XYZ.BasisX, XYZ.BasisY, XYZ.BasisZ);
+
+        // Creer la sphere via revolution d'un demi-cercle
+        var profileLoops = new List<CurveLoop>();
+        var loop = new CurveLoop();
+
+        // Demi-cercle dans le plan XZ
+        var arc = Arc.Create(
+            new XYZ(0, 0, -radius),
+            new XYZ(0, 0, radius),
+            new XYZ(radius, 0, 0));
+        var line = Line.CreateBound(
+            new XYZ(0, 0, radius),
+            new XYZ(0, 0, -radius));
+
+        loop.Append(arc);
+        loop.Append(line);
+        profileLoops.Add(loop);
+
+        // Revolution autour de l'axe Z
+        var solid = GeometryCreationUtilities.CreateRevolvedGeometry(
+            frame, profileLoops, 0, 2 * Math.PI);
+
+        // Appliquer le materialId directement sur le solide via Paint
+        var ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
+        ds.SetShape(new GeometryObject[] { solid });
+
+        // Peindre toutes les faces du DirectShape avec le materiau
+        // Document.Paint(ElementId elementId, Face face, ElementId materialId)
+        var opt = new Options { ComputeReferences = true };
+        var geomElem = ds.get_Geometry(opt);
+        if (geomElem != null)
+        {
+            foreach (var geomObj in geomElem)
+            {
+                if (geomObj is Solid s)
+                {
+                    foreach (Face face in s.Faces)
+                    {
+                        doc.Paint(ds.Id, face, materialId);
+                    }
+                }
+            }
+        }
+
+        return ds;
+    }
+
+    /// <summary>
+    /// Cree une vue 3D temporaire qui isole uniquement l'element specifie.
+    /// Configure un fond neutre et un eclairage standard.
+    /// </summary>
+    private static View3D? CreateIsolatedView(Document doc, ElementId elementToIsolate)
+    {
+        // Trouver un ViewFamilyType pour les vues 3D
+        var viewFamilyType = new FilteredElementCollector(doc)
+            .OfClass(typeof(ViewFamilyType))
+            .Cast<ViewFamilyType>()
+            .FirstOrDefault(vft => vft.ViewFamily == ViewFamily.ThreeDimensional);
+
+        if (viewFamilyType == null) return null;
+
+        var view3d = View3D.CreateIsometric(doc, viewFamilyType.Id);
+        view3d.Name = "Olympe_TempPreview_" + Guid.NewGuid().ToString("N")[..8];
+
+        // Isoler uniquement la sphere
+        view3d.IsolateElementTemporary(elementToIsolate);
+
+        // Configurer le style visuel : realiste
+        view3d.DisplayStyle = DisplayStyle.Realistic;
+
+        // Desactiver les annotations
+        view3d.AreAnnotationCategoriesHidden = true;
+
+        // Cadrer sur l'element
+        var boundingBox = doc.GetElement(elementToIsolate).get_BoundingBox(view3d);
+        if (boundingBox != null)
+        {
+            var min = boundingBox.Min;
+            var max = boundingBox.Max;
+            var center = (min + max) / 2;
+            var diagonal = max - min;
+            var dist = diagonal.GetLength() * 2;
+
+            var eyePos = center + new XYZ(dist * 0.5, -dist * 0.3, dist * 0.4);
+            var upDir = XYZ.BasisZ;
+            var forwardDir = (center - eyePos).Normalize();
+
+            view3d.SetOrientation(new ViewOrientation3D(eyePos, upDir, forwardDir));
+        }
+
+        return view3d;
     }
 
     /// <summary>
