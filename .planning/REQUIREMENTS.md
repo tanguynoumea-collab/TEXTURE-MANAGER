@@ -22,13 +22,13 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Scene Active
 
 - [x] **SCENE-01**: L'utilisateur peut creer une scene active avec un nom personnalise
-- [ ] **SCENE-02**: L'utilisateur peut switcher entre plusieurs scenes actives via un selecteur
+- [x] **SCENE-02**: L'utilisateur peut switcher entre plusieurs scenes actives via un selecteur
 - [x] **SCENE-03**: L'utilisateur peut ajouter des familles/types a la scene via un mode liste (dropdown famille puis type)
 - [ ] **SCENE-04**: L'utilisateur peut ajouter des elements a la scene via un clic dans la vue 3D (PickObject via IExternalEventHandler)
-- [ ] **SCENE-05**: L'utilisateur peut retirer un type de la scene active
+- [x] **SCENE-05**: L'utilisateur peut retirer un type de la scene active
 - [x] **SCENE-06**: Le panneau gauche affiche un TreeView des familles/types de la scene active
 - [x] **SCENE-07**: Le TreeView trie les Murs et Sols en tete, le reste en ordre alphabetique
-- [ ] **SCENE-08**: La selection d'un type dans le TreeView met a jour le panneau centre
+- [x] **SCENE-08**: La selection d'un type dans le TreeView met a jour le panneau centre
 - [ ] **SCENE-09**: La vue 3D active est validee avant d'autoriser la selection par clic
 
 ### Couches et Parametres
@@ -133,13 +133,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-08 | Phase 1 | Complete |
 | INFRA-09 | Phase 1 | Complete |
 | SCENE-01 | Phase 2 | Complete |
-| SCENE-02 | Phase 2 | Pending |
+| SCENE-02 | Phase 2 | Complete |
 | SCENE-03 | Phase 2 | Complete |
 | SCENE-04 | Phase 4 | Pending |
-| SCENE-05 | Phase 2 | Pending |
+| SCENE-05 | Phase 2 | Complete |
 | SCENE-06 | Phase 2 | Complete |
 | SCENE-07 | Phase 2 | Complete |
-| SCENE-08 | Phase 2 | Pending |
+| SCENE-08 | Phase 2 | Complete |
 | SCENE-09 | Phase 4 | Pending |
 | LAYER-01 | Phase 2 | Complete |
 | LAYER-02 | Phase 2 | Complete |

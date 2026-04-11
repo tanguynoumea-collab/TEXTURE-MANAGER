@@ -52,7 +52,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md -- DTOs, helpers, Messenger message, and RevitEventBridge handlers (data foundation)
-- [ ] 02-02-PLAN.md -- Left panel: scene management, TreeView with grouping, type add/remove via ComboBoxes
+- [x] 02-02-PLAN.md -- Left panel: scene management, TreeView with grouping, type add/remove via ComboBoxes
 - [x] 02-03-PLAN.md -- Center panel: conditional layer/parameter display, multi-selection, human verification
 **UI hint**: yes
 
