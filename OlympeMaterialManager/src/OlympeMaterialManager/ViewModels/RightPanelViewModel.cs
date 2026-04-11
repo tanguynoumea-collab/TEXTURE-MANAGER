@@ -2,7 +2,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Olympe.MaterialManager.Events;
+using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
 using Olympe.MaterialManager.Services;
 using Olympe.MaterialManager.Views;
@@ -37,13 +39,22 @@ public partial class RightPanelViewModel : ObservableObject
     private string _statusMessage = string.Empty;
 
     /// <summary>
+    /// Sub-ViewModel pour la section editeur de materiau (MATEDIT-01 a MATEDIT-08).
+    /// </summary>
+    public MaterialEditorViewModel MaterialEditorVM { get; }
+
+    /// <summary>
     /// Constructeur principal avec injection du bridge et du service de presets.
     /// </summary>
     public RightPanelViewModel(RevitEventBridge eventBridge, PresetService presetService)
     {
         _eventBridge = eventBridge;
         _presetService = presetService;
+        MaterialEditorVM = new MaterialEditorViewModel(eventBridge);
         LoadPresets();
+
+        // Ecouter les editions de materiau pour mettre a jour les noms dans les presets (D-21)
+        WeakReferenceMessenger.Default.Register<MaterialEditedMessage>(this, (_, msg) => OnMaterialEdited(msg));
     }
 
     /// <summary>
@@ -213,6 +224,34 @@ public partial class RightPanelViewModel : ObservableObject
         }
 
         _presetService.Save(_collection, _presetFilePath);
+    }
+
+    /// <summary>
+    /// Envoie MaterialSelectedMessage quand la selection du preset change (D-20).
+    /// </summary>
+    partial void OnSelectedPresetMaterialChanged(PresetMaterialDto? value)
+    {
+        WeakReferenceMessenger.Default.Send(new MaterialSelectedMessage(value));
+    }
+
+    /// <summary>
+    /// Met a jour le nom du materiau dans les presets apres edition (D-21).
+    /// </summary>
+    private void OnMaterialEdited(MaterialEditedMessage msg)
+    {
+        foreach (var group in PresetGroups)
+        {
+            foreach (var mat in group.Materials)
+            {
+                if (mat.MaterialElementIdValue == msg.Value)
+                {
+                    // Rafraichir le nom et la couleur depuis le sub-VM
+                    mat.MaterialName = MaterialEditorVM.MaterialName;
+                    mat.ColorArgb = MaterialEditorVM.ColorArgb;
+                }
+            }
+        }
+        AutoSave();
     }
 
     /// <summary>
