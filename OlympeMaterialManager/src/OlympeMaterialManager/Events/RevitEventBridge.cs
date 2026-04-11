@@ -1,5 +1,7 @@
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Visual;
 using Autodesk.Revit.UI;
+using Autodesk.Revit.UI.Selection;
 using Olympe.MaterialManager.Helpers;
 using Olympe.MaterialManager.Models;
 
@@ -88,6 +90,26 @@ public class RevitEventBridge
                     break;
                 case RevitRequestType.DuplicateMaterial:
                     result = HandleDuplicateMaterial(uiApp, (DuplicateMaterialRequestDto)data!);
+                    break;
+
+                // Phase 4 : edition materiau et pick 3D
+                case RevitRequestType.GetMaterialDetails:
+                    result = HandleGetMaterialDetails(uiApp, (long)data!);
+                    break;
+                case RevitRequestType.EditMaterialName:
+                    HandleEditMaterialName(uiApp, (EditMaterialNameRequestDto)data!);
+                    break;
+                case RevitRequestType.EditMaterialDescription:
+                    HandleEditMaterialDescription(uiApp, (EditMaterialDescriptionRequestDto)data!);
+                    break;
+                case RevitRequestType.EditMaterialColor:
+                    HandleEditMaterialColor(uiApp, (EditMaterialColorRequestDto)data!);
+                    break;
+                case RevitRequestType.EditMaterialTint:
+                    HandleEditMaterialTint(uiApp, (EditMaterialTintRequestDto)data!);
+                    break;
+                case RevitRequestType.PickElementInView:
+                    result = HandlePickElementInView(uiApp);
                     break;
             }
         }
@@ -508,5 +530,300 @@ public class RevitEventBridge
         if (m.Color.IsValid)
             return System.Drawing.Color.FromArgb(255, m.Color.Red, m.Color.Green, m.Color.Blue).ToArgb();
         return System.Drawing.Color.Gray.ToArgb();
+    }
+
+    // =====================================================================
+    // Phase 4 : handlers edition materiau et pick 3D
+    // =====================================================================
+
+    /// <summary>
+    /// Retourne les details complets d'un materiau pour le visualisateur (D-16).
+    /// Lit les proprietes directes du Material + tint via AppearanceAsset si present.
+    /// </summary>
+    private static MaterialDetailsDto HandleGetMaterialDetails(UIApplication uiApp, long materialIdValue)
+    {
+        var doc = uiApp.ActiveUIDocument?.Document;
+        if (doc == null)
+            throw new InvalidOperationException("Aucun document ouvert.");
+
+        var matId = ElementIdHelper.FromValue(materialIdValue);
+        var material = doc.GetElement(matId) as Material;
+        if (material == null)
+            throw new InvalidOperationException("Materiau introuvable.");
+
+        var dto = new MaterialDetailsDto
+        {
+            Name = material.Name,
+            ColorArgb = ExtractColorArgb(material),
+            PatternName = GetPatternName(doc, material),
+            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId
+        };
+
+        // Description via BuiltInParameter (D-08)
+        var descParam = material.get_Parameter(BuiltInParameter.ALL_MODEL_DESCRIPTION);
+        dto.Description = descParam?.AsString() ?? string.Empty;
+
+        // Proprietes de teinte (si AppearanceAsset present)
+        if (dto.HasAppearanceAsset)
+        {
+            var assetElem = doc.GetElement(material.AppearanceAssetId) as AppearanceAssetElement;
+            if (assetElem != null)
+            {
+                var renderAsset = assetElem.GetRenderingAsset();
+
+                var tintToggle = renderAsset.FindByName("common_Tint_toggle")
+                    as AssetPropertyBoolean;
+                dto.TintEnabled = tintToggle?.Value ?? false;
+
+                var tintColor = renderAsset.FindByName("common_Tint_color")
+                    as AssetPropertyDoubleArray4d;
+                if (tintColor != null)
+                {
+                    var values = tintColor.GetValueAsDoubles();
+                    if (values.Count >= 3)
+                    {
+                        byte r = (byte)(values[0] * 255);
+                        byte g = (byte)(values[1] * 255);
+                        byte b = (byte)(values[2] * 255);
+                        dto.TintColorArgb = System.Drawing.Color.FromArgb(255, r, g, b).ToArgb();
+                    }
+                }
+
+                // D-18 : tentative de lecture du chemin thumbnail (best-effort)
+                // Le ThumbnailFile peut etre null, relatif ou pointer vers un fichier inexistant
+            }
+        }
+
+        return dto;
+    }
+
+    /// <summary>
+    /// Renomme un materiau Revit (D-07, D-10).
+    /// Transaction individuelle pour granularite undo.
+    /// </summary>
+    private static void HandleEditMaterialName(UIApplication uiApp, EditMaterialNameRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Renommer materiau");
+        tx.Start();
+
+        try
+        {
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            var material = doc.GetElement(matId) as Material;
+            if (material == null)
+                throw new InvalidOperationException("Materiau introuvable.");
+
+            material.Name = request.NewName;
+            tx.Commit();
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Modifie la description d'un materiau Revit (D-08, D-10).
+    /// Utilise BuiltInParameter.ALL_MODEL_DESCRIPTION.
+    /// </summary>
+    private static void HandleEditMaterialDescription(UIApplication uiApp, EditMaterialDescriptionRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Modifier description materiau");
+        tx.Start();
+
+        try
+        {
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            var material = doc.GetElement(matId) as Material;
+            if (material == null)
+                throw new InvalidOperationException("Materiau introuvable.");
+
+            var descParam = material.get_Parameter(BuiltInParameter.ALL_MODEL_DESCRIPTION);
+            if (descParam == null || descParam.IsReadOnly)
+                throw new InvalidOperationException("Le parametre description est introuvable ou en lecture seule.");
+
+            descParam.Set(request.NewDescription);
+            tx.Commit();
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Modifie la couleur de surface (premier plan) d'un materiau Revit (D-09, D-10).
+    /// Note : bug connu REVIT-134700 si la couleur correspond a Material.Color.
+    /// </summary>
+    private static void HandleEditMaterialColor(UIApplication uiApp, EditMaterialColorRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Modifier couleur de surface");
+        tx.Start();
+
+        try
+        {
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            var material = doc.GetElement(matId) as Material;
+            if (material == null)
+                throw new InvalidOperationException("Materiau introuvable.");
+
+            material.SurfaceForegroundPatternColor = new Color(request.Red, request.Green, request.Blue);
+            tx.Commit();
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Modifie la teinte (tint) d'un materiau via AppearanceAssetEditScope (D-04, D-05, D-06, D-10).
+    /// Utilise common_Tint_toggle et common_Tint_color avec SetValueAsDoubles (pas SetValueAsColor).
+    /// </summary>
+    private static void HandleEditMaterialTint(UIApplication uiApp, EditMaterialTintRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Modifier teinte materiau");
+        tx.Start();
+
+        try
+        {
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            var material = doc.GetElement(matId) as Material;
+            if (material == null)
+                throw new InvalidOperationException("Materiau introuvable.");
+
+            var assetElemId = material.AppearanceAssetId;
+            if (assetElemId == ElementId.InvalidElementId)
+                throw new InvalidOperationException("Teinte non disponible : pas d'AppearanceAsset.");
+
+            var assetElem = doc.GetElement(assetElemId) as AppearanceAssetElement;
+            if (assetElem == null)
+                throw new InvalidOperationException("AppearanceAssetElement introuvable.");
+
+            using (var scope = new AppearanceAssetEditScope(doc))
+            {
+                Asset editableAsset = scope.Start(assetElemId);
+
+                // Toggle teinte on/off
+                var tintToggle = editableAsset.FindByName("common_Tint_toggle")
+                    as AssetPropertyBoolean;
+                if (tintToggle != null)
+                    tintToggle.Value = request.TintEnabled;
+
+                // Couleur de teinte (RGB en doubles normalises 0.0-1.0)
+                if (request.TintEnabled)
+                {
+                    var tintColor = editableAsset.FindByName("common_Tint_color")
+                        as AssetPropertyDoubleArray4d;
+                    if (tintColor != null)
+                    {
+                        tintColor.SetValueAsDoubles(new double[]
+                        {
+                            request.Red / 255.0,
+                            request.Green / 255.0,
+                            request.Blue / 255.0,
+                            1.0 // Alpha
+                        });
+                    }
+                }
+
+                scope.Commit(true); // true = forcer la mise a jour des vues
+            }
+
+            tx.Commit();
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Selection d'un element dans la vue 3D via PickObject (D-11, D-12, D-13, D-14, D-17).
+    /// Cache la fenetre WPF, attend le clic utilisateur, re-affiche en finally.
+    /// Retourne SceneTypeDto? (null si annule par Escape).
+    /// CRITIQUE : catch Autodesk.Revit.Exceptions.OperationCanceledException (pas System).
+    /// </summary>
+    private static SceneTypeDto? HandlePickElementInView(UIApplication uiApp)
+    {
+        var uiDoc = uiApp.ActiveUIDocument;
+        if (uiDoc == null) return null;
+
+        // D-14, SCENE-09 : valider que la vue active est une vue 3D
+        if (uiDoc.ActiveView is not View3D)
+            throw new InvalidOperationException("Vue 3D requise pour la selection par clic.");
+
+        // D-11 : cacher la fenetre WPF avant le pick
+        var mainWindow = App.MainWindow;
+        mainWindow?.Hide();
+
+        try
+        {
+            var reference = uiDoc.Selection.PickObject(
+                ObjectType.Element,
+                "Selectionnez un element dans la vue 3D");
+
+            var element = uiDoc.Document.GetElement(reference);
+            if (element == null) return null;
+
+            // D-12 : extraire le ElementType de l'element selectionne
+            var typeId = element.GetTypeId();
+            if (typeId == ElementId.InvalidElementId) return null;
+
+            var elementType = uiDoc.Document.GetElement(typeId) as ElementType;
+            if (elementType == null) return null;
+
+            bool hasCs = elementType is HostObjAttributes hoa
+                && hoa.GetCompoundStructure() != null;
+
+            string catName = element.Category?.Name ?? "Autre";
+
+            return new SceneTypeDto
+            {
+                ElementIdValue = ElementIdHelper.GetValue(typeId),
+                FamilyName = elementType.FamilyName,
+                TypeName = elementType.Name,
+                CategoryName = catName,
+                HasCompoundStructure = hasCs
+            };
+        }
+        catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+        {
+            // D-13 : Escape presse -- retour gracieux, pas une erreur
+            return null;
+        }
+        finally
+        {
+            // Toujours re-afficher la fenetre (D-11, D-13, Pitfall 6)
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                mainWindow?.Show();
+            });
+        }
+    }
+
+    /// <summary>
+    /// Retourne le nom du motif de surface premier plan d'un materiau.
+    /// Retourne "< Aucun >" si pas de motif attribue.
+    /// </summary>
+    private static string GetPatternName(Document doc, Material material)
+    {
+        var patternId = material.SurfaceForegroundPatternId;
+        if (patternId == ElementId.InvalidElementId)
+            return "< Aucun >";
+        var pattern = doc.GetElement(patternId) as FillPatternElement;
+        return pattern?.Name ?? "< Inconnu >";
     }
 }

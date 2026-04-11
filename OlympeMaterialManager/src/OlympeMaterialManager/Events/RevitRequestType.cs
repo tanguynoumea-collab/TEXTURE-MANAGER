@@ -18,4 +18,12 @@ public enum RevitRequestType
     SetMaterialOnLayers,          // Phase 3 : data=SetMatRequestDto, returns null (success) or Exception
     SetMaterialOnParameter,       // Phase 3 : data=SetMatParamRequestDto, returns null (success) or Exception
     DuplicateMaterial,            // Phase 3 : data=DuplicateMaterialRequestDto, returns PresetMaterialDto
+
+    // Phase 4 : edition materiau et pick 3D
+    GetMaterialDetails,            // data=long (materialIdValue), returns MaterialDetailsDto
+    EditMaterialName,              // data=EditMaterialNameRequestDto, returns null (success) or Exception
+    EditMaterialDescription,       // data=EditMaterialDescriptionRequestDto, returns null (success) or Exception
+    EditMaterialColor,             // data=EditMaterialColorRequestDto, returns null (success) or Exception
+    EditMaterialTint,              // data=EditMaterialTintRequestDto, returns null (success) or Exception
+    PickElementInView,             // data=null, returns SceneTypeDto? (null if cancelled)
 }
