@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-04-11T09:42:40.781Z"
+status: verifying
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-04-11T09:52:12.275Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 
 Phase: 01 (foundation-and-infrastructure) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-11
 
 Progress: [..............] 0%
@@ -54,6 +54,7 @@ Progress: [..............] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 3min | 2 tasks | 6 files |
 | Phase 01 P02 | 3min | 2 tasks | 13 files |
+| Phase 01 P03 | 6min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 01]: .NET 10 SDK confirmed backward-compatible with net48/net8.0-windows targets; traditional .sln format used over .slnx
 - [Phase 01]: Comprehensive ComboBox ControlTemplate included in dark theme rather than deferred -- dark theme requires full template override
 - [Phase 01]: CommunityToolkit.Mvvm [ObservableProperty] source generators confirmed working on both net48 and net8.0-windows TFMs
+- [Phase 01]: Nice3point Toolkit ExternalEvent used with Action<UIApplication> constructor (not ExternalEvent<T>); standard Revit API for ribbon (CreateRibbonTab + PushButtonData)
+- [Phase 01]: AllowClose flag pattern for modeless window: hides on user X-click, actually closes on Revit shutdown
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T09:42:40.777Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-04-11T09:52:12.271Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
