@@ -8,6 +8,7 @@ using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
 using Olympe.MaterialManager.Services;
 using Olympe.MaterialManager.Views;
+using Window = System.Windows.Window;
 
 namespace Olympe.MaterialManager.ViewModels;
 
@@ -31,9 +32,6 @@ public partial class RightPanelViewModel : ObservableObject
 
     [ObservableProperty]
     private PresetMaterialDto? _selectedPresetMaterial;
-
-    [ObservableProperty]
-    private string _newGroupName = string.Empty;
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
@@ -71,20 +69,24 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Cree un nouveau groupe de presets a partir du nom saisi (D-11).
+    /// Cree un nouveau groupe de presets via un dialog de saisie (D-11).
     /// </summary>
     [RelayCommand]
     private void CreerGroupe()
     {
-        if (string.IsNullOrWhiteSpace(NewGroupName))
-            return;
+        var dialog = new CreateNameDialog();
+        dialog.Title = "Nouveau groupe";
+        dialog.SetPrompt("Nom du groupe :");
+        dialog.Owner = App.MainWindow;
 
-        var group = new PresetGroupDto { GroupName = NewGroupName.Trim() };
-        PresetGroups.Add(group);
-        _collection?.Groups.Add(group);
-        NewGroupName = string.Empty;
-        StatusMessage = $"Groupe \"{group.GroupName}\" cree.";
-        AutoSave();
+        if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.EnteredName))
+        {
+            var group = new PresetGroupDto { GroupName = dialog.EnteredName };
+            PresetGroups.Add(group);
+            _collection?.Groups.Add(group);
+            StatusMessage = $"Groupe \"{group.GroupName}\" cree.";
+            AutoSave();
+        }
     }
 
     /// <summary>

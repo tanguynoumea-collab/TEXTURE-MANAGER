@@ -37,25 +37,24 @@
                        Foreground="{StaticResource AccentBrush}"
                        Margin="0,0,0,8" />
 
-            <!-- Section 2: Creation de scene (D-03, SCENE-01) -->
+            <!-- Section 2: Selecteur de scene + bouton creation (SCENE-01, SCENE-02) -->
             <StackPanel DockPanel.Dock="Top"
                         Orientation="Horizontal"
-                        Margin="0,0,0,8">
-                <TextBox Text="{Binding NewSceneName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MinWidth="120"
-                         VerticalContentAlignment="Center" />
-                <Button Content="Creer"
+                        Margin="0,0,0,4">
+                <ComboBox ItemsSource="{Binding Scenes}"
+                          SelectedItem="{Binding ActiveScene, Mode=TwoWay}"
+                          DisplayMemberPath="Name"
+                          MinWidth="160" />
+                <Button Content="+"
                         Command="{Binding CreerSceneCommand}"
+                        ToolTip="Creer une nouvelle scene"
                         Background="{StaticResource AccentBrush}"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
                         Margin="4,0,0,0" />
             </StackPanel>
-
-            <!-- Section 3: Selecteur de scene (SCENE-02) -->
-            <ComboBox DockPanel.Dock="Top"
-                      ItemsSource="{Binding Scenes}"
-                      SelectedItem="{Binding ActiveScene, Mode=TwoWay}"
-                      DisplayMemberPath="Name"
-                      Margin="0,0,0,4" />
 
             <!-- Section 4: Zone d'ajout de type (D-09, SCENE-03) -->
             <StackPanel DockPanel.Dock="Top"

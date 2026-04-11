@@ -21,25 +21,22 @@
                        Foreground="{StaticResource AccentBrush}"
                        Margin="0,0,0,8" />
 
-            <!-- Section 2 : Bouton Ajouter au preset (D-10) -->
+            <!-- Section 2 : Boutons Ajouter materiau et Creer groupe (D-10, D-11) -->
             <StackPanel DockPanel.Dock="Top"
                         Orientation="Horizontal"
-                        Margin="0,0,0,4">
+                        Margin="0,0,0,8">
                 <Button Content="Ajouter au preset"
                         Command="{Binding AjouterMateriauCommand}"
                         Background="{StaticResource AccentBrush}" />
-            </StackPanel>
-
-            <!-- Section 3 : Creation de groupe (D-11) -->
-            <StackPanel DockPanel.Dock="Top"
-                        Orientation="Horizontal"
-                        Margin="0,4,0,8">
-                <TextBox Text="{Binding NewGroupName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         MinWidth="120"
-                         VerticalContentAlignment="Center" />
-                <Button Content="Creer un groupe"
+                <Button Content="+"
                         Command="{Binding CreerGroupeCommand}"
-                        Margin="4,0,0,0" />
+                        ToolTip="Creer un nouveau groupe"
+                        Background="{StaticResource AccentBrush}"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="8,0,0,0" />
             </StackPanel>
 
             <!-- Section 4 : Message de statut -->

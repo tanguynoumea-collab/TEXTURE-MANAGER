@@ -8,6 +8,7 @@ using Olympe.MaterialManager.Events;
 using Olympe.MaterialManager.Helpers;
 using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
+using Olympe.MaterialManager.Views;
 
 namespace Olympe.MaterialManager.ViewModels;
 
@@ -33,12 +34,6 @@ public partial class LeftPanelViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private SceneDto? _activeScene;
-
-    /// <summary>
-    /// Nom saisi pour la creation d'une nouvelle scene (D-03).
-    /// </summary>
-    [ObservableProperty]
-    private string _newSceneName = string.Empty;
 
     /// <summary>
     /// Liste des familles disponibles, peuplee par GetFamilyList.
@@ -122,18 +117,22 @@ public partial class LeftPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Cree une nouvelle scene et l'ajoute a la collection (SCENE-01, D-03).
+    /// Cree une nouvelle scene via un dialog de saisie (SCENE-01, D-03).
     /// </summary>
     [RelayCommand]
     private void CreerScene()
     {
-        if (string.IsNullOrWhiteSpace(NewSceneName))
-            return;
+        var dialog = new CreateNameDialog();
+        dialog.Title = "Nouvelle scene";
+        dialog.SetPrompt("Nom de la scene :");
+        dialog.Owner = App.MainWindow;
 
-        var scene = new SceneDto { Name = NewSceneName.Trim() };
-        Scenes.Add(scene);
-        ActiveScene = scene;
-        NewSceneName = string.Empty;
+        if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.EnteredName))
+        {
+            var scene = new SceneDto { Name = dialog.EnteredName };
+            Scenes.Add(scene);
+            ActiveScene = scene;
+        }
     }
 
     /// <summary>
