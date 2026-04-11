@@ -69,7 +69,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **UI-02**: Un theme sombre Olympe est applique via ResourceDictionary (fond ~#1E1E1E, accent ambre/orange)
 - [ ] **UI-03**: Tous les controles WPF sont styles de maniere coherente (boutons, listes, TreeView, scrollbars)
 - [x] **UI-04**: L'interface est entierement en francais
-- [ ] **UI-05**: Le bouton Set Mat est visuellement proemirent et centre entre les panneaux centre et droit
+- [x] **UI-05**: Le bouton Set Mat est visuellement proemirent et centre entre les panneaux centre et droit
 
 ### Deploiement
 
@@ -168,7 +168,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 5 | Pending |
 | UI-04 | Phase 1 | Complete |
-| UI-05 | Phase 3 | Pending |
+| UI-05 | Phase 3 | Complete |
 | DEPLOY-01 | Phase 5 | Pending |
 | DEPLOY-02 | Phase 5 | Pending |
 | DEPLOY-03 | Phase 5 | Pending |
