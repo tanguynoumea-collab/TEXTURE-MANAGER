@@ -1031,45 +1031,49 @@ public class RevitEventBridge : IExternalEventHandler
         if (uiDoc == null) return null;
         var doc = uiDoc.Document;
 
-        // Valider que la vue active est une vue 3D
         if (uiDoc.ActiveView is not View3D)
             throw new InvalidOperationException("Vue 3D requise pour la selection par clic.");
 
-        // Afficher un TaskDialog d'instruction avant le pick
         var td = new TaskDialog("Selection 3D")
         {
             MainInstruction = "Selection d'elements dans la vue 3D",
             MainContent = "Cliquez sur les elements a ajouter a la scene.\n" +
-                          "Tous les elements du meme type seront selectionnes.\n\n" +
-                          "Appuyez sur ENTREE pour valider.\n" +
-                          "Appuyez sur ECHAP pour annuler.",
+                          "Toutes les occurences du type seront marquees en vert.\n\n" +
+                          "Appuyez sur ECHAP pour valider.",
             CommonButtons = TaskDialogCommonButtons.Ok
         };
         td.Show();
 
-        // Cacher la fenetre WPF avant le pick
         var mainWindow = App.MainWindow;
-        System.Windows.Application.Current.Dispatcher.Invoke(() =>
-        {
-            mainWindow?.Hide();
-        });
+        System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow?.Hide());
+
+        var selectedTypes = new Dictionary<long, SceneTypeDto>();
+        var markedElementIds = new List<ElementId>();
+        var activeView = uiDoc.ActiveView;
+
+        // Override vert pour marquer les elements selectionnes
+        var greenOverride = new OverrideGraphicSettings();
+        greenOverride.SetProjectionLineColor(new Color(0, 220, 0));
+        greenOverride.SetSurfaceForegroundPatternColor(new Color(0, 180, 0));
+        greenOverride.SetProjectionLineWeight(5);
 
         try
         {
-            // PickObjects (avec S) : selection multiple native Revit
-            // ENTREE = valide et retourne les elements selectionnes
-            // ECHAP = lance OperationCanceledException (annulation)
-            var references = uiDoc.Selection.PickObjects(
-                ObjectType.Element,
-                "Selectionnez les elements (ENTREE pour valider, ECHAP pour annuler)");
-
-            LogService.Log($"HandlePickElementInView: PickObjects returned {references.Count} references");
-
-            // Extraire les types uniques des elements selectionnes
-            var selectedTypes = new Dictionary<long, SceneTypeDto>();
-
-            foreach (var reference in references)
+            while (true)
             {
+                Reference reference;
+                try
+                {
+                    reference = uiDoc.Selection.PickObject(
+                        ObjectType.Element,
+                        "Cliquez les elements (ECHAP = valider)");
+                }
+                catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+                {
+                    // ECHAP = fin de la boucle, valider
+                    break;
+                }
+
                 var element = doc.GetElement(reference);
                 if (element == null) continue;
 
@@ -1077,55 +1081,78 @@ public class RevitEventBridge : IExternalEventHandler
                 if (typeId == ElementId.InvalidElementId) continue;
 
                 long typeIdValue = ElementIdHelper.GetValue(typeId);
+
+                // Si deja selectionne, ignorer (pas de toggle pour simplifier)
                 if (selectedTypes.ContainsKey(typeIdValue)) continue;
 
+                // Creer le DTO
                 var elementType = doc.GetElement(typeId) as ElementType;
                 if (elementType == null) continue;
 
                 bool hasCs = elementType is HostObjAttributes hoa
                     && (hoa.GetCompoundStructure() != null || elementType is WallType);
-
-                // Detecter mur empile
                 bool isStackedWall = false;
-                if (elementType is WallType pickedWt && pickedWt.GetCompoundStructure() == null
-                    && element is Wall pickedWall)
+                if (elementType is WallType wt && wt.GetCompoundStructure() == null
+                    && element is Wall w)
                 {
-                    var stackedIds = pickedWall.GetStackedWallMemberIds();
-                    isStackedWall = stackedIds != null && stackedIds.Count > 0;
+                    var sids = w.GetStackedWallMemberIds();
+                    isStackedWall = sids != null && sids.Count > 0;
                 }
-
-                string catName = element.Category?.Name ?? "Autre";
 
                 selectedTypes[typeIdValue] = new SceneTypeDto
                 {
                     ElementIdValue = typeIdValue,
                     FamilyName = elementType.FamilyName,
                     TypeName = elementType.Name,
-                    CategoryName = catName,
+                    CategoryName = element.Category?.Name ?? "Autre",
                     HasCompoundStructure = hasCs,
                     IsComposite = isStackedWall
                 };
 
-                LogService.Log($"HandlePickElementInView: added type {typeIdValue} ({elementType.Name})");
+                // Marquer en vert TOUTES les instances de ce type
+                var instanceIds = new FilteredElementCollector(doc)
+                    .WhereElementIsNotElementType()
+                    .Where(e => e.GetTypeId() == typeId)
+                    .Select(e => e.Id)
+                    .ToList();
+
+                using (var tx = new Transaction(doc, "Olympe - Marquer selection"))
+                {
+                    tx.Start();
+                    foreach (var id in instanceIds)
+                    {
+                        activeView.SetElementOverrides(id, greenOverride);
+                        markedElementIds.Add(id);
+                    }
+                    tx.Commit();
+                }
+
+                LogService.Log($"HandlePickElementInView: selected {typeIdValue} ({elementType.Name}), marked {instanceIds.Count} instances, total types={selectedTypes.Count}");
             }
 
-            LogService.Log($"HandlePickElementInView: validated {selectedTypes.Count} unique types");
-            return selectedTypes.Values.ToList();
-        }
-        catch (Autodesk.Revit.Exceptions.OperationCanceledException)
-        {
-            // ECHAP = annulation, retourner liste vide
-            LogService.Log("HandlePickElementInView: cancelled by user (Escape)");
-            return new List<SceneTypeDto>();
+            LogService.Log($"HandlePickElementInView: validated {selectedTypes.Count} types");
         }
         finally
         {
-            // Toujours re-afficher la fenetre
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            // Nettoyer les overrides verts
+            if (markedElementIds.Count > 0)
             {
-                mainWindow?.Show();
-            });
+                try
+                {
+                    using var txClean = new Transaction(doc, "Olympe - Nettoyage");
+                    txClean.Start();
+                    var clean = new OverrideGraphicSettings();
+                    foreach (var id in markedElementIds)
+                        activeView.SetElementOverrides(id, clean);
+                    txClean.Commit();
+                }
+                catch { }
+            }
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow?.Show());
         }
+
+        return selectedTypes.Values.ToList();
     }
 
     /// <summary>
