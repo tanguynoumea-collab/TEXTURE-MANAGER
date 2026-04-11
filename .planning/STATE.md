@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 4 context gathered
-last_updated: "2026-04-11T11:48:36.169Z"
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-04-11T12:12:22.494Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** L'architecte peut appliquer rapidement un materiau preset aux couches ou parametres materiaux de n'importe quel type Revit visible en 3D, en quelques clics depuis un editeur visuel unifie.
-**Current focus:** Phase 03 — preset-panel-and-set-mat
+**Current focus:** Phase 04 — material-editing-and-3d-pick
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 04 (material-editing-and-3d-pick) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-11
 
 Progress: [..............] 0%
@@ -61,6 +61,7 @@ Progress: [..............] 0%
 | Phase 03 P01 | 4min | 2 tasks | 15 files |
 | Phase 03 P02 | 4min | 2 tasks | 5 files |
 | Phase 03 P03 | 2min | 2 tasks | 3 files |
+| Phase 04 P01 | 3min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 03]: DispatcherTimer for 2-second feedback clear instead of async Task.Delay -- lightweight, no async needed in MVVM command
 - [Phase 03]: Bottom bar placement for Set Mat button -- always visible, impossible to miss, clear visual hierarchy
 - [Phase 03]: Cross-ViewModel CanExecute: subscribe to child VM PropertyChanged and call NotifyCanExecuteChanged on parent command
+- [Phase 04]: common_Tint_toggle/common_Tint_color for cross-schema tint editing; SetValueAsDoubles instead of SetValueAsColor
+- [Phase 04]: Fully-qualified Autodesk.Revit.Exceptions.OperationCanceledException in PickObject catch; try/finally for guaranteed window re-show
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T11:48:36.166Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-material-editing-and-3d-pick/04-CONTEXT.md
+Last session: 2026-04-11T12:12:22.490Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None

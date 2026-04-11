@@ -24,12 +24,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **SCENE-01**: L'utilisateur peut creer une scene active avec un nom personnalise
 - [x] **SCENE-02**: L'utilisateur peut switcher entre plusieurs scenes actives via un selecteur
 - [x] **SCENE-03**: L'utilisateur peut ajouter des familles/types a la scene via un mode liste (dropdown famille puis type)
-- [ ] **SCENE-04**: L'utilisateur peut ajouter des elements a la scene via un clic dans la vue 3D (PickObject via IExternalEventHandler)
+- [x] **SCENE-04**: L'utilisateur peut ajouter des elements a la scene via un clic dans la vue 3D (PickObject via IExternalEventHandler)
 - [x] **SCENE-05**: L'utilisateur peut retirer un type de la scene active
 - [x] **SCENE-06**: Le panneau gauche affiche un TreeView des familles/types de la scene active
 - [x] **SCENE-07**: Le TreeView trie les Murs et Sols en tete, le reste en ordre alphabetique
 - [x] **SCENE-08**: La selection d'un type dans le TreeView met a jour le panneau centre
-- [ ] **SCENE-09**: La vue 3D active est validee avant d'autoriser la selection par clic
+- [x] **SCENE-09**: La vue 3D active est validee avant d'autoriser la selection par clic
 
 ### Couches et Parametres
 
@@ -54,14 +54,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Edition de Materiau
 
-- [ ] **MATEDIT-01**: Le visualisateur affiche le nom, la description, le motif/couleur de surface et la teinte d'apparence du materiau selectionne
-- [ ] **MATEDIT-02**: L'utilisateur peut editer le nom du materiau en live via Transaction Revit
-- [ ] **MATEDIT-03**: L'utilisateur peut editer la description du materiau en live via Transaction Revit
-- [ ] **MATEDIT-04**: L'utilisateur peut editer le motif et la couleur de premier plan (onglet Graphique) via Transaction Revit
-- [ ] **MATEDIT-05**: L'utilisateur peut activer/desactiver la teinte d'apparence et modifier la couleur RVB via AppearanceAssetEditScope
-- [ ] **MATEDIT-06**: Une preview du materiau est affichee (thumbnail existant ou fallback image coloree)
-- [ ] **MATEDIT-07**: La preview se rafraichit apres chaque modification de materiau
-- [ ] **MATEDIT-08**: Les cas sans AppearanceAsset sont geres gracieusement (teinte non disponible)
+- [x] **MATEDIT-01**: Le visualisateur affiche le nom, la description, le motif/couleur de surface et la teinte d'apparence du materiau selectionne
+- [x] **MATEDIT-02**: L'utilisateur peut editer le nom du materiau en live via Transaction Revit
+- [x] **MATEDIT-03**: L'utilisateur peut editer la description du materiau en live via Transaction Revit
+- [x] **MATEDIT-04**: L'utilisateur peut editer le motif et la couleur de premier plan (onglet Graphique) via Transaction Revit
+- [x] **MATEDIT-05**: L'utilisateur peut activer/desactiver la teinte d'apparence et modifier la couleur RVB via AppearanceAssetEditScope
+- [x] **MATEDIT-06**: Une preview du materiau est affichee (thumbnail existant ou fallback image coloree)
+- [x] **MATEDIT-07**: La preview se rafraichit apres chaque modification de materiau
+- [x] **MATEDIT-08**: Les cas sans AppearanceAsset sont geres gracieusement (teinte non disponible)
 
 ### Interface et Theme
 
@@ -135,12 +135,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SCENE-01 | Phase 2 | Complete |
 | SCENE-02 | Phase 2 | Complete |
 | SCENE-03 | Phase 2 | Complete |
-| SCENE-04 | Phase 4 | Pending |
+| SCENE-04 | Phase 4 | Complete |
 | SCENE-05 | Phase 2 | Complete |
 | SCENE-06 | Phase 2 | Complete |
 | SCENE-07 | Phase 2 | Complete |
 | SCENE-08 | Phase 2 | Complete |
-| SCENE-09 | Phase 4 | Pending |
+| SCENE-09 | Phase 4 | Complete |
 | LAYER-01 | Phase 2 | Complete |
 | LAYER-02 | Phase 2 | Complete |
 | LAYER-03 | Phase 2 | Complete |
@@ -156,14 +156,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PRESET-08 | Phase 3 | Complete |
 | PRESET-09 | Phase 3 | Complete |
 | PRESET-10 | Phase 3 | Complete |
-| MATEDIT-01 | Phase 4 | Pending |
-| MATEDIT-02 | Phase 4 | Pending |
-| MATEDIT-03 | Phase 4 | Pending |
-| MATEDIT-04 | Phase 4 | Pending |
-| MATEDIT-05 | Phase 4 | Pending |
-| MATEDIT-06 | Phase 4 | Pending |
-| MATEDIT-07 | Phase 4 | Pending |
-| MATEDIT-08 | Phase 4 | Pending |
+| MATEDIT-01 | Phase 4 | Complete |
+| MATEDIT-02 | Phase 4 | Complete |
+| MATEDIT-03 | Phase 4 | Complete |
+| MATEDIT-04 | Phase 4 | Complete |
+| MATEDIT-05 | Phase 4 | Complete |
+| MATEDIT-06 | Phase 4 | Complete |
+| MATEDIT-07 | Phase 4 | Complete |
+| MATEDIT-08 | Phase 4 | Complete |
 | UI-01 | Phase 1 | Complete |
 | UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 5 | Pending |
