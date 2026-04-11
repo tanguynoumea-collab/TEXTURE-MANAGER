@@ -1,0 +1,51 @@
+<Window x:Class="Olympe.MaterialManager.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Olympe.MaterialManager.Views"
+        Title="Olympe MaterialManager"
+        Width="900" Height="650"
+        MinWidth="750" MinHeight="500"
+        Style="{StaticResource OlympeWindowStyle}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Themes/OlympeTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <!-- Layout trois colonnes avec GridSplitters (D-07) -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250" MinWidth="200" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="*" MinWidth="300" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="250" MinWidth="200" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Panneau gauche : Familles / Types -->
+        <views:LeftPanelView Grid.Column="0"
+                             DataContext="{Binding LeftPanelVM}" />
+
+        <!-- Separateur gauche -->
+        <GridSplitter Grid.Column="1"
+                      Width="5"
+                      HorizontalAlignment="Stretch" />
+
+        <!-- Panneau central : Couches / Parametres -->
+        <views:CenterPanelView Grid.Column="2"
+                               DataContext="{Binding CenterPanelVM}" />
+
+        <!-- Separateur droit -->
+        <GridSplitter Grid.Column="3"
+                      Width="5"
+                      HorizontalAlignment="Stretch" />
+
+        <!-- Panneau droit : Materiaux preset -->
+        <views:RightPanelView Grid.Column="4"
+                              DataContext="{Binding RightPanelVM}" />
+    </Grid>
+
+</Window>
