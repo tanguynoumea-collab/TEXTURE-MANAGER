@@ -39,6 +39,12 @@ public partial class RightPanelViewModel : ObservableObject
     private string _statusMessage = string.Empty;
 
     /// <summary>
+    /// Groupe actuellement selectionne dans le TreeView (pour ajout direct de materiau).
+    /// </summary>
+    [ObservableProperty]
+    private PresetGroupDto? _selectedGroup;
+
+    /// <summary>
     /// Sub-ViewModel pour la section editeur de materiau (MATEDIT-01 a MATEDIT-08).
     /// </summary>
     public MaterialEditorViewModel MaterialEditorVM { get; }
@@ -82,7 +88,8 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Ouvre un dialogue pour ajouter un materiau du projet a un groupe preset (D-10).
+    /// Ajoute un materiau du projet au groupe actuellement selectionne (D-10).
+    /// Si aucun groupe n'est selectionne, affiche le dialog complet avec choix de groupe.
     /// Interroge Revit via GetAllMaterials, puis affiche AddMaterialDialog.
     /// </summary>
     [RelayCommand]
@@ -91,6 +98,15 @@ public partial class RightPanelViewModel : ObservableObject
         if (_eventBridge == null)
         {
             StatusMessage = "Bridge Revit non disponible.";
+            return;
+        }
+
+        // Determiner le groupe cible (selectionne ou premier disponible)
+        var targetGroup = SelectedGroup ?? (PresetGroups.Count > 0 ? PresetGroups[0] : null);
+
+        if (targetGroup == null)
+        {
+            StatusMessage = "Creez d'abord un groupe de presets.";
             return;
         }
 
@@ -104,6 +120,9 @@ public partial class RightPanelViewModel : ObservableObject
                     PresetGroups = PresetGroups
                 };
                 dialog.InitializeCollectionView();
+
+                // Pre-selectionner le groupe cible dans le dialog
+                dialog.PreselectGroup(targetGroup);
 
                 if (dialog.ShowDialog() == true &&
                     dialog.SelectedMaterial != null &&
@@ -119,6 +138,19 @@ public partial class RightPanelViewModel : ObservableObject
                 StatusMessage = $"Erreur : {ex.Message}";
             }
         });
+    }
+
+    /// <summary>
+    /// Deplace un materiau d'un groupe source vers un groupe cible (drag and drop).
+    /// </summary>
+    public void MoveMaterial(PresetMaterialDto material, PresetGroupDto sourceGroup, PresetGroupDto targetGroup)
+    {
+        if (sourceGroup == targetGroup) return;
+
+        sourceGroup.Materials.Remove(material);
+        targetGroup.Materials.Add(material);
+        StatusMessage = $"\"{material.MaterialName}\" deplace vers \"{targetGroup.GroupName}\".";
+        AutoSave();
     }
 
     /// <summary>
@@ -177,12 +209,22 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Met a jour SelectedPresetMaterial quand la selection TreeView change.
+    /// Met a jour SelectedPresetMaterial et SelectedGroup quand la selection TreeView change.
     /// </summary>
     [RelayCommand]
     private void TreeViewSelectionChanged(object? param)
     {
         SelectedPresetMaterial = param as PresetMaterialDto;
+
+        // Tracker aussi le groupe selectionne
+        if (param is PresetGroupDto group)
+        {
+            SelectedGroup = group;
+        }
+        else if (param is PresetMaterialDto mat)
+        {
+            SelectedGroup = FindGroupContaining(mat);
+        }
     }
 
     /// <summary>

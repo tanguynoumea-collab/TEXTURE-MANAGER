@@ -229,12 +229,18 @@
             </Border>
 
             <!-- Section 5 : TreeView des presets (D-08, D-09) -->
-            <TreeView ItemsSource="{Binding PresetGroups}"
+            <TreeView x:Name="PresetTreeView"
+                      ItemsSource="{Binding PresetGroups}"
                       VirtualizingStackPanel.IsVirtualizing="True"
                       VirtualizingStackPanel.VirtualizationMode="Recycling"
                       BorderThickness="0"
                       Background="Transparent"
-                      Tag="{Binding DataContext, ElementName=RightPanelRoot}">
+                      AllowDrop="True"
+                      Tag="{Binding DataContext, ElementName=RightPanelRoot}"
+                      PreviewMouseLeftButtonDown="PresetTreeView_PreviewMouseLeftButtonDown"
+                      PreviewMouseMove="PresetTreeView_PreviewMouseMove"
+                      Drop="PresetTreeView_Drop"
+                      DragOver="PresetTreeView_DragOver">
 
                 <!-- Selection via EventTrigger (TreeView.SelectedItem non bindable) -->
                 <b:Interaction.Triggers>

@@ -54,6 +54,15 @@ public partial class AddMaterialDialog : Window
             GroupCombo.SelectedIndex = 0;
     }
 
+    /// <summary>
+    /// Pre-selectionne un groupe dans le ComboBox.
+    /// Doit etre appele apres InitializeCollectionView.
+    /// </summary>
+    public void PreselectGroup(PresetGroupDto group)
+    {
+        GroupCombo.SelectedItem = group;
+    }
+
     private bool FilterMaterial(object obj)
     {
         if (obj is not PresetMaterialDto mat) return false;
