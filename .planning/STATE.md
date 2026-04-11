@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-04-11T12:12:22.494Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-04-11T12:16:01.369Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 04 (material-editing-and-3d-pick) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -62,6 +62,7 @@ Progress: [..............] 0%
 | Phase 03 P02 | 4min | 2 tasks | 5 files |
 | Phase 03 P03 | 2min | 2 tasks | 3 files |
 | Phase 04 P01 | 3min | 2 tasks | 9 files |
+| Phase 04 P03 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,7 @@ Recent decisions affecting current work:
 - [Phase 03]: Cross-ViewModel CanExecute: subscribe to child VM PropertyChanged and call NotifyCanExecuteChanged on parent command
 - [Phase 04]: common_Tint_toggle/common_Tint_color for cross-schema tint editing; SetValueAsDoubles instead of SetValueAsColor
 - [Phase 04]: Fully-qualified Autodesk.Revit.Exceptions.OperationCanceledException in PickObject catch; try/finally for guaranteed window re-show
+- [Phase 04]: View3D validation delegated to RevitEventBridge handler (not ViewModel pre-check) -- simpler, more reliable on Revit thread
 
 ### Pending Todos
 
@@ -107,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T12:12:22.490Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-04-11T12:16:01.366Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None
