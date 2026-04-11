@@ -73,11 +73,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Deploiement
 
-- [ ] **DEPLOY-01**: Un installer .exe est genere via WiX v5
-- [ ] **DEPLOY-02**: L'installer detecte les versions de Revit installees sur la machine
-- [ ] **DEPLOY-03**: L'utilisateur peut choisir pour quelle(s) version(s) de Revit installer l'add-in
-- [ ] **DEPLOY-04**: L'installer copie les assemblies et le fichier .addin dans le bon dossier selon la version choisie
-- [ ] **DEPLOY-05**: L'installer fonctionne correctement sur Windows 10 et Windows 11
+- [x] **DEPLOY-01**: Un installer .exe est genere via WiX v5
+- [x] **DEPLOY-02**: L'installer detecte les versions de Revit installees sur la machine
+- [x] **DEPLOY-03**: L'utilisateur peut choisir pour quelle(s) version(s) de Revit installer l'add-in
+- [x] **DEPLOY-04**: L'installer copie les assemblies et le fichier .addin dans le bon dossier selon la version choisie
+- [x] **DEPLOY-05**: L'installer fonctionne correctement sur Windows 10 et Windows 11
 
 ## v2 Requirements
 
@@ -169,11 +169,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | UI-03 | Phase 5 | Complete |
 | UI-04 | Phase 1 | Complete |
 | UI-05 | Phase 3 | Complete |
-| DEPLOY-01 | Phase 5 | Pending |
-| DEPLOY-02 | Phase 5 | Pending |
-| DEPLOY-03 | Phase 5 | Pending |
-| DEPLOY-04 | Phase 5 | Pending |
-| DEPLOY-05 | Phase 5 | Pending |
+| DEPLOY-01 | Phase 5 | Complete |
+| DEPLOY-02 | Phase 5 | Complete |
+| DEPLOY-03 | Phase 5 | Complete |
+| DEPLOY-04 | Phase 5 | Complete |
+| DEPLOY-05 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 51 total
