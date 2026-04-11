@@ -211,6 +211,85 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Supprime la selection courante : si c'est un materiau, le retire du groupe.
+    /// Si c'est un groupe, demande a l'utilisateur quoi faire des materiaux.
+    /// </summary>
+    [RelayCommand]
+    private void SupprimerSelection()
+    {
+        // Cas 1 : un materiau est selectionne
+        if (SelectedPresetMaterial != null)
+        {
+            SupprimerMateriau(SelectedPresetMaterial);
+            return;
+        }
+
+        // Cas 2 : un groupe est selectionne
+        if (SelectedGroup != null && PresetGroups.Contains(SelectedGroup))
+        {
+            var group = SelectedGroup;
+
+            if (group.Materials.Count > 0)
+            {
+                // Demander a l'utilisateur quoi faire des materiaux
+                var otherGroups = PresetGroups.Where(g => g != group).ToList();
+
+                if (otherGroups.Count > 0)
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        $"Le groupe \"{group.GroupName}\" contient {group.Materials.Count} materiau(x).\n\n" +
+                        "Oui = Transferer les materiaux dans un autre groupe\n" +
+                        "Non = Supprimer le groupe et ses materiaux\n" +
+                        "Annuler = Ne rien faire",
+                        "Supprimer le groupe",
+                        System.Windows.MessageBoxButton.YesNoCancel,
+                        System.Windows.MessageBoxImage.Question);
+
+                    if (result == System.Windows.MessageBoxResult.Cancel)
+                        return;
+
+                    if (result == System.Windows.MessageBoxResult.Yes)
+                    {
+                        // Transferer dans un autre groupe choisi par l'utilisateur
+                        PresetGroupDto targetGroup;
+                        if (otherGroups.Count == 1)
+                        {
+                            targetGroup = otherGroups[0];
+                        }
+                        else
+                        {
+                            // Dialog de choix de groupe avec ComboBox
+                            var dialog = new ChooseGroupDialog();
+                            dialog.Owner = App.MainWindow;
+                            dialog.SetGroups(otherGroups);
+                            dialog.PreselectGroup(otherGroups[0]);
+
+                            if (dialog.ShowDialog() != true || dialog.SelectedGroup == null)
+                                return;
+
+                            targetGroup = dialog.SelectedGroup;
+                        }
+
+                        // Transferer tous les materiaux
+                        foreach (var mat in group.Materials.ToList())
+                        {
+                            targetGroup.Materials.Add(mat);
+                        }
+                        StatusMessage = $"{group.Materials.Count} materiau(x) transfere(s) dans \"{targetGroup.GroupName}\".";
+                    }
+                    // Si "Non" : on supprime tout
+                }
+            }
+
+            PresetGroups.Remove(group);
+            SelectedGroup = null;
+            SelectedPresetMaterial = null;
+            StatusMessage = $"Groupe \"{group.GroupName}\" supprime.";
+            AutoSave();
+        }
+    }
+
+    /// <summary>
     /// Met a jour SelectedPresetMaterial et SelectedGroup quand la selection TreeView change.
     /// </summary>
     [RelayCommand]
