@@ -75,6 +75,20 @@ public class RevitEventBridge
                 case RevitRequestType.GetMaterialParametersForType:
                     result = HandleGetMaterialParametersForType(uiApp, (long)data!);
                     break;
+
+                // Phase 3 : preset panel et Set Mat
+                case RevitRequestType.GetAllMaterials:
+                    result = HandleGetAllMaterials(uiApp);
+                    break;
+                case RevitRequestType.SetMaterialOnLayers:
+                    HandleSetMaterialOnLayers(uiApp, (SetMatRequestDto)data!);
+                    break;
+                case RevitRequestType.SetMaterialOnParameter:
+                    HandleSetMaterialOnParameter(uiApp, (SetMatParamRequestDto)data!);
+                    break;
+                case RevitRequestType.DuplicateMaterial:
+                    result = HandleDuplicateMaterial(uiApp, (DuplicateMaterialRequestDto)data!);
+                    break;
             }
         }
         catch (Exception ex)
@@ -331,5 +345,168 @@ public class RevitEventBridge
         }
 
         return result;
+    }
+
+    // =====================================================================
+    // Phase 3 : handlers preset panel et Set Mat
+    // =====================================================================
+
+    /// <summary>
+    /// Retourne tous les materiaux du document sous forme de PresetMaterialDto (D-21).
+    /// Utilise FilteredElementCollector.OfClass(typeof(Material)) -- filtre natif rapide.
+    /// </summary>
+    private static List<PresetMaterialDto> HandleGetAllMaterials(UIApplication uiApp)
+    {
+        var doc = uiApp.ActiveUIDocument?.Document;
+        if (doc == null) return new List<PresetMaterialDto>();
+
+        return new FilteredElementCollector(doc)
+            .OfClass(typeof(Material))
+            .Cast<Material>()
+            .Select(m => new PresetMaterialDto
+            {
+                MaterialName = m.Name,
+                MaterialElementIdValue = ElementIdHelper.GetValue(m.Id),
+                ColorArgb = ExtractColorArgb(m)
+            })
+            .OrderBy(m => m.MaterialName)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Applique un materiau aux couches CompoundStructure selectionnees (D-16, D-22).
+    /// Pattern Get-Modify-Set : GetCompoundStructure retourne une COPIE.
+    /// </summary>
+    private static void HandleSetMaterialOnLayers(UIApplication uiApp, SetMatRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Appliquer materiau aux couches");
+        tx.Start();
+
+        try
+        {
+            var typeId = ElementIdHelper.FromValue(request.TargetTypeIdValue);
+            var hostAttrs = doc.GetElement(typeId) as HostObjAttributes;
+            if (hostAttrs == null)
+                throw new InvalidOperationException("Le type selectionne n'est pas un type a couches.");
+
+            // COPY -- must call SetCompoundStructure() to persist
+            var cs = hostAttrs.GetCompoundStructure();
+            if (cs == null)
+                throw new InvalidOperationException("Le type n'a pas de structure composee.");
+
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+
+            foreach (int layerIndex in request.LayerIndices)
+            {
+                cs.SetMaterialId(layerIndex, matId);
+            }
+
+            hostAttrs.SetCompoundStructure(cs); // PERSISTS changes
+            tx.Commit();
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Applique un materiau aux parametres materiaux selectionnes (D-17).
+    /// Batch de tous les parametres dans une seule Transaction (un seul undo step).
+    /// </summary>
+    private static void HandleSetMaterialOnParameter(UIApplication uiApp, SetMatParamRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Appliquer materiau aux parametres");
+        tx.Start();
+
+        try
+        {
+            var typeId = ElementIdHelper.FromValue(request.TargetTypeIdValue);
+            var element = doc.GetElement(typeId);
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+
+            foreach (string paramName in request.ParameterDefinitionNames)
+            {
+                var param = element.LookupParameter(paramName);
+                if (param == null || param.IsReadOnly)
+                    throw new InvalidOperationException(
+                        $"Le parametre '{paramName}' est introuvable ou en lecture seule.");
+
+                bool success = param.Set(matId);
+                if (!success)
+                    throw new InvalidOperationException(
+                        $"Echec de l'assignation du materiau au parametre '{paramName}'.");
+            }
+
+            tx.Commit();
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Duplique un materiau Revit avec nom automatique "[Original] copie" (D-23).
+    /// Gere les collisions de nom (copie 2, copie 3...).
+    /// Note : les AppearanceAssets sont partages par reference (acceptable pour Phase 3).
+    /// </summary>
+    private static PresetMaterialDto HandleDuplicateMaterial(UIApplication uiApp, DuplicateMaterialRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument!.Document;
+        using var tx = new Transaction(doc, "Olympe : Dupliquer materiau");
+        tx.Start();
+
+        try
+        {
+            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            var original = doc.GetElement(matId) as Material;
+            if (original == null)
+                throw new InvalidOperationException("Materiau source introuvable.");
+
+            string newName = $"{original.Name} copie";
+            // Gestion des collisions de nom
+            int counter = 2;
+            while (new FilteredElementCollector(doc)
+                       .OfClass(typeof(Material))
+                       .Cast<Material>()
+                       .Any(m => m.Name == newName))
+            {
+                newName = $"{original.Name} copie {counter++}";
+            }
+
+            Material duplicate = original.Duplicate(newName);
+            tx.Commit();
+
+            return new PresetMaterialDto
+            {
+                MaterialName = duplicate.Name,
+                MaterialElementIdValue = ElementIdHelper.GetValue(duplicate.Id),
+                ColorArgb = ExtractColorArgb(duplicate)
+            };
+        }
+        catch
+        {
+            if (tx.HasStarted() && !tx.HasEnded())
+                tx.RollBack();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Extrait la valeur ARGB (int) de la couleur d'un materiau Revit.
+    /// Si la couleur est invalide, retourne le gris par defaut.
+    /// </summary>
+    private static int ExtractColorArgb(Material m)
+    {
+        if (m.Color.IsValid)
+            return System.Drawing.Color.FromArgb(255, m.Color.Red, m.Color.Green, m.Color.Blue).ToArgb();
+        return System.Drawing.Color.Gray.ToArgb();
     }
 }

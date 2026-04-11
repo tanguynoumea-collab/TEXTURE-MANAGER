@@ -12,4 +12,10 @@ public enum RevitRequestType
     GetTypeList,                  // Phase 2 : data=GetTypeListRequestDto, returns List<SceneTypeDto>
     GetLayersForType,             // Phase 2 : data=long (typeElementId), returns List<LayerDto>
     GetMaterialParametersForType, // Phase 2 : data=long (typeElementId), returns List<MaterialParamDto>
+
+    // Phase 3 : preset panel et Set Mat
+    GetAllMaterials,              // Phase 3 : data=null, returns List<PresetMaterialDto>
+    SetMaterialOnLayers,          // Phase 3 : data=SetMatRequestDto, returns null (success) or Exception
+    SetMaterialOnParameter,       // Phase 3 : data=SetMatParamRequestDto, returns null (success) or Exception
+    DuplicateMaterial,            // Phase 3 : data=DuplicateMaterialRequestDto, returns PresetMaterialDto
 }

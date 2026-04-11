@@ -52,9 +52,12 @@ public partial class CenterPanelViewModel : ObservableObject
     [ObservableProperty]
     private IList? _selectedItems;
 
+    [ObservableProperty]
+    private long _currentTypeIdValue;
+
     /// <summary>
     /// Constructeur principal avec injection du bridge ExternalEvent.
-    /// Enregistre la reception de TypeSelectedMessage (D-19, D-20).
+    /// Enregistre la reception de TypeSelectedMessage (D-19, D-20) et RefreshLayersMessage (D-25).
     /// </summary>
     public CenterPanelViewModel(RevitEventBridge eventBridge)
     {
@@ -63,6 +66,15 @@ public partial class CenterPanelViewModel : ObservableObject
         WeakReferenceMessenger.Default.Register<TypeSelectedMessage>(this, (r, m) =>
         {
             ((CenterPanelViewModel)r).OnTypeSelected(m.Value);
+        });
+
+        WeakReferenceMessenger.Default.Register<RefreshLayersMessage>(this, (r, m) =>
+        {
+            var vm = (CenterPanelViewModel)r;
+            if (vm.ShowLayers)
+                vm.FetchLayers(m.Value);
+            else if (vm.ShowParameters)
+                vm.FetchMaterialParameters(m.Value);
         });
     }
 
@@ -91,11 +103,13 @@ public partial class CenterPanelViewModel : ObservableObject
             ShowPlaceholder = true;
             SelectedTypeName = string.Empty;
             ModeLabel = string.Empty;
+            CurrentTypeIdValue = 0;
             return;
         }
 
         ShowPlaceholder = false;
         SelectedTypeName = $"{type.FamilyName} : {type.TypeName}";
+        CurrentTypeIdValue = type.ElementIdValue;
 
         if (type.HasCompoundStructure)
         {
