@@ -66,12 +66,12 @@ Plans:
   3. Clicking Set Mat applies the selected preset material to all selected CompoundStructure layers via a Revit Transaction
   4. For loaded families without layers, Set Mat lets the user choose which material parameter to modify
   5. Set Mat handles errors with rollback and displays a clear message to the user
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md -- DTOs, PresetService, DialogService, RevitEventBridge handlers, CenterPanelVM extensions (data foundation)
+- [ ] 03-02-PLAN.md -- Right panel: RightPanelViewModel with CRUD, RightPanelView.xaml TreeView, AddMaterialDialog
+- [ ] 03-03-PLAN.md -- SetMatCommand coordination in MainWindowViewModel, Set Mat button with accent style, human verification
 **UI hint**: yes
 
 ### Phase 4: Material Editing and 3D Pick
@@ -116,6 +116,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation and Infrastructure | 3/3 | Complete | 2026-04-11 |
 | 2. Read Path -- Scene and Layer Display | 0/3 | Planned | - |
-| 3. Preset Panel and Set Mat | 0/3 | Not started | - |
+| 3. Preset Panel and Set Mat | 0/3 | Planned | - |
 | 4. Material Editing and 3D Pick | 0/3 | Not started | - |
 | 5. Polish and Installer | 0/2 | Not started | - |
