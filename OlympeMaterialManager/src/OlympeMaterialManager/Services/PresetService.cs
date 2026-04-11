@@ -228,7 +228,7 @@ public class PresetService
                 var json = File.ReadAllText(_settingsPath);
                 var settings = JsonSerializer.Deserialize<AppSettingsDto>(json, _options);
                 if (!string.IsNullOrEmpty(settings?.ScenesFilePath))
-                    return settings.ScenesFilePath;
+                    return settings!.ScenesFilePath!;
             }
         }
         catch { /* fallback */ }

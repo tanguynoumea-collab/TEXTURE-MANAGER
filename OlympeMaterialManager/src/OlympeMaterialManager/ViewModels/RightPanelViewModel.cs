@@ -405,7 +405,7 @@ public partial class RightPanelViewModel : ObservableObject
         if (availablePresets.Count > 0)
         {
             // Utiliser le preset actif ou le premier disponible
-            var targetName = settings.ActivePresetName;
+            var targetName = settings.ActivePresetName ?? string.Empty;
             if (string.IsNullOrEmpty(targetName) || !availablePresets.Contains(targetName))
                 targetName = availablePresets[0];
 
@@ -446,7 +446,7 @@ public partial class RightPanelViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(value)) return;
 
-        _collection = _presetService.LoadPreset(value);
+        _collection = _presetService.LoadPreset(value!);
         PresetGroups = _collection.Groups;
 
         // Persister le choix dans les settings
@@ -466,7 +466,7 @@ public partial class RightPanelViewModel : ObservableObject
     {
         if (_collection == null || string.IsNullOrEmpty(ActivePresetName)) return;
 
-        _presetService.SavePreset(ActivePresetName, _collection);
+        _presetService.SavePreset(ActivePresetName!, _collection);
     }
 
     /// <summary>

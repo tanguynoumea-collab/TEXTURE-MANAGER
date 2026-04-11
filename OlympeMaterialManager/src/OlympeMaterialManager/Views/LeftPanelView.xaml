@@ -54,10 +54,19 @@
                         FontSize="16"
                         FontWeight="Bold"
                         Margin="4,0,0,0" />
+                <Button Content="..."
+                        Command="{Binding ChargerSceneExterneCommand}"
+                        ToolTip="Charger une scene depuis un fichier externe"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
             </StackPanel>
 
-            <!-- Section 4: Zone d'ajout de type (D-09, SCENE-03) -->
+            <!-- Boutons Ajouter par clic + Retirer selection -->
             <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
                         Margin="0,4,0,8">
                 <StackPanel.Style>
                     <Style TargetType="StackPanel">
@@ -69,49 +78,19 @@
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
-
-                <TextBlock Text="Ajouter un type :"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           Margin="0,0,0,4" />
-
-                <!-- Indicateur de chargement familles -->
-                <TextBlock Text="Chargement..."
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontStyle="Italic"
-                           Visibility="{Binding IsLoadingFamilies, Converter={StaticResource BoolToVis}}"
-                           Margin="0,0,0,2" />
-
-                <!-- ComboBox Famille -->
-                <ComboBox ItemsSource="{Binding Families}"
-                          SelectedItem="{Binding SelectedFamily, Mode=TwoWay}"
-                          DisplayMemberPath="FamilyName"
-                          Margin="0,0,0,4" />
-
-                <!-- Indicateur de chargement types -->
-                <TextBlock Text="Chargement..."
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontStyle="Italic"
-                           Visibility="{Binding IsLoadingTypes, Converter={StaticResource BoolToVis}}"
-                           Margin="0,0,0,2" />
-
-                <!-- ComboBox Type -->
-                <ComboBox ItemsSource="{Binding FamilyTypes}"
-                          SelectedItem="{Binding SelectedFamilyType, Mode=TwoWay}"
-                          DisplayMemberPath="TypeName"
-                          Margin="0,0,0,4" />
-
-                <!-- Bouton Ajouter -->
-                <Button Content="Ajouter"
-                        Command="{Binding AjouterTypeCommand}"
-                        Background="{StaticResource AccentBrush}"
-                        HorizontalAlignment="Left" />
-
-                <!-- Bouton Ajouter par clic 3D (D-11, SCENE-04) -->
-                <Button Content="Ajouter par clic"
+                <Button Content="Ajouter par clic dans la vue"
                         Command="{Binding AjouterParClicCommand}"
                         ToolTip="{Binding PickButtonTooltip}"
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Left" />
+                        Background="{StaticResource AccentBrush}"
+                        Padding="8,4" />
+                <Button Content="-"
+                        Command="{Binding SupprimerTypeCommand}"
+                        ToolTip="Retirer le type selectionne de la scene"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
             </StackPanel>
 
             <!-- Section 5: TreeView avec groupement par categorie (D-04, D-05, D-06, SCENE-06, SCENE-07) -->

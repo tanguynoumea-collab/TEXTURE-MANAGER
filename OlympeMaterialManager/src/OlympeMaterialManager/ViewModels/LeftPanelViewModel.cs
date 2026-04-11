@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -8,6 +9,7 @@ using Olympe.MaterialManager.Events;
 using Olympe.MaterialManager.Helpers;
 using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
+using Olympe.MaterialManager.Services;
 using Olympe.MaterialManager.Views;
 
 namespace Olympe.MaterialManager.ViewModels;
@@ -19,6 +21,7 @@ namespace Olympe.MaterialManager.ViewModels;
 public partial class LeftPanelViewModel : ObservableObject
 {
     private readonly RevitEventBridge? _eventBridge;
+    private readonly PresetService? _presetService;
 
     [ObservableProperty]
     private string _panelTitle = "Familles / Types";
@@ -104,16 +107,41 @@ public partial class LeftPanelViewModel : ObservableObject
     /// <summary>
     /// Constructeur principal avec injection du bridge ExternalEvent.
     /// </summary>
-    public LeftPanelViewModel(RevitEventBridge eventBridge)
+    public LeftPanelViewModel(RevitEventBridge eventBridge, PresetService presetService)
     {
         _eventBridge = eventBridge;
+        _presetService = presetService;
+        LoadScenes();
     }
 
     /// <summary>
     /// Constructeur sans parametre pour le designer WPF.
     /// </summary>
-    public LeftPanelViewModel() : this(null!)
+    public LeftPanelViewModel() : this(null!, null!)
     {
+    }
+
+    /// <summary>
+    /// Charge les scenes sauvegardees depuis le fichier JSON.
+    /// </summary>
+    private void LoadScenes()
+    {
+        if (_presetService == null) return;
+        var collection = _presetService.LoadScenes();
+        foreach (var scene in collection.Scenes)
+            Scenes.Add(scene);
+        if (Scenes.Count > 0)
+            ActiveScene = Scenes[0];
+    }
+
+    /// <summary>
+    /// Sauvegarde toutes les scenes dans le fichier JSON.
+    /// </summary>
+    private void AutoSaveScenes()
+    {
+        if (_presetService == null) return;
+        var collection = new SceneCollectionDto { Scenes = Scenes };
+        _presetService.SaveScenes(collection);
     }
 
     /// <summary>
@@ -132,6 +160,60 @@ public partial class LeftPanelViewModel : ObservableObject
             var scene = new SceneDto { Name = dialog.EnteredName };
             Scenes.Add(scene);
             ActiveScene = scene;
+            AutoSaveScenes();
+        }
+    }
+
+    /// <summary>
+    /// Charge un fichier scene externe via OpenFileDialog.
+    /// Copie le fichier dans le dossier scenes pour la persistence, puis charge les scenes.
+    /// </summary>
+    [RelayCommand]
+    private void ChargerSceneExterne()
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Charger une scene depuis un fichier externe",
+            Filter = "Fichiers JSON (*.json)|*.json",
+            DefaultExt = ".json"
+        };
+
+        if (dialog.ShowDialog() != true || _presetService == null) return;
+
+        try
+        {
+            var sourcePath = dialog.FileName;
+            var scenesPath = _presetService.GetScenesPath();
+            var destDir = Path.GetDirectoryName(scenesPath)!;
+            Directory.CreateDirectory(destDir);
+
+            // Lire le contenu du fichier externe
+            var json = File.ReadAllText(sourcePath);
+            var importedCollection = System.Text.Json.JsonSerializer.Deserialize<SceneCollectionDto>(json,
+                new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase });
+
+            if (importedCollection?.Scenes != null)
+            {
+                // Ajouter les scenes importees a la collection existante
+                foreach (var scene in importedCollection.Scenes)
+                {
+                    Scenes.Add(scene);
+                }
+
+                if (importedCollection.Scenes.Count > 0)
+                    ActiveScene = importedCollection.Scenes[importedCollection.Scenes.Count - 1];
+
+                AutoSaveScenes();
+
+                // Copier le fichier source dans le dossier local pour reference
+                var destPath = Path.Combine(destDir, Path.GetFileName(sourcePath));
+                if (destPath != sourcePath)
+                    File.Copy(sourcePath, destPath, overwrite: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Erreur chargement scene externe : {ex.Message}";
         }
     }
 
@@ -146,6 +228,7 @@ public partial class LeftPanelViewModel : ObservableObject
 
         ActiveScene.Types.Remove(SelectedType);
         SelectedType = null;
+        AutoSaveScenes();
     }
 
     private bool CanSupprimerType() => SelectedType != null && ActiveScene != null;
@@ -167,6 +250,7 @@ public partial class LeftPanelViewModel : ObservableObject
         }
 
         ActiveScene.Types.Add(SelectedFamilyType);
+        AutoSaveScenes();
     }
 
     private bool CanAjouterType() => SelectedFamilyType != null && ActiveScene != null;
@@ -213,6 +297,7 @@ public partial class LeftPanelViewModel : ObservableObject
                 if (added > 0)
                 {
                     SetupCustomSort();
+                    AutoSaveScenes();
                 }
             }
             else if (result is Exception ex)
