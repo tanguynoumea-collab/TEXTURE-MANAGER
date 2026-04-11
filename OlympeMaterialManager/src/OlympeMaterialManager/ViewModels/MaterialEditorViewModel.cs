@@ -357,6 +357,8 @@ public partial class MaterialEditorViewModel : ObservableObject
             ColorR = dialog.Color.R;
             ColorG = dialog.Color.G;
             ColorB = dialog.Color.B;
+            // Mettre a jour le ColorArgb pour rafraichir le carre de couleur
+            ColorArgb = System.Drawing.Color.FromArgb(255, ColorR, ColorG, ColorB).ToArgb();
             EditColorCommand.Execute(null);
         }
     }
@@ -379,6 +381,8 @@ public partial class MaterialEditorViewModel : ObservableObject
             TintR = dialog.Color.R;
             TintG = dialog.Color.G;
             TintB = dialog.Color.B;
+            // Mettre a jour le TintColorArgb pour rafraichir le carre de teinte
+            TintColorArgb = System.Drawing.Color.FromArgb(255, TintR, TintG, TintB).ToArgb();
             EditTintCommand.Execute(null);
         }
     }

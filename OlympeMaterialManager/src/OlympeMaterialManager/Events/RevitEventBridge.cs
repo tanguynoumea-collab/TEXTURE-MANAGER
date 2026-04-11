@@ -941,6 +941,9 @@ public class RevitEventBridge : IExternalEventHandler
             if (material == null)
                 throw new InvalidOperationException("Materiau introuvable.");
 
+            // Modifier la couleur de base du materiau (Material.Color)
+            // ET la couleur du motif de surface (SurfaceForegroundPatternColor)
+            material.Color = new Color(request.Red, request.Green, request.Blue);
             material.SurfaceForegroundPatternColor = new Color(request.Red, request.Green, request.Blue);
             tx.Commit();
         }
