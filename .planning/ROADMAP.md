@@ -84,12 +84,12 @@ Plans:
   3. The preview refreshes after each material modification
   4. User can add types to the active scene by clicking an element in the 3D view (with 3D view validation and graceful cancellation)
   5. Materials without an AppearanceAsset display a graceful fallback (tint section disabled, not an error)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
+- [ ] 04-01-PLAN.md -- DTOs, messages, enum values, and 6 RevitEventBridge handlers (data foundation)
+- [ ] 04-02-PLAN.md -- MaterialEditorViewModel, RightPanelView editor section, inter-VM wiring
+- [ ] 04-03-PLAN.md -- 3D pick command in LeftPanelViewModel, pick button in LeftPanelView, human verification
 **UI hint**: yes
 
 ### Phase 5: Polish and Installer
@@ -117,5 +117,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation and Infrastructure | 3/3 | Complete | 2026-04-11 |
 | 2. Read Path -- Scene and Layer Display | 0/3 | Planned | - |
 | 3. Preset Panel and Set Mat | 0/3 | Planned | - |
-| 4. Material Editing and 3D Pick | 0/3 | Not started | - |
+| 4. Material Editing and 3D Pick | 0/3 | Planned | - |
 | 5. Polish and Installer | 0/2 | Not started | - |
