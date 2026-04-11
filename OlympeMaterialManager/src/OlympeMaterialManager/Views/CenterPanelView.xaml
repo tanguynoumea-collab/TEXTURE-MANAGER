@@ -101,19 +101,44 @@
                 </b:Interaction.Triggers>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="4,2">
-                            <TextBlock Text="{Binding Function}"
-                                       Foreground="{StaticResource AccentBrush}"
-                                       MinWidth="120" />
-                            <TextBlock Text=" -- " Foreground="{StaticResource TextSecondaryBrush}" />
-                            <TextBlock Foreground="{StaticResource TextPrimaryBrush}">
-                                <Run Text="{Binding Width, StringFormat={}{0:F1}}" />
-                                <Run Text=" mm" />
-                            </TextBlock>
-                            <TextBlock Text=" -- " Foreground="{StaticResource TextSecondaryBrush}" />
-                            <TextBlock Text="{Binding MaterialName}"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
-                        </StackPanel>
+                        <Border Background="{StaticResource SurfaceBrush}"
+                                CornerRadius="4"
+                                Padding="10"
+                                Margin="2,4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Fonction de la couche (en-tete) -->
+                                <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
+                                           Text="{Binding Function}"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           FontWeight="SemiBold"
+                                           FontSize="13"
+                                           Margin="0,0,0,4" />
+
+                                <!-- Epaisseur -->
+                                <TextBlock Grid.Column="2" Grid.Row="0"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Right">
+                                    <Run Text="{Binding Width, StringFormat={}{0:F1}}" />
+                                    <Run Text=" mm" />
+                                </TextBlock>
+
+                                <!-- Nom du materiau -->
+                                <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
+                                           Text="{Binding MaterialName}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="12" />
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
                 <!-- UI-03: BasedOn added for theme consistency -->

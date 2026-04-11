@@ -3,14 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:Olympe.MaterialManager.Views"
         Title="Olympe MaterialManager"
-        Width="900" Height="650"
-        MinWidth="750" MinHeight="500"
-        Style="{StaticResource OlympeWindowStyle}">
+        Width="1000" Height="700"
+        MinWidth="850" MinHeight="500"
+        Style="{DynamicResource OlympeWindowStyle}">
 
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Themes/OlympeTheme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/OlympeMaterialManager;component/Themes/OlympeTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
@@ -44,11 +44,11 @@
         <!-- Trois colonnes avec GridSplitters -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250" MinWidth="200" />
+                <ColumnDefinition Width="300" MinWidth="220" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" MinWidth="300" />
                 <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="250" MinWidth="200" />
+                <ColumnDefinition Width="300" MinWidth="220" />
             </Grid.ColumnDefinitions>
 
             <!-- Panneau gauche : Familles / Types -->
