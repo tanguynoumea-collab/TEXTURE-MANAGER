@@ -36,8 +36,8 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **LAYER-01**: Pour un type a couches (mur, sol, toit, plafond), le panneau centre affiche la liste des couches CompoundStructure
 - [x] **LAYER-02**: Chaque couche affiche sa fonction, son epaisseur et le materiau actuellement assigne
 - [x] **LAYER-03**: Pour une famille chargee sans couches, le panneau centre affiche la liste des parametres de type Material
-- [ ] **LAYER-04**: L'utilisateur peut selectionner une ou plusieurs couches/parametres dans le panneau centre
-- [ ] **LAYER-05**: La selection multiple est supportee (Ctrl+clic, Shift+clic)
+- [x] **LAYER-04**: L'utilisateur peut selectionner une ou plusieurs couches/parametres dans le panneau centre
+- [x] **LAYER-05**: La selection multiple est supportee (Ctrl+clic, Shift+clic)
 
 ### Presets et Set Mat
 
@@ -144,8 +144,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LAYER-01 | Phase 2 | Complete |
 | LAYER-02 | Phase 2 | Complete |
 | LAYER-03 | Phase 2 | Complete |
-| LAYER-04 | Phase 2 | Pending |
-| LAYER-05 | Phase 2 | Pending |
+| LAYER-04 | Phase 2 | Complete |
+| LAYER-05 | Phase 2 | Complete |
 | PRESET-01 | Phase 3 | Pending |
 | PRESET-02 | Phase 3 | Pending |
 | PRESET-03 | Phase 3 | Pending |
