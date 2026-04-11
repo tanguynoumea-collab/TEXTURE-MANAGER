@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Olympe.MaterialManager.Events;
 using Olympe.MaterialManager.Models;
+using Olympe.MaterialManager.Services;
 
 namespace Olympe.MaterialManager.ViewModels;
 
@@ -30,9 +31,17 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(RevitEventBridge eventBridge)
     {
         _eventBridge = eventBridge;
+        var presetService = new PresetService();
         LeftPanelVM = new LeftPanelViewModel(eventBridge);
         CenterPanelVM = new CenterPanelViewModel(eventBridge);
-        RightPanelVM = new RightPanelViewModel();
+        RightPanelVM = new RightPanelViewModel(eventBridge, presetService);
+
+        // Surveiller SelectedPresetMaterial pour rafraichir CanExecute de commandes dependantes (Plan 03)
+        RightPanelVM.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(RightPanelViewModel.SelectedPresetMaterial))
+                OnSelectedPresetMaterialChanged();
+        };
     }
 
     /// <summary>
@@ -40,6 +49,15 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     public MainWindowViewModel() : this(null!)
     {
+    }
+
+    /// <summary>
+    /// Hook pour reagir au changement de SelectedPresetMaterial dans RightPanelVM.
+    /// Plan 03 ajoutera ici le NotifyCanExecuteChanged de AppliquerMateriauCommand.
+    /// </summary>
+    private void OnSelectedPresetMaterialChanged()
+    {
+        // Placeholder -- Plan 03 ajoutera : AppliquerMateriauCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
