@@ -48,12 +48,12 @@ Plans:
   3. Selecting a wall/floor/roof/ceiling type in the TreeView displays its CompoundStructure layers with function, thickness, and current material
   4. Selecting a loaded family type without layers displays its material parameters
   5. User can select one or multiple layers/parameters in the center panel (Ctrl+click, Shift+click)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
-- [ ] 02-03: TBD
+- [ ] 02-01-PLAN.md -- DTOs, helpers, Messenger message, and RevitEventBridge handlers (data foundation)
+- [ ] 02-02-PLAN.md -- Left panel: scene management, TreeView with grouping, type add/remove via ComboBoxes
+- [ ] 02-03-PLAN.md -- Center panel: conditional layer/parameter display, multi-selection, human verification
 **UI hint**: yes
 
 ### Phase 3: Preset Panel and Set Mat
@@ -114,8 +114,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation and Infrastructure | 0/3 | Not started | - |
-| 2. Read Path -- Scene and Layer Display | 0/3 | Not started | - |
+| 1. Foundation and Infrastructure | 3/3 | Complete | 2026-04-11 |
+| 2. Read Path -- Scene and Layer Display | 0/3 | Planned | - |
 | 3. Preset Panel and Set Mat | 0/3 | Not started | - |
 | 4. Material Editing and 3D Pick | 0/3 | Not started | - |
 | 5. Polish and Installer | 0/2 | Not started | - |
