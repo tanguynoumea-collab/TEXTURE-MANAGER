@@ -31,7 +31,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _eventBridge = eventBridge;
         LeftPanelVM = new LeftPanelViewModel();
-        CenterPanelVM = new CenterPanelViewModel();
+        CenterPanelVM = new CenterPanelViewModel(eventBridge);
         RightPanelVM = new RightPanelViewModel();
     }
 
