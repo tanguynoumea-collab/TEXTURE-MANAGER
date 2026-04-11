@@ -1,12 +1,15 @@
 <Project Sdk="WixToolset.Sdk/5.0.2">
   <PropertyGroup>
-    <OutputType>Bundle</OutputType>
+    <OutputType>Package</OutputType>
     <OutputName>OlympeMaterialManager.Setup</OutputName>
-    <DefineConstants>StagingDir=staging;PackagePath=bin\Release\en-US\OlympeMaterialManager.msi</DefineConstants>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <DefineConstants>StagingDir=staging</DefineConstants>
+    <!-- ICE64: Autodesk/Revit/Addins are shared directories we must NOT remove on uninstall -->
+    <!-- ICE91: Per-user .addin files in per-machine install is the standard Revit addin pattern -->
+    <SuppressIces>ICE64;ICE91</SuppressIces>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WixToolset.Bal.wixext" Version="5.0.2" />
     <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
   </ItemGroup>
 </Project>

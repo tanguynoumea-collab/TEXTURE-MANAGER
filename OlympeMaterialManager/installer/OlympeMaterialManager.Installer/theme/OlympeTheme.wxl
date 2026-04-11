@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl"
                  Culture="fr-FR">
-  <String Id="Caption">Olympe MaterialManager - Installation</String>
-  <String Id="Title">Installation d'Olympe MaterialManager</String>
-  <String Id="SelectVersions">Selectionner les versions de Revit :</String>
-  <String Id="Revit2023">Revit 2023</String>
-  <String Id="Revit2024">Revit 2024</String>
-  <String Id="Revit2025">Revit 2025</String>
-  <String Id="Revit2026">Revit 2026</String>
-  <String Id="NoRevitDetected">Aucune version de Revit detectee sur cette machine.</String>
-  <String Id="InstallButton">Installer</String>
-  <String Id="CancelButton">Annuler</String>
-  <String Id="ProgressTitle">Installation en cours...</String>
-  <String Id="SuccessTitle">Installation terminee</String>
-  <String Id="SuccessMessage">Olympe MaterialManager a ete installe avec succes. Redemarrez Revit pour utiliser l'add-in.</String>
-  <String Id="CloseButton">Fermer</String>
+  <String Id="Caption" Value="Olympe MaterialManager - Installation" />
+  <String Id="Title" Value="Installation d'Olympe MaterialManager" />
+  <String Id="SelectVersions" Value="Selectionner les versions de Revit :" />
+  <String Id="Revit2023" Value="Revit 2023" />
+  <String Id="Revit2024" Value="Revit 2024" />
+  <String Id="Revit2025" Value="Revit 2025" />
+  <String Id="Revit2026" Value="Revit 2026" />
+  <String Id="NoRevitDetected" Value="Aucune version de Revit detectee sur cette machine." />
+  <String Id="InstallButton" Value="Installer" />
+  <String Id="CancelButton" Value="Annuler" />
+  <String Id="ProgressTitle" Value="Installation en cours..." />
+  <String Id="SuccessTitle" Value="Installation terminee" />
+  <String Id="SuccessMessage" Value="Olympe MaterialManager a ete installe avec succes. Redemarrez Revit pour utiliser l'add-in." />
+  <String Id="CloseButton" Value="Fermer" />
 </WixLocalization>

@@ -12,45 +12,13 @@
     <MajorUpgrade DowngradeErrorMessage="Une version plus recente d'Olympe MaterialManager est deja installee." />
     <MediaTemplate EmbedCab="yes" />
 
-    <!-- Public properties for Bundle -> MSI communication -->
-    <Property Id="INSTALL_REVIT2023" Value="0" Secure="yes" />
-    <Property Id="INSTALL_REVIT2024" Value="0" Secure="yes" />
-    <Property Id="INSTALL_REVIT2025" Value="0" Secure="yes" />
-    <Property Id="INSTALL_REVIT2026" Value="0" Secure="yes" />
-
-    <!-- Feature: Shared net48 assemblies (for Revit 2023 and 2024) -->
-    <Feature Id="CoreNet48" Title="Assemblies .NET Framework 4.8" Level="1000">
-      <Condition Level="1">INSTALL_REVIT2023 = "1" OR INSTALL_REVIT2024 = "1"</Condition>
+    <!-- Installe toutes les versions par defaut (Alpha) -->
+    <Feature Id="Complete" Title="Olympe MaterialManager" Level="1">
       <ComponentGroupRef Id="Net48Assemblies" />
-    </Feature>
-
-    <!-- Feature: Revit 2023 (.addin only; assemblies via CoreNet48) -->
-    <Feature Id="Revit2023" Title="Revit 2023" Level="1000">
-      <Condition Level="1">INSTALL_REVIT2023 = "1"</Condition>
-      <ComponentRef Id="Revit2023Addin" />
-    </Feature>
-
-    <!-- Feature: Revit 2024 (.addin only; assemblies via CoreNet48) -->
-    <Feature Id="Revit2024" Title="Revit 2024" Level="1000">
-      <Condition Level="1">INSTALL_REVIT2024 = "1"</Condition>
-      <ComponentRef Id="Revit2024Addin" />
-    </Feature>
-
-    <!-- Feature: Shared net8.0-windows assemblies (for Revit 2025 and 2026) -->
-    <Feature Id="CoreNet8" Title="Assemblies .NET 8" Level="1000">
-      <Condition Level="1">INSTALL_REVIT2025 = "1" OR INSTALL_REVIT2026 = "1"</Condition>
       <ComponentGroupRef Id="Net8Assemblies" />
-    </Feature>
-
-    <!-- Feature: Revit 2025 (.addin only; assemblies via CoreNet8) -->
-    <Feature Id="Revit2025" Title="Revit 2025" Level="1000">
-      <Condition Level="1">INSTALL_REVIT2025 = "1"</Condition>
+      <ComponentRef Id="Revit2023Addin" />
+      <ComponentRef Id="Revit2024Addin" />
       <ComponentRef Id="Revit2025Addin" />
-    </Feature>
-
-    <!-- Feature: Revit 2026 (.addin only; assemblies via CoreNet8) -->
-    <Feature Id="Revit2026" Title="Revit 2026" Level="1000">
-      <Condition Level="1">INSTALL_REVIT2026 = "1"</Condition>
       <ComponentRef Id="Revit2026Addin" />
     </Feature>
 
