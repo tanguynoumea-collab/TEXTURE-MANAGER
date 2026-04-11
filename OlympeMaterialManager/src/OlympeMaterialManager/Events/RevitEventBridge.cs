@@ -616,7 +616,7 @@ public class RevitEventBridge : IExternalEventHandler
                     {
                         var prop = renderAsset.Get(pi);
                         if (prop is AssetPropertyString strProp &&
-                            strProp.Name.Contains("Bitmap", StringComparison.OrdinalIgnoreCase) &&
+                            strProp.Name.IndexOf("Bitmap", StringComparison.OrdinalIgnoreCase) >= 0 &&
                             !string.IsNullOrEmpty(strProp.Value))
                         {
                             dto.ThumbnailPath = strProp.Value;
