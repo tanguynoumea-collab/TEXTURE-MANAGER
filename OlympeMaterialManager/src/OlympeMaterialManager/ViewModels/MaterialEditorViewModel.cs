@@ -228,6 +228,49 @@ public partial class MaterialEditorViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Ouvre un ColorDialog pour choisir la couleur de surface.
+    /// </summary>
+    [RelayCommand]
+    private void PickSurfaceColor()
+    {
+        if (_currentMaterialIdValue < 0 || _eventBridge == null) return;
+
+        using var dialog = new System.Windows.Forms.ColorDialog();
+        dialog.Color = System.Drawing.Color.FromArgb(255, ColorR, ColorG, ColorB);
+        dialog.FullOpen = true;
+
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            ColorR = dialog.Color.R;
+            ColorG = dialog.Color.G;
+            ColorB = dialog.Color.B;
+            EditColorCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
+    /// Ouvre un ColorDialog pour choisir la couleur de teinte.
+    /// </summary>
+    [RelayCommand]
+    private void PickTintColor()
+    {
+        if (_currentMaterialIdValue < 0 || _eventBridge == null) return;
+        if (!HasAppearanceAsset) return;
+
+        using var dialog = new System.Windows.Forms.ColorDialog();
+        dialog.Color = System.Drawing.Color.FromArgb(255, TintR, TintG, TintB);
+        dialog.FullOpen = true;
+
+        if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            TintR = dialog.Color.R;
+            TintG = dialog.Color.G;
+            TintB = dialog.Color.B;
+            EditTintCommand.Execute(null);
+        }
+    }
+
+    /// <summary>
     /// Edite la teinte (activation + couleur) via Transaction Revit (MATEDIT-05).
     /// Declenche sur LostFocus des TextBox R/V/B teinte ou toggle du CheckBox.
     /// </summary>

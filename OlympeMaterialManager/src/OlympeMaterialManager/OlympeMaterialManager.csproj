@@ -17,6 +17,12 @@
     <DefineConstants>$(DefineConstants);REVIT2025_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
+  <!-- Embedded icon resources -->
+  <ItemGroup>
+    <Resource Include="Resources\olympe-icon-16.png" />
+    <Resource Include="Resources\olympe-icon-32.png" />
+  </ItemGroup>
+
   <!-- Shared packages (all TFMs) -->
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
@@ -28,23 +34,26 @@
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
-  <!-- net48 : reference System.Windows.Forms pour FolderBrowserDialog -->
+  <!-- net48 : reference System.Windows.Forms pour FolderBrowserDialog et ColorDialog -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <!-- net8.0-windows : reference System.Windows.Forms pour ColorDialog -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
   </ItemGroup>
 
   <!-- Revit 2024 (net48) -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2024.3.30" />
     <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2024.3.30" />
-    <PackageReference Include="Nice3point.Revit.Toolkit" Version="2024.3.0" />
   </ItemGroup>
 
-  <!-- Revit 2025/2026 (net8.0-windows) -->
+  <!-- Revit 2025/2026 (net8.0-windows) — use 2025.x for backward compat with both versions -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2026.4.0" />
-    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2026.4.0" />
-    <PackageReference Include="Nice3point.Revit.Toolkit" Version="2026.1.0" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2025.0.2" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2025.0.2" />
   </ItemGroup>
 
   <!-- Release-only: stage build output for WiX installer harvesting -->

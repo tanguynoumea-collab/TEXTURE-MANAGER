@@ -4,6 +4,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Olympe.MaterialManager.Models;
 using Olympe.MaterialManager.ViewModels;
+using DragEventArgs = System.Windows.DragEventArgs;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using Point = System.Windows.Point;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace Olympe.MaterialManager.Views;
 
@@ -41,22 +45,22 @@ public partial class RightPanelView : UserControl
         if (treeViewItem?.DataContext is not PresetMaterialDto material) return;
 
         _draggedMaterial = material;
-        var data = new DataObject("PresetMaterial", material);
-        DragDrop.DoDragDrop(treeViewItem, data, DragDropEffects.Move);
+        var data = new System.Windows.DataObject("PresetMaterial", material);
+        System.Windows.DragDrop.DoDragDrop(treeViewItem, data, System.Windows.DragDropEffects.Move);
     }
 
     private void PresetTreeView_DragOver(object sender, DragEventArgs e)
     {
         if (!e.Data.GetDataPresent("PresetMaterial"))
         {
-            e.Effects = DragDropEffects.None;
+            e.Effects = System.Windows.DragDropEffects.None;
             e.Handled = true;
             return;
         }
 
         // Verifier qu'on survole un groupe ou un materiau d'un groupe
         var target = GetTargetGroup(e);
-        e.Effects = target != null ? DragDropEffects.Move : DragDropEffects.None;
+        e.Effects = target != null ? System.Windows.DragDropEffects.Move : System.Windows.DragDropEffects.None;
         e.Handled = true;
     }
 

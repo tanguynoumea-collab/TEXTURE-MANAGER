@@ -146,10 +146,27 @@
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    Margin="0,0,0,2" />
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <!-- Petit carre couleur -->
+                            <Rectangle Width="24" Height="24"
+                                       RadiusX="3" RadiusY="3"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <!-- Bouton color picker -->
+                            <Button Content="..."
+                                    Command="{Binding MaterialEditorVM.PickSurfaceColorCommand}"
+                                    Width="30" Height="24"
+                                    Padding="0"
+                                    VerticalAlignment="Center"
+                                    ToolTip="Choisir la couleur de surface" />
+                            <!-- Valeurs R/V/B compactes -->
                             <TextBlock Text="R" Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center" Margin="0,0,4,0" />
+                                       VerticalAlignment="Center" Margin="8,0,4,0" />
                             <TextBox Text="{Binding MaterialEditorVM.ColorR, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                     Width="40" Margin="0,0,8,0">
+                                     Width="36" Margin="0,0,4,0">
                                 <b:Interaction.Triggers>
                                     <b:EventTrigger EventName="LostFocus">
                                         <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditColorCommand}" />
@@ -159,7 +176,7 @@
                             <TextBlock Text="V" Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center" Margin="0,0,4,0" />
                             <TextBox Text="{Binding MaterialEditorVM.ColorG, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                     Width="40" Margin="0,0,8,0">
+                                     Width="36" Margin="0,0,4,0">
                                 <b:Interaction.Triggers>
                                     <b:EventTrigger EventName="LostFocus">
                                         <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditColorCommand}" />
@@ -169,7 +186,7 @@
                             <TextBlock Text="B" Foreground="{StaticResource TextSecondaryBrush}"
                                        VerticalAlignment="Center" Margin="0,0,4,0" />
                             <TextBox Text="{Binding MaterialEditorVM.ColorB, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                     Width="40">
+                                     Width="36">
                                 <b:Interaction.Triggers>
                                     <b:EventTrigger EventName="LostFocus">
                                         <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditColorCommand}" />
@@ -206,10 +223,28 @@
                                           Margin="0,0,0,4" />
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <!-- Petit carre couleur teinte -->
+                                    <Rectangle Width="24" Height="24"
+                                               RadiusX="3" RadiusY="3"
+                                               VerticalAlignment="Center"
+                                               Margin="0,0,8,0">
+                                        <Rectangle.Fill>
+                                            <SolidColorBrush Color="{Binding MaterialEditorVM.TintColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                    <!-- Bouton color picker teinte -->
+                                    <Button Content="..."
+                                            Command="{Binding MaterialEditorVM.PickTintColorCommand}"
+                                            Width="30" Height="24"
+                                            Padding="0"
+                                            VerticalAlignment="Center"
+                                            IsEnabled="{Binding MaterialEditorVM.TintEnabled}"
+                                            ToolTip="Choisir la couleur de teinte" />
+                                    <!-- Valeurs R/V/B teinte compactes -->
                                     <TextBlock Text="R" Foreground="{StaticResource TextSecondaryBrush}"
-                                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                                               VerticalAlignment="Center" Margin="8,0,4,0" />
                                     <TextBox Text="{Binding MaterialEditorVM.TintR, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                             Width="40" Margin="0,0,8,0"
+                                             Width="36" Margin="0,0,4,0"
                                              IsEnabled="{Binding MaterialEditorVM.TintEnabled}">
                                         <b:Interaction.Triggers>
                                             <b:EventTrigger EventName="LostFocus">
@@ -220,7 +255,7 @@
                                     <TextBlock Text="V" Foreground="{StaticResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,4,0" />
                                     <TextBox Text="{Binding MaterialEditorVM.TintG, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                             Width="40" Margin="0,0,8,0"
+                                             Width="36" Margin="0,0,4,0"
                                              IsEnabled="{Binding MaterialEditorVM.TintEnabled}">
                                         <b:Interaction.Triggers>
                                             <b:EventTrigger EventName="LostFocus">
@@ -231,7 +266,7 @@
                                     <TextBlock Text="B" Foreground="{StaticResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,4,0" />
                                     <TextBox Text="{Binding MaterialEditorVM.TintB, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                             Width="40"
+                                             Width="36"
                                              IsEnabled="{Binding MaterialEditorVM.TintEnabled}">
                                         <b:Interaction.Triggers>
                                             <b:EventTrigger EventName="LostFocus">
