@@ -12,7 +12,7 @@ namespace Olympe.MaterialManager.Events;
 /// Point de passage unique entre les ViewModels et l'API Revit.
 /// Thread-safe : les requetes sont protegees par lock.
 /// </summary>
-public class RevitEventBridge
+public class RevitEventBridge : IExternalEventHandler
 {
     private volatile RevitRequestType _requestType = RevitRequestType.None;
     private volatile object? _requestData;
@@ -35,8 +35,20 @@ public class RevitEventBridge
     }
 
     /// <summary>
+    /// IExternalEventHandler.Execute — appele par Revit quand l'ExternalEvent est leve.
+    /// </summary>
+    public void Execute(UIApplication app)
+    {
+        ProcessRequest(app);
+    }
+
+    /// <summary>
+    /// IExternalEventHandler.GetName — nom affiche dans Revit.
+    /// </summary>
+    public string GetName() => "Olympe MaterialManager Bridge";
+
+    /// <summary>
     /// Traite la requete sur le thread Revit.
-    /// Appele par le callback ExternalEvent dans App.cs.
     /// </summary>
     public void ProcessRequest(UIApplication uiApp)
     {
@@ -276,6 +288,8 @@ public class RevitEventBridge
 
     /// <summary>
     /// Retourne les couches CompoundStructure pour un type systeme (D-11, D-12, D-13).
+    /// Supporte toutes les familles systeme : WallType, FloorType, RoofType, CeilingType
+    /// via la classe de base HostObjAttributes qui expose GetCompoundStructure().
     /// Gere les cas sans noyau (Revit 2026) et les materiaux par categorie (InvalidElementId).
     /// Utilise UnitUtils pour la conversion pieds -> mm et LayerFunctionMapper pour les noms francais.
     /// </summary>
@@ -287,6 +301,8 @@ public class RevitEventBridge
         var elementId = ElementIdHelper.FromValue(typeIdValue);
         var element = doc.GetElement(elementId);
 
+        // HostObjAttributes est la classe de base commune a WallType, FloorType, RoofType, CeilingType
+        // Tous ces types exposent CompoundStructure de maniere generique
         if (element is HostObjAttributes hostAttrs)
         {
             var cs = hostAttrs.GetCompoundStructure();
