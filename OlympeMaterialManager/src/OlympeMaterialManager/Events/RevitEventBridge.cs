@@ -1018,17 +1018,20 @@ public class RevitEventBridge : IExternalEventHandler
     }
 
     /// <summary>
-    /// Selection multi-elements dans la vue 3D via PickObject en boucle (D-11, D-12, D-13, D-14, D-17).
-    /// Affiche un TaskDialog d'instruction, cache la fenetre WPF, boucle sur PickObject
-    /// jusqu'a ce que l'utilisateur appuie sur Echap. Retourne List&lt;SceneTypeDto&gt;.
+    /// Selection toggle dans la vue 3D via PickObject en boucle.
+    /// Chaque clic sur un element selectionne/deselectionne son type (toggle).
+    /// Toutes les instances du type sont mises en surbrillance dans la vue Revit.
+    /// Echap ou Entree (OperationCanceledException) valide la selection courante.
+    /// Retourne List&lt;SceneTypeDto&gt; des types actuellement selectionnes.
     /// CRITIQUE : catch Autodesk.Revit.Exceptions.OperationCanceledException (pas System).
     /// </summary>
     private static object? HandlePickElementInView(UIApplication uiApp)
     {
         var uiDoc = uiApp.ActiveUIDocument;
         if (uiDoc == null) return null;
+        var doc = uiDoc.Document;
 
-        // D-14, SCENE-09 : valider que la vue active est une vue 3D
+        // Valider que la vue active est une vue 3D
         if (uiDoc.ActiveView is not View3D)
             throw new InvalidOperationException("Vue 3D requise pour la selection par clic.");
 
@@ -1036,20 +1039,24 @@ public class RevitEventBridge : IExternalEventHandler
         var td = new TaskDialog("Selection 3D")
         {
             MainInstruction = "Selection d'elements dans la vue 3D",
-            MainContent = "Cliquez sur les elements a ajouter a la scene.\nAppuyez sur Echap pour terminer la selection.",
+            MainContent = "Cliquez sur les elements pour les selectionner ou deselectionner.\n" +
+                          "Les elements selectionnes sont mis en surbrillance.\n\n" +
+                          "Appuyez sur Echap ou Entree pour valider la selection.",
             CommonButtons = TaskDialogCommonButtons.Ok
         };
         td.Show();
 
-        // D-11 : cacher la fenetre WPF avant le pick
+        // Cacher la fenetre WPF avant le pick
         var mainWindow = App.MainWindow;
         System.Windows.Application.Current.Dispatcher.Invoke(() =>
         {
             mainWindow?.Hide();
         });
 
-        var pickedTypes = new List<SceneTypeDto>();
-        var seenTypeIds = new HashSet<long>();
+        // Dictionnaire des types selectionnes (toggle on/off)
+        var selectedTypes = new Dictionary<long, SceneTypeDto>();
+        // Ensemble cumule de toutes les instances selectionnees
+        var allSelectedInstanceIds = new HashSet<ElementId>();
 
         try
         {
@@ -1057,63 +1064,90 @@ public class RevitEventBridge : IExternalEventHandler
             {
                 var reference = uiDoc.Selection.PickObject(
                     ObjectType.Element,
-                    "Selectionnez un element (Echap pour terminer)");
+                    "Cliquez pour selectionner/deselectionner (Echap pour valider)");
 
-                var element = uiDoc.Document.GetElement(reference);
+                var element = doc.GetElement(reference);
                 if (element == null) continue;
 
-                // D-12 : extraire le ElementType de l'element selectionne
                 var typeId = element.GetTypeId();
                 if (typeId == ElementId.InvalidElementId) continue;
 
                 long typeIdValue = ElementIdHelper.GetValue(typeId);
 
-                // Eviter les doublons par type
-                if (seenTypeIds.Contains(typeIdValue)) continue;
-                seenTypeIds.Add(typeIdValue);
+                // Recuperer toutes les instances de ce type dans le document
+                var instanceIds = new FilteredElementCollector(doc)
+                    .WhereElementIsNotElementType()
+                    .Where(e => e.GetTypeId() == typeId)
+                    .Select(e => e.Id)
+                    .ToList();
 
-                var elementType = uiDoc.Document.GetElement(typeId) as ElementType;
-                if (elementType == null) continue;
-
-                bool hasCs = elementType is HostObjAttributes hoa
-                    && (hoa.GetCompoundStructure() != null || elementType is WallType);
-
-                // Detecter mur empile : WallType sans CompoundStructure directe mais avec sous-murs
-                bool isStackedWall = false;
-                if (elementType is WallType pickedWt && pickedWt.GetCompoundStructure() == null
-                    && element is Wall pickedWall)
+                if (selectedTypes.ContainsKey(typeIdValue))
                 {
-                    var stackedIds = pickedWall.GetStackedWallMemberIds();
-                    isStackedWall = stackedIds != null && stackedIds.Count > 0;
+                    // TOGGLE OFF : retirer le type et ses instances
+                    selectedTypes.Remove(typeIdValue);
+                    foreach (var instanceId in instanceIds)
+                        allSelectedInstanceIds.Remove(instanceId);
+
+                    LogService.Log($"HandlePickElementInView: deselected type {typeIdValue}, remaining={selectedTypes.Count}");
+                }
+                else
+                {
+                    // TOGGLE ON : ajouter le type et ses instances
+                    var elementType = doc.GetElement(typeId) as ElementType;
+                    if (elementType == null) continue;
+
+                    bool hasCs = elementType is HostObjAttributes hoa
+                        && (hoa.GetCompoundStructure() != null || elementType is WallType);
+
+                    // Detecter mur empile
+                    bool isStackedWall = false;
+                    if (elementType is WallType pickedWt && pickedWt.GetCompoundStructure() == null
+                        && element is Wall pickedWall)
+                    {
+                        var stackedIds = pickedWall.GetStackedWallMemberIds();
+                        isStackedWall = stackedIds != null && stackedIds.Count > 0;
+                    }
+
+                    string catName = element.Category?.Name ?? "Autre";
+
+                    selectedTypes[typeIdValue] = new SceneTypeDto
+                    {
+                        ElementIdValue = typeIdValue,
+                        FamilyName = elementType.FamilyName,
+                        TypeName = elementType.Name,
+                        CategoryName = catName,
+                        HasCompoundStructure = hasCs,
+                        IsComposite = isStackedWall
+                    };
+
+                    foreach (var instanceId in instanceIds)
+                        allSelectedInstanceIds.Add(instanceId);
+
+                    LogService.Log($"HandlePickElementInView: selected type {typeIdValue}, total={selectedTypes.Count}");
                 }
 
-                string catName = element.Category?.Name ?? "Autre";
-
-                pickedTypes.Add(new SceneTypeDto
-                {
-                    ElementIdValue = typeIdValue,
-                    FamilyName = elementType.FamilyName,
-                    TypeName = elementType.Name,
-                    CategoryName = catName,
-                    HasCompoundStructure = hasCs,
-                    IsComposite = isStackedWall
-                });
+                // Mettre a jour la selection visuelle dans Revit (surbrillance bleue)
+                uiDoc.Selection.SetElementIds(allSelectedInstanceIds.ToList());
             }
         }
         catch (Autodesk.Revit.Exceptions.OperationCanceledException)
         {
-            // D-13 : Escape presse -- fin de la boucle de selection
+            // Echap ou Entree : valider la selection courante
+            LogService.Log($"HandlePickElementInView: selection validated with {selectedTypes.Count} types");
         }
         finally
         {
-            // Toujours re-afficher la fenetre (D-11, D-13, Pitfall 6)
+            // Nettoyer la selection Revit
+            uiDoc.Selection.SetElementIds(new List<ElementId>());
+
+            // Toujours re-afficher la fenetre
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 mainWindow?.Show();
             });
         }
 
-        return pickedTypes;
+        return selectedTypes.Values.ToList();
     }
 
     /// <summary>
