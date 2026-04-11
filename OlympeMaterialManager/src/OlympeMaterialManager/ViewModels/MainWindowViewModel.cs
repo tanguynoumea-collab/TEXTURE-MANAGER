@@ -30,7 +30,7 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(RevitEventBridge eventBridge)
     {
         _eventBridge = eventBridge;
-        LeftPanelVM = new LeftPanelViewModel();
+        LeftPanelVM = new LeftPanelViewModel(eventBridge);
         CenterPanelVM = new CenterPanelViewModel(eventBridge);
         RightPanelVM = new RightPanelViewModel();
     }
