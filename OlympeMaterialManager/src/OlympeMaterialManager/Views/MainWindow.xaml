@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:Olympe.MaterialManager.Views"
         Title="Olympe MaterialManager"
-        Width="1000" Height="700"
-        MinWidth="850" MinHeight="500"
+        Width="1400" Height="750"
+        MinWidth="1000" MinHeight="500"
         Style="{DynamicResource OlympeWindowStyle}">
 
     <Window.Resources>
@@ -23,32 +23,47 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Barre d'en-tete : bouton Rafraichir + info document -->
+        <!-- Barre d'en-tete : repertoire de projet + boutons Ouvrir / Migrer -->
         <Border Grid.Row="0"
                 Background="{StaticResource SurfaceBrush}"
                 BorderBrush="{StaticResource BorderBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="8,6">
             <DockPanel>
-                <Button DockPanel.Dock="Left"
-                        Content="Rafraichir le document"
-                        Command="{Binding RafraichirDocumentCommand}"
-                        Padding="12,4"
-                        Margin="0,0,12,0" />
-                <TextBlock Text="{Binding DocumentInfo}"
+                <TextBlock DockPanel.Dock="Left"
+                           Text="Repertoire de projet :"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Margin="0,0,8,0" />
+                <Button DockPanel.Dock="Right"
+                        Content="Migrer"
+                        Command="{Binding MigrerRepertoireCommand}"
+                        ToolTip="Migrer le repertoire"
+                        Padding="12,4"
+                        Margin="4,0,0,0" />
+                <Button DockPanel.Dock="Right"
+                        Content="Ouvrir"
+                        Command="{Binding OuvrirRepertoireCommand}"
+                        ToolTip="Ouvrir"
+                        Padding="12,4"
+                        Margin="4,0,0,0" />
+                <TextBlock Text="{Binding ProjectDirectoryPath}"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           ToolTip="{Binding ProjectDirectoryPath}"
+                           Margin="0,0,8,0" />
             </DockPanel>
         </Border>
 
         <!-- Trois colonnes avec GridSplitters -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="300" MinWidth="220" />
+                <ColumnDefinition Width="450" MinWidth="300" />
                 <ColumnDefinition Width="5" />
                 <ColumnDefinition Width="*" MinWidth="300" />
                 <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="300" MinWidth="220" />
+                <ColumnDefinition Width="450" MinWidth="300" />
             </Grid.ColumnDefinitions>
 
             <!-- Panneau gauche : Familles / Types -->
