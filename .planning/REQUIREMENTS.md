@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **PRESET-01**: Le panneau droit affiche une liste de materiaux preset organises par groupes
 - [x] **PRESET-02**: Trois groupes par defaut existent : Murs, Sols, Autres
-- [ ] **PRESET-03**: L'utilisateur peut creer des groupes de preset personnalises
+- [x] **PRESET-03**: L'utilisateur peut creer des groupes de preset personnalises
 - [x] **PRESET-04**: L'utilisateur peut ajouter un materiau du projet a un groupe de preset
 - [x] **PRESET-05**: Les presets sont persistes dans un fichier JSON dont le chemin est choisi par l'utilisateur
 - [x] **PRESET-06**: Le chemin du fichier JSON est memorise et reutilise automatiquement aux sessions suivantes
@@ -148,7 +148,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LAYER-05 | Phase 2 | Complete |
 | PRESET-01 | Phase 3 | Complete |
 | PRESET-02 | Phase 3 | Complete |
-| PRESET-03 | Phase 3 | Pending |
+| PRESET-03 | Phase 3 | Complete |
 | PRESET-04 | Phase 3 | Complete |
 | PRESET-05 | Phase 3 | Complete |
 | PRESET-06 | Phase 3 | Complete |

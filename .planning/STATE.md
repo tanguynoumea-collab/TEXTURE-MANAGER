@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-04-11T11:31:40.082Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-04-11T11:38:35.219Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-11)
 ## Current Position
 
 Phase: 03 (preset-panel-and-set-mat) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-04-11
 
@@ -59,6 +59,7 @@ Progress: [..............] 0%
 | Phase 02 P03 | 2min | 3 tasks | 4 files |
 | Phase 02 P02 | 3min | 2 tasks | 3 files |
 | Phase 03 P01 | 4min | 2 tasks | 15 files |
+| Phase 03 P02 | 4min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Void handlers (SetMaterialOnLayers, SetMaterialOnParameter) called without result assignment -- null result signals success
 - [Phase 03]: SetMatParamRequestDto batches multiple ParameterDefinitionNames in single Transaction for one undo step
 - [Phase 03]: ExtractColorArgb extracted as private static helper reused by GetAllMaterials and DuplicateMaterial handlers
+- [Phase 03]: AddMaterialDialog uses code-behind for filter + dialog result (not full ViewModel) -- pragmatic for simple dialog
+- [Phase 03]: Tag proxy pattern on StackPanel within inner DataTemplate for material context menu routing in TreeView
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T11:31:40.078Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-04-11T11:38:35.216Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
