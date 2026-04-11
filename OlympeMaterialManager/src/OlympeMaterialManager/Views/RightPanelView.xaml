@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:converters="clr-namespace:Olympe.MaterialManager.Converters"
+             xmlns:controls="clr-namespace:Olympe.MaterialManager.Controls"
              x:Name="RightPanelRoot">
 
     <UserControl.Resources>
@@ -21,22 +22,56 @@
                        Foreground="{StaticResource AccentBrush}"
                        Margin="0,0,0,8" />
 
-            <!-- Section 2 : Boutons Ajouter materiau et Creer groupe (D-10, D-11) -->
+            <!-- Section 1b : Selecteur de preset + bouton creation + bouton dossier -->
             <StackPanel DockPanel.Dock="Top"
                         Orientation="Horizontal"
-                        Margin="0,0,0,8">
-                <Button Content="Ajouter au preset"
-                        Command="{Binding AjouterMateriauCommand}"
+                        Margin="0,0,0,4">
+                <ComboBox ItemsSource="{Binding PresetNames}"
+                          SelectedItem="{Binding ActivePresetName, Mode=TwoWay}"
+                          MinWidth="160" />
+                <Button Content="+"
+                        Command="{Binding CreerPresetCommand}"
+                        ToolTip="Creer un nouveau preset"
+                        Background="{StaticResource AccentBrush}"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
+                <Button Content="..."
+                        Command="{Binding ChargerPresetExterneCommand}"
+                        ToolTip="Charger un preset depuis un fichier externe"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="12"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
+            </StackPanel>
+
+            <!-- Section 2 : Boutons Creer groupe + Ajouter materiau + Supprimer (D-10, D-11) -->
+            <StackPanel DockPanel.Dock="Top"
+                        Orientation="Horizontal"
+                        Margin="0,4,0,8">
+                <Button Content="Creer un groupe"
+                        Command="{Binding CreerGroupeCommand}"
                         Background="{StaticResource AccentBrush}" />
                 <Button Content="+"
-                        Command="{Binding CreerGroupeCommand}"
-                        ToolTip="Creer un nouveau groupe"
+                        Command="{Binding AjouterMateriauCommand}"
+                        ToolTip="Ajouter un materiau au preset"
                         Background="{StaticResource AccentBrush}"
                         Width="28" Height="28"
                         Padding="0"
                         FontSize="16"
                         FontWeight="Bold"
                         Margin="8,0,0,0" />
+                <Button Content="-"
+                        Command="{Binding SupprimerSelectionCommand}"
+                        ToolTip="Supprimer le groupe ou materiau selectionne"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
             </StackPanel>
 
             <!-- Section 4 : Message de statut -->
@@ -72,34 +107,14 @@
                                    Foreground="{StaticResource AccentBrush}"
                                    Margin="0,0,0,8" />
 
-                        <!-- Preview couleur + image de rendu (D-18, MATEDIT-06) -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <!-- Carre couleur de surface -->
-                            <Rectangle Width="60" Height="60"
-                                       RadiusX="4" RadiusY="4"
-                                       Margin="0,0,8,0">
-                                <Rectangle.Fill>
-                                    <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
-                                </Rectangle.Fill>
-                            </Rectangle>
-                            <!-- Image de rendu sphere (thumbnail AppearanceAsset) ou placeholder gris -->
-                            <Border Width="60" Height="60"
-                                    CornerRadius="4"
-                                    Background="{StaticResource SurfaceBrush}"
-                                    BorderBrush="{StaticResource BorderBrush}"
-                                    BorderThickness="1"
-                                    ClipToBounds="True">
-                                <Grid>
-                                    <TextBlock Text="Rendu"
-                                               FontSize="10"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center" />
-                                    <Image Source="{Binding MaterialEditorVM.RenderPreviewImageSource}"
-                                           Stretch="UniformToFill" />
-                                </Grid>
-                            </Border>
-                        </StackPanel>
+                        <!-- Preview couleur de surface -->
+                        <Rectangle Width="60" Height="60"
+                                   RadiusX="4" RadiusY="4"
+                                   Margin="0,0,0,8">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                            </Rectangle.Fill>
+                        </Rectangle>
 
                         <!-- Nom (D-02, MATEDIT-02) -->
                         <TextBlock Text="Nom :"
@@ -302,29 +317,23 @@
                 </b:Interaction.Triggers>
 
                 <TreeView.ItemTemplate>
-                    <!-- Template groupe (D-09) : nom + badge compteur -->
+                    <!-- Template groupe : meme style que les categories du panneau gauche -->
                     <HierarchicalDataTemplate ItemsSource="{Binding Materials}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding GroupName}"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
-                            <Border Background="{StaticResource SurfaceBrush}"
-                                    CornerRadius="8"
-                                    Padding="6,1"
-                                    Margin="8,0,0,0">
-                                <TextBlock Text="{Binding Materials.Count}"
-                                           FontSize="11"
-                                           Foreground="{StaticResource TextSecondaryBrush}" />
-                            </Border>
-                        </StackPanel>
+                        <TextBlock Foreground="{StaticResource AccentBrush}"
+                                   FontWeight="SemiBold"
+                                   Padding="4,2">
+                            <Run Text="{Binding GroupName, Mode=OneWay}" />
+                            <Run Text=" (" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Run Text="{Binding Materials.Count, Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Run Text=")" Foreground="{StaticResource TextSecondaryBrush}" />
+                        </TextBlock>
 
-                        <!-- Template enfant : materiau preset (D-08) -->
+                        <!-- Template enfant : meme style que les types du panneau gauche -->
                         <HierarchicalDataTemplate.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal"
-                                            Margin="0,2"
+                                            Margin="0,1"
                                             Tag="{Binding DataContext, ElementName=RightPanelRoot}">
-                                    <!-- Menu contextuel Dupliquer/Supprimer (D-12) via Tag proxy pattern -->
                                     <StackPanel.ContextMenu>
                                         <ContextMenu>
                                             <MenuItem Header="Dupliquer"
@@ -336,16 +345,15 @@
                                         </ContextMenu>
                                     </StackPanel.ContextMenu>
 
-                                    <!-- Pastille couleur (D-08) -->
-                                    <Rectangle Width="14" Height="14"
+                                    <!-- Pastille couleur -->
+                                    <Rectangle Width="12" Height="12"
                                                RadiusX="2" RadiusY="2"
-                                               Margin="0,0,8,0">
+                                               Margin="0,0,6,0">
                                         <Rectangle.Fill>
                                             <SolidColorBrush Color="{Binding ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
                                         </Rectangle.Fill>
                                     </Rectangle>
 
-                                    <!-- Nom du materiau -->
                                     <TextBlock Text="{Binding MaterialName}"
                                                Foreground="{StaticResource TextPrimaryBrush}" />
                                 </StackPanel>

@@ -15,13 +15,13 @@ namespace Olympe.MaterialManager.ViewModels;
 /// <summary>
 /// ViewModel du panneau droit (Materiaux Preset).
 /// Gere les groupes de presets, CRUD sur les materiaux, persistance JSON via PresetService.
+/// Supporte le systeme multi-preset (chaque preset est un fichier JSON separe).
 /// </summary>
 public partial class RightPanelViewModel : ObservableObject
 {
     private readonly RevitEventBridge? _eventBridge;
     private readonly PresetService _presetService;
 
-    private string? _presetFilePath;
     private PresetCollectionDto? _collection;
 
     [ObservableProperty]
@@ -41,6 +41,18 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private PresetGroupDto? _selectedGroup;
+
+    /// <summary>
+    /// Liste des noms de presets disponibles pour le ComboBox de selection.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _presetNames = new();
+
+    /// <summary>
+    /// Nom du preset actuellement actif (binding ComboBox).
+    /// </summary>
+    [ObservableProperty]
+    private string? _activePresetName;
 
     /// <summary>
     /// Sub-ViewModel pour la section editeur de materiau (MATEDIT-01 a MATEDIT-08).
@@ -66,6 +78,75 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     public RightPanelViewModel() : this(null!, new PresetService())
     {
+    }
+
+    /// <summary>
+    /// Cree un nouveau preset via un dialog de saisie.
+    /// </summary>
+    [RelayCommand]
+    private void CreerPreset()
+    {
+        var dialog = new CreateNameDialog();
+        dialog.Title = "Nouveau preset";
+        dialog.SetPrompt("Nom du preset :");
+        dialog.Owner = App.MainWindow;
+
+        if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.EnteredName))
+        {
+            var name = dialog.EnteredName;
+
+            // Verifier si le nom existe deja
+            if (PresetNames.Contains(name))
+            {
+                StatusMessage = $"Le preset \"{name}\" existe deja.";
+                return;
+            }
+
+            _collection = _presetService.CreatePreset(name);
+            PresetNames.Add(name);
+            ActivePresetName = name;
+            PresetGroups = _collection.Groups;
+            StatusMessage = $"Preset \"{name}\" cree.";
+        }
+    }
+
+    /// <summary>
+    /// Charge un fichier preset externe via OpenFileDialog.
+    /// Copie le fichier dans le dossier presets pour la persistence.
+    /// </summary>
+    [RelayCommand]
+    private void ChargerPresetExterne()
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Charger un preset externe",
+            Filter = "Fichiers JSON (*.json)|*.json",
+            DefaultExt = ".json"
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            var sourcePath = dialog.FileName;
+            var presetName = Path.GetFileNameWithoutExtension(sourcePath);
+            var destDir = _presetService.GetPresetsDirectory();
+            var destPath = Path.Combine(destDir, presetName + ".json");
+
+            // Copier le fichier dans le dossier presets
+            File.Copy(sourcePath, destPath, overwrite: true);
+
+            // Mettre a jour la liste et activer le preset
+            if (!PresetNames.Contains(presetName))
+                PresetNames.Add(presetName);
+
+            ActivePresetName = presetName;
+            StatusMessage = $"Preset \"{presetName}\" charge depuis fichier externe.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Erreur chargement preset externe : {ex.Message}";
+        }
     }
 
     /// <summary>
@@ -309,44 +390,83 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Charge les presets depuis le chemin memorise ou cree la collection par defaut (D-05).
+    /// Charge les presets depuis le systeme multi-preset.
+    /// Migration: si un ancien chemin single-file existe, il est utilise comme fallback.
     /// </summary>
     private void LoadPresets()
     {
-        var storedPath = _presetService.GetStoredPresetPath();
+        // Charger la liste des presets disponibles
+        var availablePresets = _presetService.ListPresets();
+        PresetNames = new ObservableCollection<string>(availablePresets);
 
-        if (storedPath != null && File.Exists(storedPath))
+        // Charger les settings pour connaitre le preset actif
+        var settings = _presetService.LoadSettings();
+
+        if (availablePresets.Count > 0)
         {
-            _presetFilePath = storedPath;
-            _collection = _presetService.Load(storedPath);
+            // Utiliser le preset actif ou le premier disponible
+            var targetName = settings.ActivePresetName;
+            if (string.IsNullOrEmpty(targetName) || !availablePresets.Contains(targetName))
+                targetName = availablePresets[0];
+
+            _collection = _presetService.LoadPreset(targetName);
+            ActivePresetName = targetName;
         }
         else
         {
-            _presetFilePath = null;
-            _collection = PresetService.GetDefaultCollection();
+            // Fallback : essayer l'ancien systeme single-file
+            var storedPath = settings.PresetFilePath;
+            if (storedPath != null && File.Exists(storedPath))
+            {
+                _collection = _presetService.Load(storedPath);
+
+                // Migrer vers le nouveau systeme
+                var migratedName = "Preset migre";
+                _presetService.SavePreset(migratedName, _collection);
+                PresetNames.Add(migratedName);
+                ActivePresetName = migratedName;
+            }
+            else
+            {
+                // Creer un preset par defaut
+                var defaultName = "Preset par defaut";
+                _collection = _presetService.CreatePreset(defaultName);
+                PresetNames.Add(defaultName);
+                ActivePresetName = defaultName;
+            }
         }
 
         PresetGroups = _collection.Groups;
     }
 
     /// <summary>
-    /// Sauvegarde automatique apres chaque modification (D-07).
-    /// Demande un dossier a l'utilisateur si aucun chemin n'est configure.
+    /// Reagit au changement de preset actif dans le ComboBox.
+    /// </summary>
+    partial void OnActivePresetNameChanged(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return;
+
+        _collection = _presetService.LoadPreset(value);
+        PresetGroups = _collection.Groups;
+
+        // Persister le choix dans les settings
+        var settings = _presetService.LoadSettings();
+        settings.ActivePresetName = value;
+        _presetService.SaveSettings(settings);
+
+        // Mettre a jour le titre
+        PanelTitle = $"Materiaux Preset - {value}";
+    }
+
+    /// <summary>
+    /// Sauvegarde automatique apres chaque modification.
+    /// Utilise le systeme multi-preset (sauvegarde dans le fichier du preset actif).
     /// </summary>
     private void AutoSave()
     {
-        if (_collection == null) return;
+        if (_collection == null || string.IsNullOrEmpty(ActivePresetName)) return;
 
-        if (_presetFilePath == null)
-        {
-            var folder = DialogService.ShowFolderBrowser("Choisir le dossier des presets");
-            if (folder == null) return; // L'utilisateur a annule -- presets restent en memoire
-
-            _presetFilePath = Path.Combine(folder, "olympe-presets.json");
-            _presetService.StorePresetPath(_presetFilePath);
-        }
-
-        _presetService.Save(_collection, _presetFilePath);
+        _presetService.SavePreset(ActivePresetName, _collection);
     }
 
     /// <summary>
