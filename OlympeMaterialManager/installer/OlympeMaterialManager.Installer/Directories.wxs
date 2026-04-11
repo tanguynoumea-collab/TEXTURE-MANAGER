@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <!-- Directory structure -->
+  <Fragment>
+
+    <!-- Program Files: assembly installation -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="OlympeDir" Name="Olympe">
+        <Directory Id="INSTALLFOLDER" Name="MaterialManager">
+          <Directory Id="Net48Dir" Name="net48" />
+          <Directory Id="Net8Dir" Name="net8.0-windows" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <!-- AppData: per-user .addin file locations -->
+    <StandardDirectory Id="AppDataFolder">
+      <Directory Id="AutodeskDir" Name="Autodesk">
+        <Directory Id="RevitDir" Name="Revit">
+          <Directory Id="AddinsDir" Name="Addins">
+            <Directory Id="Addins2024" Name="2024" />
+            <Directory Id="Addins2025" Name="2025" />
+            <Directory Id="Addins2026" Name="2026" />
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+  </Fragment>
+
+  <!-- Revit 2024 components (net48) -->
+  <Fragment>
+    <ComponentGroup Id="Revit2024Assemblies" Directory="Net48Dir">
+      <Files Include="$(var.StagingDir)\net48\**" />
+    </ComponentGroup>
+
+    <Component Id="Revit2024Addin" Directory="Addins2024"
+               Guid="1ECD2C68-EE1A-4B7D-B0D7-355F83A34079">
+      <File Source="addin\OlympeMaterialManager.2024.addin"
+            Name="OlympeMaterialManager.addin"
+            KeyPath="no" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\Olympe\MaterialManager"
+                     Name="Revit2024Installed"
+                     Type="integer" Value="1"
+                     KeyPath="yes" />
+      <RemoveFolder Id="RemoveAddins2024" On="uninstall" />
+    </Component>
+  </Fragment>
+
+  <!-- Shared net8.0-windows assemblies (Revit 2025 + 2026) -->
+  <Fragment>
+    <ComponentGroup Id="Net8Assemblies" Directory="Net8Dir">
+      <Files Include="$(var.StagingDir)\net8.0-windows\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- Revit 2025 .addin component -->
+  <Fragment>
+    <Component Id="Revit2025Addin" Directory="Addins2025"
+               Guid="7675ACE1-F35D-4371-9182-D0DD32929BA5">
+      <File Source="addin\OlympeMaterialManager.2025.addin"
+            Name="OlympeMaterialManager.addin"
+            KeyPath="no" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\Olympe\MaterialManager"
+                     Name="Revit2025Installed"
+                     Type="integer" Value="1"
+                     KeyPath="yes" />
+      <RemoveFolder Id="RemoveAddins2025" On="uninstall" />
+    </Component>
+  </Fragment>
+
+  <!-- Revit 2026 .addin component -->
+  <Fragment>
+    <Component Id="Revit2026Addin" Directory="Addins2026"
+               Guid="B3E14167-7B9A-4524-9F22-E1D0FFD4C477">
+      <File Source="addin\OlympeMaterialManager.2026.addin"
+            Name="OlympeMaterialManager.addin"
+            KeyPath="no" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\Olympe\MaterialManager"
+                     Name="Revit2026Installed"
+                     Type="integer" Value="1"
+                     KeyPath="yes" />
+      <RemoveFolder Id="RemoveAddins2026" On="uninstall" />
+    </Component>
+  </Fragment>
+
+</Wix>

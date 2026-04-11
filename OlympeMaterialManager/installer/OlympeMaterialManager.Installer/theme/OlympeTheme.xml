@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
+  <Window Width="500" Height="400" HexStyle="100a0000"
+          FontId="0" Caption="#(loc.Caption)">
+
+    <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF" />
+    <Font Id="1" Height="-18" Weight="700" Foreground="000000" Background="FFFFFF" />
+    <Font Id="2" Height="-11" Weight="400" Foreground="808080" Background="FFFFFF" />
+
+    <!-- Page: Install -->
+    <Page Name="Install">
+      <Text X="20" Y="20" Width="460" Height="30"
+            FontId="1">#(loc.Title)</Text>
+
+      <Text X="20" Y="60" Width="460" Height="24"
+            FontId="0">#(loc.SelectVersions)</Text>
+
+      <Checkbox Name="InstallRevit2024" X="40" Y="90"
+                Width="400" Height="20"
+                FontId="0"
+                EnableCondition="Revit2024Detected">#(loc.Revit2024)</Checkbox>
+
+      <Checkbox Name="InstallRevit2025" X="40" Y="115"
+                Width="400" Height="20"
+                FontId="0"
+                EnableCondition="Revit2025Detected">#(loc.Revit2025)</Checkbox>
+
+      <Checkbox Name="InstallRevit2026" X="40" Y="140"
+                Width="400" Height="20"
+                FontId="0"
+                EnableCondition="Revit2026Detected">#(loc.Revit2026)</Checkbox>
+
+      <Text X="40" Y="170" Width="400" Height="20"
+            FontId="2"
+            DisableCondition="Revit2024Detected OR Revit2025Detected OR Revit2026Detected">
+        #(loc.NoRevitDetected)
+      </Text>
+
+      <Button Name="InstallButton" X="300" Y="340"
+              Width="90" Height="30"
+              FontId="0">#(loc.InstallButton)</Button>
+      <Button Name="CancelButton" X="400" Y="340"
+              Width="90" Height="30"
+              FontId="0">#(loc.CancelButton)</Button>
+    </Page>
+
+    <!-- Page: Progress -->
+    <Page Name="Progress">
+      <Text X="20" Y="20" Width="460" Height="30"
+            FontId="1">#(loc.ProgressTitle)</Text>
+      <Progressbar Name="OverallProgress" X="20" Y="70"
+                   Width="460" Height="20" />
+      <Text Name="OverallProgressText" X="20" Y="100"
+            Width="460" Height="20" FontId="0" />
+      <Button Name="CancelButton" X="400" Y="340"
+              Width="90" Height="30"
+              FontId="0">#(loc.CancelButton)</Button>
+    </Page>
+
+    <!-- Page: Success -->
+    <Page Name="Success">
+      <Text X="20" Y="20" Width="460" Height="30"
+            FontId="1">#(loc.SuccessTitle)</Text>
+      <Text X="20" Y="60" Width="460" Height="40"
+            FontId="0">#(loc.SuccessMessage)</Text>
+      <Button Name="CloseButton" X="400" Y="340"
+              Width="90" Height="30"
+              FontId="0">#(loc.CloseButton)</Button>
+    </Page>
+
+  </Window>
+</Theme>

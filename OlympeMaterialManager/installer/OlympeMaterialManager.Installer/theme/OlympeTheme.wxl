@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization xmlns="http://wixtoolset.org/schemas/v4/wxl"
+                 Culture="fr-FR">
+  <String Id="Caption">Olympe MaterialManager - Installation</String>
+  <String Id="Title">Installation d'Olympe MaterialManager</String>
+  <String Id="SelectVersions">Selectionner les versions de Revit :</String>
+  <String Id="Revit2024">Revit 2024</String>
+  <String Id="Revit2025">Revit 2025</String>
+  <String Id="Revit2026">Revit 2026</String>
+  <String Id="NoRevitDetected">Aucune version de Revit detectee sur cette machine.</String>
+  <String Id="InstallButton">Installer</String>
+  <String Id="CancelButton">Annuler</String>
+  <String Id="ProgressTitle">Installation en cours...</String>
+  <String Id="SuccessTitle">Installation terminee</String>
+  <String Id="SuccessMessage">Olympe MaterialManager a ete installe avec succes. Redemarrez Revit pour utiliser l'add-in.</String>
+  <String Id="CloseButton">Fermer</String>
+</WixLocalization>

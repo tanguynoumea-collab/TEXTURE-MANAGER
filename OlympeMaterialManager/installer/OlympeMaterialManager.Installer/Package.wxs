@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <Package Name="Olympe MaterialManager"
+           Version="1.0.0.0"
+           Manufacturer="Olympe"
+           UpgradeCode="0FFD79DA-9EB1-4D42-9F3C-9B5CDFD98FFE"
+           InstallerVersion="500"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="Une version plus recente d'Olympe MaterialManager est deja installee." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Public properties for Bundle -> MSI communication -->
+    <Property Id="INSTALL_REVIT2024" Value="0" Secure="yes" />
+    <Property Id="INSTALL_REVIT2025" Value="0" Secure="yes" />
+    <Property Id="INSTALL_REVIT2026" Value="0" Secure="yes" />
+
+    <!-- Feature: Revit 2024 (net48 assemblies + .addin) -->
+    <Feature Id="Revit2024" Title="Revit 2024" Level="1000">
+      <Condition Level="1">INSTALL_REVIT2024 = "1"</Condition>
+      <ComponentGroupRef Id="Revit2024Assemblies" />
+      <ComponentRef Id="Revit2024Addin" />
+    </Feature>
+
+    <!-- Feature: Shared net8.0-windows assemblies (for Revit 2025 and 2026) -->
+    <Feature Id="CoreNet8" Title="Assemblies .NET 8" Level="1000">
+      <Condition Level="1">INSTALL_REVIT2025 = "1" OR INSTALL_REVIT2026 = "1"</Condition>
+      <ComponentGroupRef Id="Net8Assemblies" />
+    </Feature>
+
+    <!-- Feature: Revit 2025 (.addin only; assemblies via CoreNet8) -->
+    <Feature Id="Revit2025" Title="Revit 2025" Level="1000">
+      <Condition Level="1">INSTALL_REVIT2025 = "1"</Condition>
+      <ComponentRef Id="Revit2025Addin" />
+    </Feature>
+
+    <!-- Feature: Revit 2026 (.addin only; assemblies via CoreNet8) -->
+    <Feature Id="Revit2026" Title="Revit 2026" Level="1000">
+      <Condition Level="1">INSTALL_REVIT2026 = "1"</Condition>
+      <ComponentRef Id="Revit2026Addin" />
+    </Feature>
+
+  </Package>
+</Wix>
