@@ -1,6 +1,10 @@
+using System.Linq;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Olympe.MaterialManager.Events;
+using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
 using Olympe.MaterialManager.Services;
 
@@ -14,12 +18,25 @@ namespace Olympe.MaterialManager.ViewModels;
 public partial class MainWindowViewModel : ObservableObject
 {
     private readonly RevitEventBridge? _eventBridge;
+    private DispatcherTimer? _feedbackTimer;
 
     [ObservableProperty]
     private string _titre = "Olympe MaterialManager";
 
     [ObservableProperty]
     private string _documentInfo = "Aucun document";
+
+    /// <summary>
+    /// Texte de retour visuel apres Set Mat ("Materiau applique !" ou message d'erreur) (D-19).
+    /// </summary>
+    [ObservableProperty]
+    private string _setMatStatusText = string.Empty;
+
+    /// <summary>
+    /// Empeche le double-clic pendant une operation Revit en cours.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSetMatBusy;
 
     public LeftPanelViewModel LeftPanelVM { get; }
     public CenterPanelViewModel CenterPanelVM { get; }
@@ -36,11 +53,20 @@ public partial class MainWindowViewModel : ObservableObject
         CenterPanelVM = new CenterPanelViewModel(eventBridge);
         RightPanelVM = new RightPanelViewModel(eventBridge, presetService);
 
-        // Surveiller SelectedPresetMaterial pour rafraichir CanExecute de commandes dependantes (Plan 03)
+        // Surveiller SelectedPresetMaterial pour rafraichir CanExecute (D-15)
         RightPanelVM.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(RightPanelViewModel.SelectedPresetMaterial))
-                OnSelectedPresetMaterialChanged();
+                AppliquerMateriauCommand.NotifyCanExecuteChanged();
+        };
+
+        // Surveiller CenterPanelVM pour rafraichir CanExecute quand selection/mode change (D-15, Pitfall 5)
+        CenterPanelVM.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(CenterPanelViewModel.SelectedItems)
+                or nameof(CenterPanelViewModel.ShowLayers)
+                or nameof(CenterPanelViewModel.ShowParameters))
+                AppliquerMateriauCommand.NotifyCanExecuteChanged();
         };
     }
 
@@ -52,13 +78,145 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Hook pour reagir au changement de SelectedPresetMaterial dans RightPanelVM.
-    /// Plan 03 ajoutera ici le NotifyCanExecuteChanged de AppliquerMateriauCommand.
+    /// Rafraichit l'etat du bouton Set Mat quand IsSetMatBusy change.
     /// </summary>
-    private void OnSelectedPresetMaterialChanged()
+    partial void OnIsSetMatBusyChanged(bool value)
     {
-        // Placeholder -- Plan 03 ajoutera : AppliquerMateriauCommand.NotifyCanExecuteChanged();
+        AppliquerMateriauCommand.NotifyCanExecuteChanged();
     }
+
+    // ------------------------------------------------------------------
+    //  AppliquerMateriauCommand (D-14, D-15, D-16, D-17, D-18, D-19, D-24, D-25)
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// CanExecute : actif si pas en cours, preset selectionne, et items selectionnes en mode couches ou parametres.
+    /// </summary>
+    private bool CanAppliquerMateriau()
+        => !IsSetMatBusy
+           && RightPanelVM.SelectedPresetMaterial != null
+           && CenterPanelVM.SelectedItems?.Count > 0
+           && (CenterPanelVM.ShowLayers || CenterPanelVM.ShowParameters);
+
+    /// <summary>
+    /// Applique le materiau preset selectionne aux couches ou parametres selectionnes (D-24).
+    /// Dispatch vers SetMaterialOnLayers (types a couches) ou SetMaterialOnParameter (familles chargees).
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanAppliquerMateriau))]
+    private void AppliquerMateriau()
+    {
+        var presetMat = RightPanelVM.SelectedPresetMaterial;
+        if (presetMat == null) return;
+
+        IsSetMatBusy = true;
+
+        if (CenterPanelVM.ShowLayers)
+        {
+            // D-16 : couches CompoundStructure
+            var layerIndices = CenterPanelVM.SelectedItems?
+                .Cast<LayerDto>()
+                .Select(l => l.LayerIndex)
+                .ToArray();
+
+            if (layerIndices == null || layerIndices.Length == 0)
+            {
+                IsSetMatBusy = false;
+                return;
+            }
+
+            var request = new SetMatRequestDto
+            {
+                TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
+                LayerIndices = layerIndices,
+                MaterialIdValue = presetMat.MaterialElementIdValue
+            };
+
+            _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnLayers, request, OnSetMatResult);
+        }
+        else if (CenterPanelVM.ShowParameters)
+        {
+            // D-17 : parametres materiaux de familles chargees
+            var paramNames = CenterPanelVM.SelectedItems?
+                .Cast<MaterialParamDto>()
+                .Select(p => p.ParameterDefinitionName)
+                .ToArray();
+
+            if (paramNames == null || paramNames.Length == 0)
+            {
+                IsSetMatBusy = false;
+                return;
+            }
+
+            var request = new SetMatParamRequestDto
+            {
+                TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
+                MaterialIdValue = presetMat.MaterialElementIdValue,
+                ParameterDefinitionNames = paramNames
+            };
+
+            _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnParameter, request, OnSetMatResult);
+        }
+        else
+        {
+            IsSetMatBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// Callback apres execution de Set Mat par le bridge Revit (D-18, D-19, D-25).
+    /// Gere erreur (MessageBox francais + rollback) et succes (feedback + refresh).
+    /// </summary>
+    private void OnSetMatResult(object? result)
+    {
+        IsSetMatBusy = false;
+
+        if (result is Exception ex)
+        {
+            // D-18 : erreur avec message francais
+            SetMatStatusText = $"Erreur : {ex.Message}";
+            System.Windows.MessageBox.Show(
+                $"Erreur lors de l'application du materiau :\n{ex.Message}",
+                "Olympe MaterialManager",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+        }
+        else
+        {
+            // D-19 : retour visuel succes
+            SetMatStatusText = "Materiau applique !";
+
+            // D-25 : rafraichir le panneau central pour afficher les nouveaux noms de materiaux
+            WeakReferenceMessenger.Default.Send(
+                new RefreshLayersMessage(CenterPanelVM.CurrentTypeIdValue));
+
+            // Effacer le feedback apres 2 secondes
+            StartFeedbackTimer();
+        }
+
+        AppliquerMateriauCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// Lance un timer de 2 secondes pour effacer le texte de feedback (D-19).
+    /// </summary>
+    private void StartFeedbackTimer()
+    {
+        _feedbackTimer?.Stop();
+        _feedbackTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(2)
+        };
+        _feedbackTimer.Tick += (_, _) =>
+        {
+            SetMatStatusText = string.Empty;
+            _feedbackTimer.Stop();
+        };
+        _feedbackTimer.Start();
+    }
+
+    // ------------------------------------------------------------------
+    //  RafraichirDocumentCommand
+    // ------------------------------------------------------------------
 
     /// <summary>
     /// Commande pour rafraichir les informations du document via ExternalEvent round-trip.

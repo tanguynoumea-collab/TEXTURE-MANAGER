@@ -15,11 +15,12 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <!-- Layout principal : barre d'en-tete + trois colonnes (D-07) -->
+    <!-- Layout principal : barre d'en-tete + trois colonnes + barre Set Mat (D-07, D-14) -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Barre d'en-tete : bouton Rafraichir + info document -->
@@ -72,6 +73,26 @@
             <views:RightPanelView Grid.Column="4"
                                   DataContext="{Binding RightPanelVM}" />
         </Grid>
+
+        <!-- Barre Set Mat : bouton proemirent entre les panneaux (D-14, UI-05) -->
+        <Border Grid.Row="2"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="8,6">
+            <DockPanel>
+                <Button DockPanel.Dock="Right"
+                        Content="Appliquer le materiau"
+                        Command="{Binding AppliquerMateriauCommand}"
+                        Style="{StaticResource SetMatButtonStyle}"
+                        Margin="8,0,0,0" />
+                <TextBlock Text="{Binding SetMatStatusText}"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource AccentBrush}"
+                           FontWeight="SemiBold"
+                           Margin="8,0,0,0" />
+            </DockPanel>
+        </Border>
     </Grid>
 
 </Window>

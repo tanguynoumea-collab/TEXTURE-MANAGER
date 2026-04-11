@@ -501,4 +501,16 @@
         <Setter Property="HorizontalAlignment" Value="Stretch" />
     </Style>
 
+    <!-- === Style Set Mat : bouton proemirent accent ambre (UI-05, D-14) === -->
+    <Style x:Key="SetMatButtonStyle" TargetType="Button"
+           BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="#FF9800" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Padding" Value="20,10" />
+        <Setter Property="MinWidth" Value="200" />
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
 </ResourceDictionary>
