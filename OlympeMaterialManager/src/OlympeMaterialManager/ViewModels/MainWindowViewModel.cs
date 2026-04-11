@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -23,8 +24,11 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _titre = "Olympe MaterialManager";
 
+    /// <summary>
+    /// Chemin du repertoire de projet affiche dans la barre d'en-tete.
+    /// </summary>
     [ObservableProperty]
-    private string _documentInfo = "Aucun document";
+    private string _projectDirectoryPath = string.Empty;
 
     /// <summary>
     /// Texte de retour visuel apres Set Mat ("Materiau applique !" ou message d'erreur) (D-19).
@@ -49,9 +53,12 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _eventBridge = eventBridge;
         var presetService = new PresetService();
-        LeftPanelVM = new LeftPanelViewModel(eventBridge);
+        LeftPanelVM = new LeftPanelViewModel(eventBridge, presetService);
         CenterPanelVM = new CenterPanelViewModel(eventBridge);
         RightPanelVM = new RightPanelViewModel(eventBridge, presetService);
+
+        // Initialiser le chemin du repertoire de projet
+        ProjectDirectoryPath = PresetService.GetProjectDirectory() ?? string.Empty;
 
         // Surveiller SelectedPresetMaterial pour rafraichir CanExecute (D-15)
         RightPanelVM.PropertyChanged += (_, e) =>
@@ -83,6 +90,54 @@ public partial class MainWindowViewModel : ObservableObject
     partial void OnIsSetMatBusyChanged(bool value)
     {
         AppliquerMateriauCommand.NotifyCanExecuteChanged();
+    }
+
+    // ------------------------------------------------------------------
+    //  Repertoire de projet : Ouvrir / Migrer
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Ouvre le repertoire de projet dans l'Explorateur Windows.
+    /// </summary>
+    [RelayCommand]
+    private void OuvrirRepertoire()
+    {
+        var path = PresetService.GetProjectDirectory();
+        if (!string.IsNullOrEmpty(path) && System.IO.Directory.Exists(path))
+        {
+            Process.Start("explorer.exe", path);
+        }
+    }
+
+    /// <summary>
+    /// Ouvre un dialogue de choix de dossier, puis migre tous les fichiers
+    /// vers le nouveau repertoire de projet.
+    /// </summary>
+    [RelayCommand]
+    private void MigrerRepertoire()
+    {
+        var newPath = DialogService.ShowFolderBrowser("Choisir le nouveau repertoire de projet");
+        if (string.IsNullOrEmpty(newPath)) return;
+
+        try
+        {
+            PresetService.MigrateProjectDirectory(newPath!);
+            ProjectDirectoryPath = newPath!;
+
+            System.Windows.MessageBox.Show(
+                $"Repertoire de projet migre avec succes vers :\n{newPath}",
+                "Olympe MaterialManager",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                $"Erreur lors de la migration :\n{ex.Message}",
+                "Olympe MaterialManager",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -212,28 +267,5 @@ public partial class MainWindowViewModel : ObservableObject
             _feedbackTimer.Stop();
         };
         _feedbackTimer.Start();
-    }
-
-    // ------------------------------------------------------------------
-    //  RafraichirDocumentCommand
-    // ------------------------------------------------------------------
-
-    /// <summary>
-    /// Commande pour rafraichir les informations du document via ExternalEvent round-trip.
-    /// Prouve le pipeline complet UI -> ExternalEvent -> Revit API -> DTO -> ViewModel.
-    /// </summary>
-    [RelayCommand]
-    private void RafraichirDocument()
-    {
-        _eventBridge?.MakeRequest(
-            RevitRequestType.GetDocumentInfo,
-            null,
-            result =>
-            {
-                if (result is RevitDocInfoDto info)
-                    DocumentInfo = info.IsValid ? $"Document : {info.Title}" : "Aucun document ouvert";
-                else if (result is Exception ex)
-                    DocumentInfo = $"Erreur : {ex.Message}";
-            });
     }
 }

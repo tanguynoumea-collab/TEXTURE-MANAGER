@@ -51,7 +51,7 @@ public class ShowWindowCommand : IExternalCommand
             if (string.IsNullOrEmpty(folder))
                 return Result.Cancelled;
 
-            PresetService.SetProjectDirectory(folder);
+            PresetService.SetProjectDirectory(folder!);
         }
 
         if (App.MainWindow == null)
