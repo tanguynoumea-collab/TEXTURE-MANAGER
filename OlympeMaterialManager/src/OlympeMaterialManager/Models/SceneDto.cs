@@ -10,4 +10,6 @@ public class SceneDto
 {
     public string Name { get; set; } = string.Empty;
     public ObservableCollection<SceneTypeDto> Types { get; set; } = new();
+
+    public override string ToString() => Name;
 }

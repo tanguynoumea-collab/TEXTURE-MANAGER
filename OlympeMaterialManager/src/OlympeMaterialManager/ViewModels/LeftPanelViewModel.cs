@@ -284,6 +284,11 @@ public partial class LeftPanelViewModel : ObservableObject
         OnPropertyChanged(nameof(ActiveSceneTypes));
         SelectedType = null;
 
+        // Mettre a jour le titre du panneau avec le nom de la scene active
+        PanelTitle = value != null
+            ? $"Familles / Types - {value.Name}"
+            : "Familles / Types";
+
         if (value != null)
         {
             ChargerFamillesCommand.Execute(null);
