@@ -30,12 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The window persists across show/hide cycles without memory leaks or duplicate instances
   4. A round-trip ExternalEvent request from the UI triggers a handler callback and returns a DTO to the ViewModel (skeleton proof)
   5. All UI labels and text are in French
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md -- Solution structure, multi-target csproj build spike, .addin registration files
+- [ ] 01-02-PLAN.md -- Olympe dark theme, MainWindow 3-column layout, panel UserControls, ViewModels (shell)
+- [ ] 01-03-PLAN.md -- Revit entry points, ExternalEvent bridge, DTOs, round-trip proof, human verification
 **UI hint**: yes
 
 ### Phase 2: Read Path -- Scene and Layer Display
