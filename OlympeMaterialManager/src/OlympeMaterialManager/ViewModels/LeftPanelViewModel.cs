@@ -89,6 +89,18 @@ public partial class LeftPanelViewModel : ObservableObject
     private string _errorMessage = string.Empty;
 
     /// <summary>
+    /// Indique que le mode pick 3D est actif (D-11, SCENE-04).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isPickMode;
+
+    /// <summary>
+    /// Tooltip du bouton Ajouter par clic.
+    /// </summary>
+    [ObservableProperty]
+    private string _pickButtonTooltip = "Ajouter un type par clic dans la vue 3D";
+
+    /// <summary>
     /// Types de la scene active, utilise pour le binding du TreeView.
     /// Non genere par [ObservableProperty] -- leve PropertyChanged manuellement.
     /// </summary>
@@ -159,6 +171,51 @@ public partial class LeftPanelViewModel : ObservableObject
     }
 
     private bool CanAjouterType() => SelectedFamilyType != null && ActiveScene != null;
+
+    /// <summary>
+    /// Ajoute un type a la scene active via clic dans la vue 3D (D-11, D-12, D-13, D-14, SCENE-04, SCENE-09).
+    /// Le handler RevitEventBridge gere : validation View3D, hide/show fenetre, PickObject.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanAjouterParClic))]
+    private void AjouterParClic()
+    {
+        if (_eventBridge == null || ActiveScene == null) return;
+
+        IsPickMode = true;
+        ErrorMessage = string.Empty;
+
+        _eventBridge.MakeRequest(RevitRequestType.PickElementInView, null, result =>
+        {
+            IsPickMode = false;
+
+            if (result is SceneTypeDto pickedType)
+            {
+                // D-12: Add to active scene (with duplicate check by ElementIdValue)
+                bool isDuplicate = false;
+                foreach (var existing in ActiveScene!.Types)
+                {
+                    if (existing.ElementIdValue == pickedType.ElementIdValue)
+                    {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate)
+                {
+                    ActiveScene.Types.Add(pickedType);
+                }
+            }
+            else if (result is Exception ex)
+            {
+                // D-14: View3D validation error or other error
+                ErrorMessage = ex.Message;
+            }
+            // result == null means user pressed Escape (D-13): no action needed
+        });
+    }
+
+    private bool CanAjouterParClic() => ActiveScene != null && !IsPickMode;
 
     /// <summary>
     /// Charge la liste des familles depuis Revit via ExternalEvent.
@@ -236,6 +293,7 @@ public partial class LeftPanelViewModel : ObservableObject
         // Notify CanExecute changes
         SupprimerTypeCommand.NotifyCanExecuteChanged();
         AjouterTypeCommand.NotifyCanExecuteChanged();
+        AjouterParClicCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnSelectedFamilyChanged(FamilyCategoryDto? value)
@@ -287,5 +345,10 @@ public partial class LeftPanelViewModel : ObservableObject
     partial void OnSelectedFamilyTypeChanged(SceneTypeDto? value)
     {
         AjouterTypeCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsPickModeChanged(bool value)
+    {
+        AjouterParClicCommand.NotifyCanExecuteChanged();
     }
 }

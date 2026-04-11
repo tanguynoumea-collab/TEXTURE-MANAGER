@@ -106,6 +106,13 @@
                         Command="{Binding AjouterTypeCommand}"
                         Background="{StaticResource AccentBrush}"
                         HorizontalAlignment="Left" />
+
+                <!-- Bouton Ajouter par clic 3D (D-11, SCENE-04) -->
+                <Button Content="Ajouter par clic"
+                        Command="{Binding AjouterParClicCommand}"
+                        ToolTip="{Binding PickButtonTooltip}"
+                        Margin="0,4,0,0"
+                        HorizontalAlignment="Left" />
             </StackPanel>
 
             <!-- Section 5: TreeView avec groupement par categorie (D-04, D-05, D-06, SCENE-06, SCENE-07) -->
