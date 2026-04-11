@@ -7,6 +7,9 @@ namespace Olympe.MaterialManager.Events;
 public enum RevitRequestType
 {
     None,
-    GetDocumentInfo,  // Phase 1 : round-trip proof
-    // Future phases : ReadCompoundLayers, SetLayerMaterial, EditMaterial, etc.
+    GetDocumentInfo,              // Phase 1 : round-trip proof
+    GetFamilyList,                // Phase 2 : data=null, returns List<FamilyCategoryDto>
+    GetTypeList,                  // Phase 2 : data=GetTypeListRequestDto, returns List<SceneTypeDto>
+    GetLayersForType,             // Phase 2 : data=long (typeElementId), returns List<LayerDto>
+    GetMaterialParametersForType, // Phase 2 : data=long (typeElementId), returns List<MaterialParamDto>
 }
