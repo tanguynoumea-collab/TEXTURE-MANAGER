@@ -88,7 +88,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md -- DTOs, messages, enum values, and 6 RevitEventBridge handlers (data foundation)
-- [ ] 04-02-PLAN.md -- MaterialEditorViewModel, RightPanelView editor section, inter-VM wiring
+- [x] 04-02-PLAN.md -- MaterialEditorViewModel, RightPanelView editor section, inter-VM wiring
 - [x] 04-03-PLAN.md -- 3D pick command in LeftPanelViewModel, pick button in LeftPanelView, human verification
 **UI hint**: yes
 
