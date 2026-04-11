@@ -108,11 +108,11 @@ Explicitly excluded. Documented to prevent scope creep.
 
 | Feature | Reason |
 |---------|--------|
-| Rendu realiste de la preview materiau | API limitee, complexite disproportionnee — fallback image coloree suffisant |
+| Rendu realiste de la preview materiau | API limitee, complexite disproportionnee -- fallback image coloree suffisant |
 | Persistance des scenes actives entre sessions | Complexite de serialisation des ElementId, pas prioritaire pour v1 |
 | Cloud build / CI/CD | Developpement 100% local, pas necessaire pour un add-in desktop |
 | Support Revit < 2024 | API trop ancienne, ElementId 32-bit, pas de marche suffisant |
-| Base de donnees externe | Surdimensionne — JSON presets + memoire Revit suffisent |
+| Base de donnees externe | Surdimensionne -- JSON presets + memoire Revit suffisent |
 | Application mobile ou web | Desktop WPF uniquement, pas de use case pour mobile/web |
 | Chat en temps reel ou collaboration | Outil individuel, pas un outil d'equipe |
 | Marketplace Autodesk publishing | Peut etre considere en v2+ si le produit est valide |
@@ -123,13 +123,63 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Filled by roadmapper) | | |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 1 | Pending |
+| INFRA-06 | Phase 1 | Pending |
+| INFRA-07 | Phase 1 | Pending |
+| INFRA-08 | Phase 1 | Pending |
+| INFRA-09 | Phase 1 | Pending |
+| SCENE-01 | Phase 2 | Pending |
+| SCENE-02 | Phase 2 | Pending |
+| SCENE-03 | Phase 2 | Pending |
+| SCENE-04 | Phase 4 | Pending |
+| SCENE-05 | Phase 2 | Pending |
+| SCENE-06 | Phase 2 | Pending |
+| SCENE-07 | Phase 2 | Pending |
+| SCENE-08 | Phase 2 | Pending |
+| SCENE-09 | Phase 4 | Pending |
+| LAYER-01 | Phase 2 | Pending |
+| LAYER-02 | Phase 2 | Pending |
+| LAYER-03 | Phase 2 | Pending |
+| LAYER-04 | Phase 2 | Pending |
+| LAYER-05 | Phase 2 | Pending |
+| PRESET-01 | Phase 3 | Pending |
+| PRESET-02 | Phase 3 | Pending |
+| PRESET-03 | Phase 3 | Pending |
+| PRESET-04 | Phase 3 | Pending |
+| PRESET-05 | Phase 3 | Pending |
+| PRESET-06 | Phase 3 | Pending |
+| PRESET-07 | Phase 3 | Pending |
+| PRESET-08 | Phase 3 | Pending |
+| PRESET-09 | Phase 3 | Pending |
+| PRESET-10 | Phase 3 | Pending |
+| MATEDIT-01 | Phase 4 | Pending |
+| MATEDIT-02 | Phase 4 | Pending |
+| MATEDIT-03 | Phase 4 | Pending |
+| MATEDIT-04 | Phase 4 | Pending |
+| MATEDIT-05 | Phase 4 | Pending |
+| MATEDIT-06 | Phase 4 | Pending |
+| MATEDIT-07 | Phase 4 | Pending |
+| MATEDIT-08 | Phase 4 | Pending |
+| UI-01 | Phase 1 | Pending |
+| UI-02 | Phase 1 | Pending |
+| UI-03 | Phase 5 | Pending |
+| UI-04 | Phase 1 | Pending |
+| UI-05 | Phase 3 | Pending |
+| DEPLOY-01 | Phase 5 | Pending |
+| DEPLOY-02 | Phase 5 | Pending |
+| DEPLOY-03 | Phase 5 | Pending |
+| DEPLOY-04 | Phase 5 | Pending |
+| DEPLOY-05 | Phase 5 | Pending |
 
 **Coverage:**
-- v1 requirements: 42 total
-- Mapped to phases: 0
-- Unmapped: 42
+- v1 requirements: 51 total
+- Mapped to phases: 51
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-11*
-*Last updated: 2026-04-11 after initial definition*
+*Last updated: 2026-04-11 after roadmap creation*
