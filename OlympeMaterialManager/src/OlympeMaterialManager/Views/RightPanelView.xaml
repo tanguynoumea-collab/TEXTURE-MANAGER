@@ -7,6 +7,7 @@
 
     <UserControl.Resources>
         <converters:ArgbToColorConverter x:Key="ArgbToColorConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
 
     <Border Background="{StaticResource BackgroundBrush}" Padding="8">
@@ -58,6 +59,174 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
+
+            <!-- Section 6 : Editeur de materiau (D-01, D-02, MATEDIT-01 a MATEDIT-08) -->
+            <Border DockPanel.Dock="Bottom"
+                    Background="{StaticResource SurfaceBrush}"
+                    Padding="8"
+                    Margin="0,8,0,0"
+                    Visibility="{Binding MaterialEditorVM.IsVisible, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
+                    <StackPanel>
+
+                        <!-- Titre de la section -->
+                        <TextBlock Text="Editeur de materiau"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   Margin="0,0,0,8" />
+
+                        <!-- Preview couleur (D-18, MATEDIT-06) -->
+                        <Rectangle Width="60" Height="60"
+                                   RadiusX="4" RadiusY="4"
+                                   HorizontalAlignment="Left"
+                                   Margin="0,0,0,8">
+                            <Rectangle.Fill>
+                                <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                            </Rectangle.Fill>
+                        </Rectangle>
+
+                        <!-- Nom (D-02, MATEDIT-02) -->
+                        <TextBlock Text="Nom :"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,2" />
+                        <TextBox Text="{Binding MaterialEditorVM.MaterialName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                 Margin="0,0,0,8">
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="LostFocus">
+                                    <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditNameCommand}" />
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                        </TextBox>
+
+                        <!-- Description (D-02, MATEDIT-03) -->
+                        <TextBlock Text="Description :"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,2" />
+                        <TextBox Text="{Binding MaterialEditorVM.Description, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                 Margin="0,0,0,8"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="40">
+                            <b:Interaction.Triggers>
+                                <b:EventTrigger EventName="LostFocus">
+                                    <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditDescriptionCommand}" />
+                                </b:EventTrigger>
+                            </b:Interaction.Triggers>
+                        </TextBox>
+
+                        <!-- Motif (D-02, lecture seule) -->
+                        <TextBlock Text="Motif :"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,2" />
+                        <TextBlock Text="{Binding MaterialEditorVM.PatternName}"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Margin="0,0,0,8" />
+
+                        <!-- Couleur de surface (D-02, MATEDIT-04) -->
+                        <TextBlock Text="Couleur de surface :"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,2" />
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="R" Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBox Text="{Binding MaterialEditorVM.ColorR, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                     Width="40" Margin="0,0,8,0">
+                                <b:Interaction.Triggers>
+                                    <b:EventTrigger EventName="LostFocus">
+                                        <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditColorCommand}" />
+                                    </b:EventTrigger>
+                                </b:Interaction.Triggers>
+                            </TextBox>
+                            <TextBlock Text="V" Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBox Text="{Binding MaterialEditorVM.ColorG, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                     Width="40" Margin="0,0,8,0">
+                                <b:Interaction.Triggers>
+                                    <b:EventTrigger EventName="LostFocus">
+                                        <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditColorCommand}" />
+                                    </b:EventTrigger>
+                                </b:Interaction.Triggers>
+                            </TextBox>
+                            <TextBlock Text="B" Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBox Text="{Binding MaterialEditorVM.ColorB, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                     Width="40">
+                                <b:Interaction.Triggers>
+                                    <b:EventTrigger EventName="LostFocus">
+                                        <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditColorCommand}" />
+                                    </b:EventTrigger>
+                                </b:Interaction.Triggers>
+                            </TextBox>
+                        </StackPanel>
+
+                        <!-- Teinte (D-02, D-06, MATEDIT-05, MATEDIT-08) -->
+                        <StackPanel>
+                            <!-- Label "Teinte non disponible" quand pas d'AppearanceAsset (D-06) -->
+                            <TextBlock Text="Teinte non disponible"
+                                       FontStyle="Italic"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,4">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding MaterialEditorVM.HasAppearanceAsset}" Value="False">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+
+                            <!-- Controles de teinte (visibles uniquement si AppearanceAsset existe) -->
+                            <StackPanel Visibility="{Binding MaterialEditorVM.HasAppearanceAsset, Converter={StaticResource BoolToVis}}">
+                                <CheckBox Content="Activer la teinte"
+                                          IsChecked="{Binding MaterialEditorVM.TintEnabled, Mode=TwoWay}"
+                                          IsEnabled="{Binding MaterialEditorVM.HasAppearanceAsset}"
+                                          Foreground="{StaticResource TextPrimaryBrush}"
+                                          Margin="0,0,0,4" />
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <TextBlock Text="R" Foreground="{StaticResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <TextBox Text="{Binding MaterialEditorVM.TintR, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                             Width="40" Margin="0,0,8,0"
+                                             IsEnabled="{Binding MaterialEditorVM.TintEnabled}">
+                                        <b:Interaction.Triggers>
+                                            <b:EventTrigger EventName="LostFocus">
+                                                <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditTintCommand}" />
+                                            </b:EventTrigger>
+                                        </b:Interaction.Triggers>
+                                    </TextBox>
+                                    <TextBlock Text="V" Foreground="{StaticResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <TextBox Text="{Binding MaterialEditorVM.TintG, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                             Width="40" Margin="0,0,8,0"
+                                             IsEnabled="{Binding MaterialEditorVM.TintEnabled}">
+                                        <b:Interaction.Triggers>
+                                            <b:EventTrigger EventName="LostFocus">
+                                                <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditTintCommand}" />
+                                            </b:EventTrigger>
+                                        </b:Interaction.Triggers>
+                                    </TextBox>
+                                    <TextBlock Text="B" Foreground="{StaticResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,4,0" />
+                                    <TextBox Text="{Binding MaterialEditorVM.TintB, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                             Width="40"
+                                             IsEnabled="{Binding MaterialEditorVM.TintEnabled}">
+                                        <b:Interaction.Triggers>
+                                            <b:EventTrigger EventName="LostFocus">
+                                                <b:InvokeCommandAction Command="{Binding MaterialEditorVM.EditTintCommand}" />
+                                            </b:EventTrigger>
+                                        </b:Interaction.Triggers>
+                                    </TextBox>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
 
             <!-- Section 5 : TreeView des presets (D-08, D-09) -->
             <TreeView ItemsSource="{Binding PresetGroups}"
