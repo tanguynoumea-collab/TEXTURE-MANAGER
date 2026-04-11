@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Phase 2 context gathered
-last_updated: "2026-04-11T10:01:29.440Z"
+status: executing
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-04-11T10:50:39.565Z"
 last_activity: 2026-04-11
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-11)
 
 **Core value:** L'architecte peut appliquer rapidement un materiau preset aux couches ou parametres materiaux de n'importe quel type Revit visible en 3D, en quelques clics depuis un editeur visuel unifie.
-**Current focus:** Phase 01 — foundation-and-infrastructure
+**Current focus:** Phase 02 — read-path-scene-and-layer-display
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 02 (read-path-scene-and-layer-display) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-04-11
 
 Progress: [..............] 0%
@@ -55,6 +55,7 @@ Progress: [..............] 0%
 | Phase 01 P01 | 3min | 2 tasks | 6 files |
 | Phase 01 P02 | 3min | 2 tasks | 13 files |
 | Phase 01 P03 | 6min | 2 tasks | 8 files |
+| Phase 02 P01 | 5min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,8 @@ Recent decisions affecting current work:
 - [Phase 01]: CommunityToolkit.Mvvm [ObservableProperty] source generators confirmed working on both net48 and net8.0-windows TFMs
 - [Phase 01]: Nice3point Toolkit ExternalEvent used with Action<UIApplication> constructor (not ExternalEvent<T>); standard Revit API for ribbon (CreateRibbonTab + PushButtonData)
 - [Phase 01]: AllowClose flag pattern for modeless window: hides on user X-click, actually closes on Revit shutdown
+- [Phase 02]: MaterialFunctionAssignment actual enum: Membrane (not MembraneLayer), Insulation (not ThermalOrAir) -- verified from Revit 2026 assembly
+- [Phase 02]: GetTypeListRequestDto pattern: typed request DTO to unify system and loaded family type fetching in a single handler
 
 ### Pending Todos
 
@@ -85,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-11T10:01:29.437Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-read-path-scene-and-layer-display/02-CONTEXT.md
+Last session: 2026-04-11T10:50:39.561Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: None

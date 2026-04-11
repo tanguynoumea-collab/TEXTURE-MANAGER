@@ -21,21 +21,21 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Scene Active
 
-- [ ] **SCENE-01**: L'utilisateur peut creer une scene active avec un nom personnalise
+- [x] **SCENE-01**: L'utilisateur peut creer une scene active avec un nom personnalise
 - [ ] **SCENE-02**: L'utilisateur peut switcher entre plusieurs scenes actives via un selecteur
-- [ ] **SCENE-03**: L'utilisateur peut ajouter des familles/types a la scene via un mode liste (dropdown famille puis type)
+- [x] **SCENE-03**: L'utilisateur peut ajouter des familles/types a la scene via un mode liste (dropdown famille puis type)
 - [ ] **SCENE-04**: L'utilisateur peut ajouter des elements a la scene via un clic dans la vue 3D (PickObject via IExternalEventHandler)
 - [ ] **SCENE-05**: L'utilisateur peut retirer un type de la scene active
-- [ ] **SCENE-06**: Le panneau gauche affiche un TreeView des familles/types de la scene active
-- [ ] **SCENE-07**: Le TreeView trie les Murs et Sols en tete, le reste en ordre alphabetique
+- [x] **SCENE-06**: Le panneau gauche affiche un TreeView des familles/types de la scene active
+- [x] **SCENE-07**: Le TreeView trie les Murs et Sols en tete, le reste en ordre alphabetique
 - [ ] **SCENE-08**: La selection d'un type dans le TreeView met a jour le panneau centre
 - [ ] **SCENE-09**: La vue 3D active est validee avant d'autoriser la selection par clic
 
 ### Couches et Parametres
 
-- [ ] **LAYER-01**: Pour un type a couches (mur, sol, toit, plafond), le panneau centre affiche la liste des couches CompoundStructure
-- [ ] **LAYER-02**: Chaque couche affiche sa fonction, son epaisseur et le materiau actuellement assigne
-- [ ] **LAYER-03**: Pour une famille chargee sans couches, le panneau centre affiche la liste des parametres de type Material
+- [x] **LAYER-01**: Pour un type a couches (mur, sol, toit, plafond), le panneau centre affiche la liste des couches CompoundStructure
+- [x] **LAYER-02**: Chaque couche affiche sa fonction, son epaisseur et le materiau actuellement assigne
+- [x] **LAYER-03**: Pour une famille chargee sans couches, le panneau centre affiche la liste des parametres de type Material
 - [ ] **LAYER-04**: L'utilisateur peut selectionner une ou plusieurs couches/parametres dans le panneau centre
 - [ ] **LAYER-05**: La selection multiple est supportee (Ctrl+clic, Shift+clic)
 
@@ -132,18 +132,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-07 | Phase 1 | Complete |
 | INFRA-08 | Phase 1 | Complete |
 | INFRA-09 | Phase 1 | Complete |
-| SCENE-01 | Phase 2 | Pending |
+| SCENE-01 | Phase 2 | Complete |
 | SCENE-02 | Phase 2 | Pending |
-| SCENE-03 | Phase 2 | Pending |
+| SCENE-03 | Phase 2 | Complete |
 | SCENE-04 | Phase 4 | Pending |
 | SCENE-05 | Phase 2 | Pending |
-| SCENE-06 | Phase 2 | Pending |
-| SCENE-07 | Phase 2 | Pending |
+| SCENE-06 | Phase 2 | Complete |
+| SCENE-07 | Phase 2 | Complete |
 | SCENE-08 | Phase 2 | Pending |
 | SCENE-09 | Phase 4 | Pending |
-| LAYER-01 | Phase 2 | Pending |
-| LAYER-02 | Phase 2 | Pending |
-| LAYER-03 | Phase 2 | Pending |
+| LAYER-01 | Phase 2 | Complete |
+| LAYER-02 | Phase 2 | Complete |
+| LAYER-03 | Phase 2 | Complete |
 | LAYER-04 | Phase 2 | Pending |
 | LAYER-05 | Phase 2 | Pending |
 | PRESET-01 | Phase 3 | Pending |
