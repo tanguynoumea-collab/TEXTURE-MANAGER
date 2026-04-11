@@ -123,6 +123,9 @@ public class RevitEventBridge : IExternalEventHandler
                 case RevitRequestType.PickElementInView:
                     result = HandlePickElementInView(uiApp);
                     break;
+                case RevitRequestType.HighlightElementsByType:
+                    HandleHighlightElementsByType(uiApp, (long)data!);
+                    break;
             }
         }
         catch (Exception ex)
@@ -853,6 +856,28 @@ public class RevitEventBridge : IExternalEventHandler
         }
 
         return pickedTypes;
+    }
+
+    /// <summary>
+    /// Selectionne dans la vue Revit tous les elements instances d'un type donne.
+    /// Utilise Selection.SetElementIds pour mettre en surbrillance les elements.
+    /// </summary>
+    private static void HandleHighlightElementsByType(UIApplication uiApp, long typeIdValue)
+    {
+        var uiDoc = uiApp.ActiveUIDocument;
+        if (uiDoc == null) return;
+
+        var doc = uiDoc.Document;
+        var typeId = ElementIdHelper.FromValue(typeIdValue);
+
+        // Chercher tous les elements qui sont des instances de ce type
+        var elementIds = new FilteredElementCollector(doc)
+            .WhereElementIsNotElementType()
+            .Where(e => e.GetTypeId() == typeId)
+            .Select(e => e.Id)
+            .ToList();
+
+        uiDoc.Selection.SetElementIds(elementIds);
     }
 
     /// <summary>

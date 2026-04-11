@@ -355,6 +355,12 @@ public partial class LeftPanelViewModel : ObservableObject
     {
         WeakReferenceMessenger.Default.Send(new TypeSelectedMessage(value));
         SupprimerTypeCommand.NotifyCanExecuteChanged();
+
+        // Highlight dans la vue Revit tous les elements du type selectionne
+        if (value != null && _eventBridge != null)
+        {
+            _eventBridge.MakeRequest(RevitRequestType.HighlightElementsByType, value.ElementIdValue, _ => { });
+        }
     }
 
     partial void OnSelectedFamilyTypeChanged(SceneTypeDto? value)

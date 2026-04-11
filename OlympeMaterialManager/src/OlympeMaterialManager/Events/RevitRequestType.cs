@@ -25,5 +25,6 @@ public enum RevitRequestType
     EditMaterialDescription,       // data=EditMaterialDescriptionRequestDto, returns null (success) or Exception
     EditMaterialColor,             // data=EditMaterialColorRequestDto, returns null (success) or Exception
     EditMaterialTint,              // data=EditMaterialTintRequestDto, returns null (success) or Exception
-    PickElementInView,             // data=null, returns SceneTypeDto? (null if cancelled)
+    PickElementInView,             // data=null, returns List<SceneTypeDto> (multi-selection)
+    HighlightElementsByType,       // data=long (typeElementIdValue), returns null (selection visuelle)
 }
