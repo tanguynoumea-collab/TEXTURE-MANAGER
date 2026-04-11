@@ -20,13 +20,14 @@
                        Margin="0,0,0,8" />
 
             <!-- Section 2 : Nom du type selectionne -->
+            <!-- UI-03: BasedOn added for theme consistency -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding SelectedTypeName}"
                        Foreground="{StaticResource TextPrimaryBrush}"
                        FontWeight="Medium"
                        Margin="0,0,0,4">
                 <TextBlock.Style>
-                    <Style TargetType="TextBlock">
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding SelectedTypeName}" Value="">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -37,13 +38,14 @@
             </TextBlock>
 
             <!-- Section 3 : Label de mode (Couches / Parametres materiaux) -->
+            <!-- UI-03: BasedOn added for theme consistency -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding ModeLabel}"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        FontStyle="Italic"
                        Margin="0,0,0,8">
                 <TextBlock.Style>
-                    <Style TargetType="TextBlock">
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding ModeLabel}" Value="">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -67,13 +69,14 @@
                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" />
 
             <!-- Section 6 : Affichage erreur -->
+            <!-- UI-03: BasedOn added for theme consistency -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding ErrorMessage}"
                        Foreground="{StaticResource ErrorBrush}"
                        TextWrapping="Wrap"
                        Margin="0,0,0,4">
                 <TextBlock.Style>
-                    <Style TargetType="TextBlock">
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding ErrorMessage}" Value="">
                                 <Setter Property="Visibility" Value="Collapsed" />
@@ -113,8 +116,9 @@
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
+                <!-- UI-03: BasedOn added for theme consistency -->
                 <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
@@ -151,8 +155,9 @@
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
+                <!-- UI-03: BasedOn added for theme consistency -->
                 <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True">
