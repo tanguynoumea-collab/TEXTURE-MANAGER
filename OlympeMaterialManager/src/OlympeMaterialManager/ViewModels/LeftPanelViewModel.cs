@@ -188,22 +188,32 @@ public partial class LeftPanelViewModel : ObservableObject
         {
             IsPickMode = false;
 
-            if (result is SceneTypeDto pickedType)
+            if (result is List<SceneTypeDto> pickedTypes)
             {
-                // D-12: Add to active scene (with duplicate check by ElementIdValue)
-                bool isDuplicate = false;
-                foreach (var existing in ActiveScene!.Types)
+                // Multi-selection : ajouter tous les types pickes (avec detection doublons)
+                int added = 0;
+                foreach (var pickedType in pickedTypes)
                 {
-                    if (existing.ElementIdValue == pickedType.ElementIdValue)
+                    bool isDuplicate = false;
+                    foreach (var existing in ActiveScene!.Types)
                     {
-                        isDuplicate = true;
-                        break;
+                        if (existing.ElementIdValue == pickedType.ElementIdValue)
+                        {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    if (!isDuplicate)
+                    {
+                        ActiveScene.Types.Add(pickedType);
+                        added++;
                     }
                 }
 
-                if (!isDuplicate)
+                if (added > 0)
                 {
-                    ActiveScene.Types.Add(pickedType);
+                    SetupCustomSort();
                 }
             }
             else if (result is Exception ex)
@@ -211,7 +221,7 @@ public partial class LeftPanelViewModel : ObservableObject
                 // D-14: View3D validation error or other error
                 ErrorMessage = ex.Message;
             }
-            // result == null means user pressed Escape (D-13): no action needed
+            // result == null means user pressed Escape with no selection (D-13): no action needed
         });
     }
 

@@ -767,12 +767,12 @@ public class RevitEventBridge : IExternalEventHandler
     }
 
     /// <summary>
-    /// Selection d'un element dans la vue 3D via PickObject (D-11, D-12, D-13, D-14, D-17).
-    /// Cache la fenetre WPF, attend le clic utilisateur, re-affiche en finally.
-    /// Retourne SceneTypeDto? (null si annule par Escape).
+    /// Selection multi-elements dans la vue 3D via PickObject en boucle (D-11, D-12, D-13, D-14, D-17).
+    /// Affiche un TaskDialog d'instruction, cache la fenetre WPF, boucle sur PickObject
+    /// jusqu'a ce que l'utilisateur appuie sur Echap. Retourne List&lt;SceneTypeDto&gt;.
     /// CRITIQUE : catch Autodesk.Revit.Exceptions.OperationCanceledException (pas System).
     /// </summary>
-    private static SceneTypeDto? HandlePickElementInView(UIApplication uiApp)
+    private static object? HandlePickElementInView(UIApplication uiApp)
     {
         var uiDoc = uiApp.ActiveUIDocument;
         if (uiDoc == null) return null;
@@ -781,44 +781,67 @@ public class RevitEventBridge : IExternalEventHandler
         if (uiDoc.ActiveView is not View3D)
             throw new InvalidOperationException("Vue 3D requise pour la selection par clic.");
 
+        // Afficher un TaskDialog d'instruction avant le pick
+        var td = new TaskDialog("Selection 3D")
+        {
+            MainInstruction = "Selection d'elements dans la vue 3D",
+            MainContent = "Cliquez sur les elements a ajouter a la scene.\nAppuyez sur Echap pour terminer la selection.",
+            CommonButtons = TaskDialogCommonButtons.Ok
+        };
+        td.Show();
+
         // D-11 : cacher la fenetre WPF avant le pick
         var mainWindow = App.MainWindow;
-        mainWindow?.Hide();
+        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+        {
+            mainWindow?.Hide();
+        });
+
+        var pickedTypes = new List<SceneTypeDto>();
+        var seenTypeIds = new HashSet<long>();
 
         try
         {
-            var reference = uiDoc.Selection.PickObject(
-                ObjectType.Element,
-                "Selectionnez un element dans la vue 3D");
-
-            var element = uiDoc.Document.GetElement(reference);
-            if (element == null) return null;
-
-            // D-12 : extraire le ElementType de l'element selectionne
-            var typeId = element.GetTypeId();
-            if (typeId == ElementId.InvalidElementId) return null;
-
-            var elementType = uiDoc.Document.GetElement(typeId) as ElementType;
-            if (elementType == null) return null;
-
-            bool hasCs = elementType is HostObjAttributes hoa
-                && hoa.GetCompoundStructure() != null;
-
-            string catName = element.Category?.Name ?? "Autre";
-
-            return new SceneTypeDto
+            while (true)
             {
-                ElementIdValue = ElementIdHelper.GetValue(typeId),
-                FamilyName = elementType.FamilyName,
-                TypeName = elementType.Name,
-                CategoryName = catName,
-                HasCompoundStructure = hasCs
-            };
+                var reference = uiDoc.Selection.PickObject(
+                    ObjectType.Element,
+                    "Selectionnez un element (Echap pour terminer)");
+
+                var element = uiDoc.Document.GetElement(reference);
+                if (element == null) continue;
+
+                // D-12 : extraire le ElementType de l'element selectionne
+                var typeId = element.GetTypeId();
+                if (typeId == ElementId.InvalidElementId) continue;
+
+                long typeIdValue = ElementIdHelper.GetValue(typeId);
+
+                // Eviter les doublons par type
+                if (seenTypeIds.Contains(typeIdValue)) continue;
+                seenTypeIds.Add(typeIdValue);
+
+                var elementType = uiDoc.Document.GetElement(typeId) as ElementType;
+                if (elementType == null) continue;
+
+                bool hasCs = elementType is HostObjAttributes hoa
+                    && hoa.GetCompoundStructure() != null;
+
+                string catName = element.Category?.Name ?? "Autre";
+
+                pickedTypes.Add(new SceneTypeDto
+                {
+                    ElementIdValue = typeIdValue,
+                    FamilyName = elementType.FamilyName,
+                    TypeName = elementType.Name,
+                    CategoryName = catName,
+                    HasCompoundStructure = hasCs
+                });
+            }
         }
         catch (Autodesk.Revit.Exceptions.OperationCanceledException)
         {
-            // D-13 : Escape presse -- retour gracieux, pas une erreur
-            return null;
+            // D-13 : Escape presse -- fin de la boucle de selection
         }
         finally
         {
@@ -828,6 +851,8 @@ public class RevitEventBridge : IExternalEventHandler
                 mainWindow?.Show();
             });
         }
+
+        return pickedTypes;
     }
 
     /// <summary>
