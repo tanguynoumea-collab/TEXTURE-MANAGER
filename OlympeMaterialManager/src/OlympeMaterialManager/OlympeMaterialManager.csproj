@@ -46,4 +46,18 @@
     <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2026.4.0" />
     <PackageReference Include="Nice3point.Revit.Toolkit" Version="2026.1.0" />
   </ItemGroup>
+
+  <!-- Release-only: stage build output for WiX installer harvesting -->
+  <Target Name="StageForInstaller" AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <StagingDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\installer\OlympeMaterialManager.Installer\staging'))</StagingDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <StagingFiles Include="$(OutputPath)**\*.*"
+                    Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.xml" />
+    </ItemGroup>
+    <Copy SourceFiles="@(StagingFiles)"
+          DestinationFolder="$(StagingDir)\$(TargetFramework)\%(RecursiveDir)" />
+  </Target>
 </Project>

@@ -16,3 +16,6 @@ packages/
 
 # JetBrains Rider
 .idea/
+
+# Installer staging (populated by Release build)
+staging/
