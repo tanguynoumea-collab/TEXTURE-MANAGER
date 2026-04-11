@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md -- Solution structure, multi-target csproj build spike, .addin registration files
-- [ ] 01-02-PLAN.md -- Olympe dark theme, MainWindow 3-column layout, panel UserControls, ViewModels (shell)
+- [x] 01-02-PLAN.md -- Olympe dark theme, MainWindow 3-column layout, panel UserControls, ViewModels (shell)
 - [ ] 01-03-PLAN.md -- Revit entry points, ExternalEvent bridge, DTOs, round-trip proof, human verification
 **UI hint**: yes
 

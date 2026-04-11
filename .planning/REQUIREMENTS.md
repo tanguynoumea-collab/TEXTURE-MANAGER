@@ -16,7 +16,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **INFRA-05**: Un IExternalEventHandler centralise avec dispatch par enum gere toutes les interactions UI-vers-Revit
 - [ ] **INFRA-06**: La fenetre WPF principale est un singleton modeless qui persiste pendant la session Revit
 - [ ] **INFRA-07**: Les ViewModels n'importent aucun type Revit API — communication via DTOs uniquement
-- [ ] **INFRA-08**: CommunityToolkit.Mvvm 8.4.2 est utilise pour ObservableObject, RelayCommand, ObservableProperty
+- [x] **INFRA-08**: CommunityToolkit.Mvvm 8.4.2 est utilise pour ObservableObject, RelayCommand, ObservableProperty
 - [x] **INFRA-09**: Le build produit des assemblies chargeables dans Revit 2024, 2025 et 2026 sans erreur
 
 ### Scene Active
@@ -65,10 +65,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Interface et Theme
 
-- [ ] **UI-01**: La fenetre principale utilise un layout trois colonnes (familles | couches | materiaux)
-- [ ] **UI-02**: Un theme sombre Olympe est applique via ResourceDictionary (fond ~#1E1E1E, accent ambre/orange)
+- [x] **UI-01**: La fenetre principale utilise un layout trois colonnes (familles | couches | materiaux)
+- [x] **UI-02**: Un theme sombre Olympe est applique via ResourceDictionary (fond ~#1E1E1E, accent ambre/orange)
 - [ ] **UI-03**: Tous les controles WPF sont styles de maniere coherente (boutons, listes, TreeView, scrollbars)
-- [ ] **UI-04**: L'interface est entierement en francais
+- [x] **UI-04**: L'interface est entierement en francais
 - [ ] **UI-05**: Le bouton Set Mat est visuellement proemirent et centre entre les panneaux centre et droit
 
 ### Deploiement
@@ -130,7 +130,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-05 | Phase 1 | Pending |
 | INFRA-06 | Phase 1 | Pending |
 | INFRA-07 | Phase 1 | Pending |
-| INFRA-08 | Phase 1 | Pending |
+| INFRA-08 | Phase 1 | Complete |
 | INFRA-09 | Phase 1 | Complete |
 | SCENE-01 | Phase 2 | Pending |
 | SCENE-02 | Phase 2 | Pending |
@@ -164,10 +164,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MATEDIT-06 | Phase 4 | Pending |
 | MATEDIT-07 | Phase 4 | Pending |
 | MATEDIT-08 | Phase 4 | Pending |
-| UI-01 | Phase 1 | Pending |
-| UI-02 | Phase 1 | Pending |
+| UI-01 | Phase 1 | Complete |
+| UI-02 | Phase 1 | Complete |
 | UI-03 | Phase 5 | Pending |
-| UI-04 | Phase 1 | Pending |
+| UI-04 | Phase 1 | Complete |
 | UI-05 | Phase 3 | Pending |
 | DEPLOY-01 | Phase 5 | Pending |
 | DEPLOY-02 | Phase 5 | Pending |
