@@ -41,16 +41,16 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Presets et Set Mat
 
-- [ ] **PRESET-01**: Le panneau droit affiche une liste de materiaux preset organises par groupes
-- [ ] **PRESET-02**: Trois groupes par defaut existent : Murs, Sols, Autres
+- [x] **PRESET-01**: Le panneau droit affiche une liste de materiaux preset organises par groupes
+- [x] **PRESET-02**: Trois groupes par defaut existent : Murs, Sols, Autres
 - [ ] **PRESET-03**: L'utilisateur peut creer des groupes de preset personnalises
-- [ ] **PRESET-04**: L'utilisateur peut ajouter un materiau du projet a un groupe de preset
-- [ ] **PRESET-05**: Les presets sont persistes dans un fichier JSON dont le chemin est choisi par l'utilisateur
-- [ ] **PRESET-06**: Le chemin du fichier JSON est memorise et reutilise automatiquement aux sessions suivantes
-- [ ] **PRESET-07**: L'utilisateur peut dupliquer un materiau preset (nom automatique "[Original] copie")
-- [ ] **PRESET-08**: Le bouton Set Mat applique le materiau preset selectionne aux couches selectionnees via Transaction Revit
-- [ ] **PRESET-09**: Pour les familles sans couches, Set Mat permet a l'utilisateur de choisir quel parametre Material modifier
-- [ ] **PRESET-10**: Set Mat gere le rollback en cas d'erreur et affiche un message utilisateur
+- [x] **PRESET-04**: L'utilisateur peut ajouter un materiau du projet a un groupe de preset
+- [x] **PRESET-05**: Les presets sont persistes dans un fichier JSON dont le chemin est choisi par l'utilisateur
+- [x] **PRESET-06**: Le chemin du fichier JSON est memorise et reutilise automatiquement aux sessions suivantes
+- [x] **PRESET-07**: L'utilisateur peut dupliquer un materiau preset (nom automatique "[Original] copie")
+- [x] **PRESET-08**: Le bouton Set Mat applique le materiau preset selectionne aux couches selectionnees via Transaction Revit
+- [x] **PRESET-09**: Pour les familles sans couches, Set Mat permet a l'utilisateur de choisir quel parametre Material modifier
+- [x] **PRESET-10**: Set Mat gere le rollback en cas d'erreur et affiche un message utilisateur
 
 ### Edition de Materiau
 
@@ -146,16 +146,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LAYER-03 | Phase 2 | Complete |
 | LAYER-04 | Phase 2 | Complete |
 | LAYER-05 | Phase 2 | Complete |
-| PRESET-01 | Phase 3 | Pending |
-| PRESET-02 | Phase 3 | Pending |
+| PRESET-01 | Phase 3 | Complete |
+| PRESET-02 | Phase 3 | Complete |
 | PRESET-03 | Phase 3 | Pending |
-| PRESET-04 | Phase 3 | Pending |
-| PRESET-05 | Phase 3 | Pending |
-| PRESET-06 | Phase 3 | Pending |
-| PRESET-07 | Phase 3 | Pending |
-| PRESET-08 | Phase 3 | Pending |
-| PRESET-09 | Phase 3 | Pending |
-| PRESET-10 | Phase 3 | Pending |
+| PRESET-04 | Phase 3 | Complete |
+| PRESET-05 | Phase 3 | Complete |
+| PRESET-06 | Phase 3 | Complete |
+| PRESET-07 | Phase 3 | Complete |
+| PRESET-08 | Phase 3 | Complete |
+| PRESET-09 | Phase 3 | Complete |
+| PRESET-10 | Phase 3 | Complete |
 | MATEDIT-01 | Phase 4 | Pending |
 | MATEDIT-02 | Phase 4 | Pending |
 | MATEDIT-03 | Phase 4 | Pending |

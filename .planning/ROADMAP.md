@@ -69,7 +69,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md -- DTOs, PresetService, DialogService, RevitEventBridge handlers, CenterPanelVM extensions (data foundation)
+- [x] 03-01-PLAN.md -- DTOs, PresetService, DialogService, RevitEventBridge handlers, CenterPanelVM extensions (data foundation)
 - [ ] 03-02-PLAN.md -- Right panel: RightPanelViewModel with CRUD, RightPanelView.xaml TreeView, AddMaterialDialog
 - [ ] 03-03-PLAN.md -- SetMatCommand coordination in MainWindowViewModel, Set Mat button with accent style, human verification
 **UI hint**: yes
