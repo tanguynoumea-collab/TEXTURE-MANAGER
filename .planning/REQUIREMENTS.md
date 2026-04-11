@@ -9,15 +9,15 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Le projet compile en multi-target (net48 pour Revit 2024, net8.0-windows pour Revit 2025/2026) avec un single SDK-style csproj
-- [ ] **INFRA-02**: Les references Revit API (Nice3point NuGet packages) sont configurees avec CopyLocal=false pour chaque version cible
-- [ ] **INFRA-03**: L'add-in s'enregistre via un fichier .addin dans le dossier Revit Addins pour chaque version supportee
+- [x] **INFRA-01**: Le projet compile en multi-target (net48 pour Revit 2024, net8.0-windows pour Revit 2025/2026) avec un single SDK-style csproj
+- [x] **INFRA-02**: Les references Revit API (Nice3point NuGet packages) sont configurees avec CopyLocal=false pour chaque version cible
+- [x] **INFRA-03**: L'add-in s'enregistre via un fichier .addin dans le dossier Revit Addins pour chaque version supportee
 - [ ] **INFRA-04**: Un IExternalApplication demarre l'add-in et cree l'ExternalEvent singleton au lancement de Revit
 - [ ] **INFRA-05**: Un IExternalEventHandler centralise avec dispatch par enum gere toutes les interactions UI-vers-Revit
 - [ ] **INFRA-06**: La fenetre WPF principale est un singleton modeless qui persiste pendant la session Revit
 - [ ] **INFRA-07**: Les ViewModels n'importent aucun type Revit API — communication via DTOs uniquement
 - [ ] **INFRA-08**: CommunityToolkit.Mvvm 8.4.2 est utilise pour ObservableObject, RelayCommand, ObservableProperty
-- [ ] **INFRA-09**: Le build produit des assemblies chargeables dans Revit 2024, 2025 et 2026 sans erreur
+- [x] **INFRA-09**: Le build produit des assemblies chargeables dans Revit 2024, 2025 et 2026 sans erreur
 
 ### Scene Active
 
@@ -123,15 +123,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Pending |
 | INFRA-05 | Phase 1 | Pending |
 | INFRA-06 | Phase 1 | Pending |
 | INFRA-07 | Phase 1 | Pending |
 | INFRA-08 | Phase 1 | Pending |
-| INFRA-09 | Phase 1 | Pending |
+| INFRA-09 | Phase 1 | Complete |
 | SCENE-01 | Phase 2 | Pending |
 | SCENE-02 | Phase 2 | Pending |
 | SCENE-03 | Phase 2 | Pending |
