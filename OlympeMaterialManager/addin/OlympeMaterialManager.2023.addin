@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Olympe MaterialManager</Name>
+    <Assembly>..\src\OlympeMaterialManager\bin\Release\net48\OlympeMaterialManager.dll</Assembly>
+    <AddInId>2557E4F8-7B71-44E5-8FED-3313C3C2269E</AddInId>
+    <FullClassName>Olympe.MaterialManager.App</FullClassName>
+    <VendorId>OLYMPE</VendorId>
+    <VendorDescription>Olympe</VendorDescription>
+  </AddIn>
+</RevitAddIns>

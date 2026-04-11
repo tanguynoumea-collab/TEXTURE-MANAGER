@@ -84,6 +84,37 @@ public partial class RightPanelViewModel : ObservableObject
     /// Cree un nouveau preset via un dialog de saisie.
     /// </summary>
     [RelayCommand]
+    private void SupprimerPreset()
+    {
+        if (string.IsNullOrEmpty(ActivePresetName)) return;
+
+        var result = System.Windows.MessageBox.Show(
+            $"Supprimer le preset \"{ActivePresetName}\" et son fichier ?",
+            "Supprimer le preset",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (result != System.Windows.MessageBoxResult.Yes) return;
+
+        var name = ActivePresetName;
+        _presetService.DeletePreset(name);
+        PresetNames.Remove(name);
+
+        if (PresetNames.Count > 0)
+        {
+            ActivePresetName = PresetNames[0];
+        }
+        else
+        {
+            ActivePresetName = null;
+            PresetGroups.Clear();
+            _collection = null;
+        }
+
+        StatusMessage = $"Preset \"{name}\" supprime.";
+    }
+
+    [RelayCommand]
     private void CreerPreset()
     {
         var dialog = new CreateNameDialog();
@@ -208,11 +239,16 @@ public partial class RightPanelViewModel : ObservableObject
                 dialog.PreselectGroup(targetGroup);
 
                 if (dialog.ShowDialog() == true &&
-                    dialog.SelectedMaterial != null &&
+                    dialog.SelectedMaterials.Count > 0 &&
                     dialog.SelectedGroup != null)
                 {
-                    dialog.SelectedGroup.Materials.Add(dialog.SelectedMaterial);
-                    StatusMessage = $"\"{dialog.SelectedMaterial.MaterialName}\" ajoute a \"{dialog.SelectedGroup.GroupName}\".";
+                    foreach (var mat in dialog.SelectedMaterials)
+                    {
+                        dialog.SelectedGroup.Materials.Add(mat);
+                    }
+                    StatusMessage = dialog.SelectedMaterials.Count == 1
+                        ? $"\"{dialog.SelectedMaterials[0].MaterialName}\" ajoute a \"{dialog.SelectedGroup.GroupName}\"."
+                        : $"{dialog.SelectedMaterials.Count} materiaux ajoutes a \"{dialog.SelectedGroup.GroupName}\".";
                     AutoSave();
                 }
             }

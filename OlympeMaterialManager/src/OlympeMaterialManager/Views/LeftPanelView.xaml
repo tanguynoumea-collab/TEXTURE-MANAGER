@@ -171,9 +171,10 @@
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
 
-                <!-- Style TreeViewItem avec menu contextuel Supprimer -->
+                <!-- Style TreeViewItem : menu contextuel + auto-depli des composites -->
                 <TreeView.ItemContainerStyle>
                     <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                        <Setter Property="IsExpanded" Value="True" />
                         <Setter Property="ContextMenu">
                             <Setter.Value>
                                 <ContextMenu>

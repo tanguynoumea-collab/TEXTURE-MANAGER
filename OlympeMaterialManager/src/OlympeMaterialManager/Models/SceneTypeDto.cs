@@ -1,14 +1,18 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Olympe.MaterialManager.Models;
 
 /// <summary>
 /// DTO pour un type Revit dans une scene.
-/// Contient les informations necessaires a l'affichage et au dispatch vers le panneau centre.
-/// POCO pur -- aucune dependance Revit API (D-01).
+/// Implemente INotifyPropertyChanged pour que le TreeView detecte les changements
+/// sur SubTypes (charges en async apres la creation pour les types composites).
 /// </summary>
-public class SceneTypeDto
+public class SceneTypeDto : INotifyPropertyChanged
 {
+    private ObservableCollection<SceneTypeDto>? _subTypes;
+
     public long ElementIdValue { get; set; } = -1;
     public string FamilyName { get; set; } = string.Empty;
     public string TypeName { get; set; } = string.Empty;
@@ -17,13 +21,29 @@ public class SceneTypeDto
 
     /// <summary>
     /// Indique que ce type est composite (ex: mur empile) et ne peut pas etre edite directement.
-    /// L'utilisateur doit selectionner un sous-type dans SubTypes pour editer ses couches.
     /// </summary>
     public bool IsComposite { get; set; }
 
     /// <summary>
     /// Sous-types composant ce type composite (ex: sous-murs d'un mur empile).
-    /// Null ou vide pour les types non-composites.
+    /// Notifie le TreeView quand les sous-types sont charges.
     /// </summary>
-    public ObservableCollection<SceneTypeDto>? SubTypes { get; set; }
+    public ObservableCollection<SceneTypeDto>? SubTypes
+    {
+        get => _subTypes;
+        set
+        {
+            _subTypes = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? name = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    public override string ToString() => $"{FamilyName} : {TypeName}";
 }

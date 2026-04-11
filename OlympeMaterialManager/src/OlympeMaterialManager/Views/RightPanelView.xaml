@@ -38,6 +38,14 @@
                         FontSize="16"
                         FontWeight="Bold"
                         Margin="4,0,0,0" />
+                <Button Content="-"
+                        Command="{Binding SupprimerPresetCommand}"
+                        ToolTip="Supprimer le preset actif"
+                        Width="28" Height="28"
+                        Padding="0"
+                        FontSize="16"
+                        FontWeight="Bold"
+                        Margin="4,0,0,0" />
                 <Button Content="..."
                         Command="{Binding ChargerPresetExterneCommand}"
                         ToolTip="Charger un preset depuis un fichier externe"

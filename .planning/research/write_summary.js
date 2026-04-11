@@ -1,0 +1,1 @@
+var fs=require("fs"); var p="C:/Users/Tanguy/Documents/PROGRAMMES/DEV/PROJET TEXTURE MANAGER/.planning/research/SUMMARY.md"; console.log(p);

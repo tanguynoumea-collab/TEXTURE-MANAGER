@@ -1,20 +1,20 @@
 using System.Reflection;
+using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
-using Nice3point.Revit.Toolkit.External;
 using Olympe.MaterialManager.Commands;
 using Olympe.MaterialManager.Events;
+using Olympe.MaterialManager.Services;
 using Olympe.MaterialManager.Views;
-using ToolkitExternalEvent = Nice3point.Revit.Toolkit.External.ExternalEvent;
 
 namespace Olympe.MaterialManager;
 
 /// <summary>
-/// Point d'entree IExternalApplication via Nice3point ExternalApplication (D-12).
+/// Point d'entree IExternalApplication.
 /// Cree le singleton ExternalEvent et le bouton ribbon au demarrage.
 /// </summary>
-public class App : ExternalApplication
+public class App : IExternalApplication
 {
-    internal static ToolkitExternalEvent RevitEvent { get; private set; } = null!;
+    internal static ExternalEvent RevitEvent { get; private set; } = null!;
     internal static RevitEventBridge EventBridge { get; private set; } = null!;
     internal static MainWindow? MainWindow { get; set; }
 
@@ -23,30 +23,35 @@ public class App : ExternalApplication
     /// </summary>
     internal static bool AllowClose { get; set; }
 
-    public override void OnStartup()
+    public Result OnStartup(UIControlledApplication application)
     {
-        // Creer le bridge et l'ExternalEvent (D-09)
+        LogService.Log("=== OnStartup: Olympe MaterialManager demarrage ===");
+        LogService.Log($"Log file: {LogService.LogPath}");
         EventBridge = new RevitEventBridge();
-        RevitEvent = new ToolkitExternalEvent(uiApp =>
-        {
-            EventBridge.ProcessRequest(uiApp);
-        });
+        RevitEvent = ExternalEvent.Create(EventBridge);
+        LogService.Log("OnStartup: ExternalEvent created");
 
-        // Creer le panneau ribbon avec bouton (UI-04 : label en francais)
         var assemblyPath = Assembly.GetExecutingAssembly().Location;
         var commandTypeName = typeof(ShowWindowCommand).FullName!;
 
-        Application.CreateRibbonTab("Olympe");
-        var panel = Application.CreateRibbonPanel("Olympe", "Olympe MaterialManager");
+        // Placer dans l'onglet "Complement" (Add-Ins) — pas d'onglet custom
+        var panel = application.CreateRibbonPanel("Olympe MaterialManager");
         var buttonData = new PushButtonData(
             "ShowMaterialManager",
             "Materiaux",
             assemblyPath,
-            commandTypeName);
+            commandTypeName)
+        {
+            ToolTip = "Ouvrir l'editeur de materiaux Olympe",
+            LargeImage = LoadIcon("olympe-icon-32.png"),
+            Image = LoadIcon("olympe-icon-16.png")
+        };
         panel.AddItem(buttonData);
+
+        return Result.Succeeded;
     }
 
-    public override void OnShutdown()
+    public Result OnShutdown(UIControlledApplication application)
     {
         if (MainWindow != null)
         {
@@ -54,7 +59,13 @@ public class App : ExternalApplication
             MainWindow.Close();
             MainWindow = null;
         }
-        // Note: Nice3point Toolkit ExternalEvent n'est pas IDisposable.
-        // Le GC gerera le nettoyage a la fermeture de Revit.
+        RevitEvent?.Dispose();
+        return Result.Succeeded;
+    }
+
+    private static BitmapImage LoadIcon(string fileName)
+    {
+        var uri = new Uri($"pack://application:,,,/OlympeMaterialManager;component/Resources/{fileName}");
+        return new BitmapImage(uri);
     }
 }

@@ -7,11 +7,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Olympe.MaterialManager</RootNamespace>
     <AssemblyName>OlympeMaterialManager</AssemblyName>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
 
   <!-- Conditional compilation symbols -->
   <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
-    <DefineConstants>$(DefineConstants);REVIT2024</DefineConstants>
+    <DefineConstants>$(DefineConstants);REVIT2023_OR_2024</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
     <DefineConstants>$(DefineConstants);REVIT2025_OR_GREATER</DefineConstants>
@@ -44,10 +47,10 @@
     <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
   </ItemGroup>
 
-  <!-- Revit 2024 (net48) -->
+  <!-- Revit 2023/2024 (net48) — use 2023.x for backward compat with both versions -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
-    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2024.3.30" />
-    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2024.3.30" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2023.1.80" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2023.1.80" />
   </ItemGroup>
 
   <!-- Revit 2025/2026 (net8.0-windows) — use 2025.x for backward compat with both versions -->

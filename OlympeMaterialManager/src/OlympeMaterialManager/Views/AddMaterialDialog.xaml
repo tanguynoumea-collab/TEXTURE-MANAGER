@@ -7,12 +7,12 @@
         WindowStyle="ToolWindow"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
-        Style="{StaticResource OlympeWindowStyle}">
+        Style="{DynamicResource OlympeWindowStyle}">
 
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Themes/OlympeTheme.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/OlympeMaterialManager;component/Themes/OlympeTheme.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:ArgbToColorConverter x:Key="ArgbToColorConverter" />
         </ResourceDictionary>
@@ -36,7 +36,7 @@
                  Grid.Row="1"
                  Background="{StaticResource SurfaceBrush}"
                  BorderThickness="0"
-                 SelectionMode="Single">
+                 SelectionMode="Extended">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="4,2">

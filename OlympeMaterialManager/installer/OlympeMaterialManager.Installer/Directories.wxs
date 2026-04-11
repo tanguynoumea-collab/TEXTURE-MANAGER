@@ -19,6 +19,7 @@
       <Directory Id="AutodeskDir" Name="Autodesk">
         <Directory Id="RevitDir" Name="Revit">
           <Directory Id="AddinsDir" Name="Addins">
+            <Directory Id="Addins2023" Name="2023" />
             <Directory Id="Addins2024" Name="2024" />
             <Directory Id="Addins2025" Name="2025" />
             <Directory Id="Addins2026" Name="2026" />
@@ -29,12 +30,31 @@
 
   </Fragment>
 
-  <!-- Revit 2024 components (net48) -->
+  <!-- Shared net48 assemblies (Revit 2023 + 2024) -->
   <Fragment>
-    <ComponentGroup Id="Revit2024Assemblies" Directory="Net48Dir">
+    <ComponentGroup Id="Net48Assemblies" Directory="Net48Dir">
       <Files Include="$(var.StagingDir)\net48\**" />
     </ComponentGroup>
+  </Fragment>
 
+  <!-- Revit 2023 .addin component -->
+  <Fragment>
+    <Component Id="Revit2023Addin" Directory="Addins2023"
+               Guid="A8C3F291-5D74-4E62-B8A1-9F0E12D36C85">
+      <File Source="addin\OlympeMaterialManager.2023.addin"
+            Name="OlympeMaterialManager.addin"
+            KeyPath="no" />
+      <RegistryValue Root="HKCU"
+                     Key="Software\Olympe\MaterialManager"
+                     Name="Revit2023Installed"
+                     Type="integer" Value="1"
+                     KeyPath="yes" />
+      <RemoveFolder Id="RemoveAddins2023" On="uninstall" />
+    </Component>
+  </Fragment>
+
+  <!-- Revit 2024 .addin component -->
+  <Fragment>
     <Component Id="Revit2024Addin" Directory="Addins2024"
                Guid="1ECD2C68-EE1A-4B7D-B0D7-355F83A34079">
       <File Source="addin\OlympeMaterialManager.2024.addin"

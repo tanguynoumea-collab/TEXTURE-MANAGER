@@ -1039,9 +1039,10 @@ public class RevitEventBridge : IExternalEventHandler
         var td = new TaskDialog("Selection 3D")
         {
             MainInstruction = "Selection d'elements dans la vue 3D",
-            MainContent = "Cliquez sur les elements pour les selectionner ou deselectionner.\n" +
-                          "Les elements selectionnes sont mis en surbrillance.\n\n" +
-                          "Appuyez sur Echap ou Entree pour valider la selection.",
+            MainContent = "Cliquez sur les elements a ajouter a la scene.\n" +
+                          "Tous les elements du meme type seront selectionnes.\n\n" +
+                          "Appuyez sur ENTREE pour valider.\n" +
+                          "Appuyez sur ECHAP pour annuler.",
             CommonButtons = TaskDialogCommonButtons.Ok
         };
         td.Show();
@@ -1053,19 +1054,22 @@ public class RevitEventBridge : IExternalEventHandler
             mainWindow?.Hide();
         });
 
-        // Dictionnaire des types selectionnes (toggle on/off)
-        var selectedTypes = new Dictionary<long, SceneTypeDto>();
-        // Ensemble cumule de toutes les instances selectionnees
-        var allSelectedInstanceIds = new HashSet<ElementId>();
-
         try
         {
-            while (true)
-            {
-                var reference = uiDoc.Selection.PickObject(
-                    ObjectType.Element,
-                    "Cliquez pour selectionner/deselectionner (Echap pour valider)");
+            // PickObjects (avec S) : selection multiple native Revit
+            // ENTREE = valide et retourne les elements selectionnes
+            // ECHAP = lance OperationCanceledException (annulation)
+            var references = uiDoc.Selection.PickObjects(
+                ObjectType.Element,
+                "Selectionnez les elements (ENTREE pour valider, ECHAP pour annuler)");
 
+            LogService.Log($"HandlePickElementInView: PickObjects returned {references.Count} references");
+
+            // Extraire les types uniques des elements selectionnes
+            var selectedTypes = new Dictionary<long, SceneTypeDto>();
+
+            foreach (var reference in references)
+            {
                 var element = doc.GetElement(reference);
                 if (element == null) continue;
 
@@ -1073,81 +1077,55 @@ public class RevitEventBridge : IExternalEventHandler
                 if (typeId == ElementId.InvalidElementId) continue;
 
                 long typeIdValue = ElementIdHelper.GetValue(typeId);
+                if (selectedTypes.ContainsKey(typeIdValue)) continue;
 
-                // Recuperer toutes les instances de ce type dans le document
-                var instanceIds = new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .Where(e => e.GetTypeId() == typeId)
-                    .Select(e => e.Id)
-                    .ToList();
+                var elementType = doc.GetElement(typeId) as ElementType;
+                if (elementType == null) continue;
 
-                if (selectedTypes.ContainsKey(typeIdValue))
+                bool hasCs = elementType is HostObjAttributes hoa
+                    && (hoa.GetCompoundStructure() != null || elementType is WallType);
+
+                // Detecter mur empile
+                bool isStackedWall = false;
+                if (elementType is WallType pickedWt && pickedWt.GetCompoundStructure() == null
+                    && element is Wall pickedWall)
                 {
-                    // TOGGLE OFF : retirer le type et ses instances
-                    selectedTypes.Remove(typeIdValue);
-                    foreach (var instanceId in instanceIds)
-                        allSelectedInstanceIds.Remove(instanceId);
-
-                    LogService.Log($"HandlePickElementInView: deselected type {typeIdValue}, remaining={selectedTypes.Count}");
-                }
-                else
-                {
-                    // TOGGLE ON : ajouter le type et ses instances
-                    var elementType = doc.GetElement(typeId) as ElementType;
-                    if (elementType == null) continue;
-
-                    bool hasCs = elementType is HostObjAttributes hoa
-                        && (hoa.GetCompoundStructure() != null || elementType is WallType);
-
-                    // Detecter mur empile
-                    bool isStackedWall = false;
-                    if (elementType is WallType pickedWt && pickedWt.GetCompoundStructure() == null
-                        && element is Wall pickedWall)
-                    {
-                        var stackedIds = pickedWall.GetStackedWallMemberIds();
-                        isStackedWall = stackedIds != null && stackedIds.Count > 0;
-                    }
-
-                    string catName = element.Category?.Name ?? "Autre";
-
-                    selectedTypes[typeIdValue] = new SceneTypeDto
-                    {
-                        ElementIdValue = typeIdValue,
-                        FamilyName = elementType.FamilyName,
-                        TypeName = elementType.Name,
-                        CategoryName = catName,
-                        HasCompoundStructure = hasCs,
-                        IsComposite = isStackedWall
-                    };
-
-                    foreach (var instanceId in instanceIds)
-                        allSelectedInstanceIds.Add(instanceId);
-
-                    LogService.Log($"HandlePickElementInView: selected type {typeIdValue}, total={selectedTypes.Count}");
+                    var stackedIds = pickedWall.GetStackedWallMemberIds();
+                    isStackedWall = stackedIds != null && stackedIds.Count > 0;
                 }
 
-                // Mettre a jour la selection visuelle dans Revit (surbrillance bleue)
-                uiDoc.Selection.SetElementIds(allSelectedInstanceIds.ToList());
+                string catName = element.Category?.Name ?? "Autre";
+
+                selectedTypes[typeIdValue] = new SceneTypeDto
+                {
+                    ElementIdValue = typeIdValue,
+                    FamilyName = elementType.FamilyName,
+                    TypeName = elementType.Name,
+                    CategoryName = catName,
+                    HasCompoundStructure = hasCs,
+                    IsComposite = isStackedWall
+                };
+
+                LogService.Log($"HandlePickElementInView: added type {typeIdValue} ({elementType.Name})");
             }
+
+            LogService.Log($"HandlePickElementInView: validated {selectedTypes.Count} unique types");
+            return selectedTypes.Values.ToList();
         }
         catch (Autodesk.Revit.Exceptions.OperationCanceledException)
         {
-            // Echap ou Entree : valider la selection courante
-            LogService.Log($"HandlePickElementInView: selection validated with {selectedTypes.Count} types");
+            // ECHAP = annulation, retourner liste vide
+            LogService.Log("HandlePickElementInView: cancelled by user (Escape)");
+            return new List<SceneTypeDto>();
         }
         finally
         {
-            // Nettoyer la selection Revit
-            uiDoc.Selection.SetElementIds(new List<ElementId>());
-
             // Toujours re-afficher la fenetre
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 mainWindow?.Show();
             });
         }
-
-        return selectedTypes.Values.ToList();
     }
 
     /// <summary>

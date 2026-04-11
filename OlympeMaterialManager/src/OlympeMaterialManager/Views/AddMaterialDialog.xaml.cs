@@ -25,9 +25,14 @@ public partial class AddMaterialDialog : Window
     public ObservableCollection<PresetGroupDto> PresetGroups { get; set; } = new();
 
     /// <summary>
-    /// Materiau selectionne par l'utilisateur (resultat du dialogue).
+    /// Materiau selectionne par l'utilisateur (resultat du dialogue). Garde pour compatibilite.
     /// </summary>
     public PresetMaterialDto? SelectedMaterial { get; set; }
+
+    /// <summary>
+    /// Liste des materiaux selectionnes (multi-selection).
+    /// </summary>
+    public List<PresetMaterialDto> SelectedMaterials { get; set; } = new();
 
     /// <summary>
     /// Groupe cible selectionne par l'utilisateur (resultat du dialogue).
@@ -78,12 +83,22 @@ public partial class AddMaterialDialog : Window
 
     private void Ajouter_Click(object sender, RoutedEventArgs e)
     {
-        SelectedMaterial = MaterialList.SelectedItem as PresetMaterialDto;
         SelectedGroup = GroupCombo.SelectedItem as PresetGroupDto;
 
-        if (SelectedMaterial == null || SelectedGroup == null)
+        // Recuperer tous les materiaux selectionnes
+        SelectedMaterials.Clear();
+        foreach (var item in MaterialList.SelectedItems)
         {
-            MessageBox.Show("Selectionnez un materiau et un groupe cible.",
+            if (item is PresetMaterialDto mat)
+                SelectedMaterials.Add(mat);
+        }
+
+        // Compatibilite : garder le premier selectionne
+        SelectedMaterial = SelectedMaterials.Count > 0 ? SelectedMaterials[0] : null;
+
+        if (SelectedMaterials.Count == 0 || SelectedGroup == null)
+        {
+            MessageBox.Show("Selectionnez au moins un materiau et un groupe cible.",
                 "Selection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }

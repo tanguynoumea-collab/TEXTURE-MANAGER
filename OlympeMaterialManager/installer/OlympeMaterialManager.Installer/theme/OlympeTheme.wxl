@@ -4,6 +4,7 @@
   <String Id="Caption">Olympe MaterialManager - Installation</String>
   <String Id="Title">Installation d'Olympe MaterialManager</String>
   <String Id="SelectVersions">Selectionner les versions de Revit :</String>
+  <String Id="Revit2023">Revit 2023</String>
   <String Id="Revit2024">Revit 2024</String>
   <String Id="Revit2025">Revit 2025</String>
   <String Id="Revit2026">Revit 2026</String>

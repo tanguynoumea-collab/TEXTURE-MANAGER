@@ -13,14 +13,26 @@
     <MediaTemplate EmbedCab="yes" />
 
     <!-- Public properties for Bundle -> MSI communication -->
+    <Property Id="INSTALL_REVIT2023" Value="0" Secure="yes" />
     <Property Id="INSTALL_REVIT2024" Value="0" Secure="yes" />
     <Property Id="INSTALL_REVIT2025" Value="0" Secure="yes" />
     <Property Id="INSTALL_REVIT2026" Value="0" Secure="yes" />
 
-    <!-- Feature: Revit 2024 (net48 assemblies + .addin) -->
+    <!-- Feature: Shared net48 assemblies (for Revit 2023 and 2024) -->
+    <Feature Id="CoreNet48" Title="Assemblies .NET Framework 4.8" Level="1000">
+      <Condition Level="1">INSTALL_REVIT2023 = "1" OR INSTALL_REVIT2024 = "1"</Condition>
+      <ComponentGroupRef Id="Net48Assemblies" />
+    </Feature>
+
+    <!-- Feature: Revit 2023 (.addin only; assemblies via CoreNet48) -->
+    <Feature Id="Revit2023" Title="Revit 2023" Level="1000">
+      <Condition Level="1">INSTALL_REVIT2023 = "1"</Condition>
+      <ComponentRef Id="Revit2023Addin" />
+    </Feature>
+
+    <!-- Feature: Revit 2024 (.addin only; assemblies via CoreNet48) -->
     <Feature Id="Revit2024" Title="Revit 2024" Level="1000">
       <Condition Level="1">INSTALL_REVIT2024 = "1"</Condition>
-      <ComponentGroupRef Id="Revit2024Assemblies" />
       <ComponentRef Id="Revit2024Addin" />
     </Feature>
 

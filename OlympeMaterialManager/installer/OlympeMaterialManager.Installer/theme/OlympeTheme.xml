@@ -15,24 +15,29 @@
       <Text X="20" Y="60" Width="460" Height="24"
             FontId="0">#(loc.SelectVersions)</Text>
 
-      <Checkbox Name="InstallRevit2024" X="40" Y="90"
+      <Checkbox Name="InstallRevit2023" X="40" Y="90"
+                Width="400" Height="20"
+                FontId="0"
+                EnableCondition="Revit2023Detected">#(loc.Revit2023)</Checkbox>
+
+      <Checkbox Name="InstallRevit2024" X="40" Y="115"
                 Width="400" Height="20"
                 FontId="0"
                 EnableCondition="Revit2024Detected">#(loc.Revit2024)</Checkbox>
 
-      <Checkbox Name="InstallRevit2025" X="40" Y="115"
+      <Checkbox Name="InstallRevit2025" X="40" Y="140"
                 Width="400" Height="20"
                 FontId="0"
                 EnableCondition="Revit2025Detected">#(loc.Revit2025)</Checkbox>
 
-      <Checkbox Name="InstallRevit2026" X="40" Y="140"
+      <Checkbox Name="InstallRevit2026" X="40" Y="165"
                 Width="400" Height="20"
                 FontId="0"
                 EnableCondition="Revit2026Detected">#(loc.Revit2026)</Checkbox>
 
-      <Text X="40" Y="170" Width="400" Height="20"
+      <Text X="40" Y="195" Width="400" Height="20"
             FontId="2"
-            DisableCondition="Revit2024Detected OR Revit2025Detected OR Revit2026Detected">
+            DisableCondition="Revit2023Detected OR Revit2024Detected OR Revit2025Detected OR Revit2026Detected">
         #(loc.NoRevitDetected)
       </Text>
 

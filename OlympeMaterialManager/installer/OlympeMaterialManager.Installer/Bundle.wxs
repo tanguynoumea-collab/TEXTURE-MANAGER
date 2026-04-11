@@ -9,11 +9,14 @@
           UpgradeCode="C61152D7-C48D-4152-93D2-A29B1E798520">
 
     <!-- Detection variables: set by RegistrySearch -->
+    <Variable Name="Revit2023Detected" Type="string" Value="" />
     <Variable Name="Revit2024Detected" Type="string" Value="" />
     <Variable Name="Revit2025Detected" Type="string" Value="" />
     <Variable Name="Revit2026Detected" Type="string" Value="" />
 
     <!-- User selection variables (overridable by UI checkboxes) -->
+    <Variable Name="InstallRevit2023" Type="numeric" Value="0"
+              bal:Overridable="yes" />
     <Variable Name="InstallRevit2024" Type="numeric" Value="0"
               bal:Overridable="yes" />
     <Variable Name="InstallRevit2025" Type="numeric" Value="0"
@@ -22,6 +25,10 @@
               bal:Overridable="yes" />
 
     <!-- Registry searches: detect installed Revit versions -->
+    <util:RegistrySearch Variable="Revit2023Detected"
+                         Root="HKLM"
+                         Key="SOFTWARE\Autodesk\Revit\Autodesk Revit 2023\Components"
+                         Result="exists" />
     <util:RegistrySearch Variable="Revit2024Detected"
                          Root="HKLM"
                          Key="SOFTWARE\Autodesk\Revit\Autodesk Revit 2024\Components"
@@ -47,6 +54,7 @@
     <!-- Chain: single MSI with version selection properties -->
     <Chain>
       <MsiPackage SourceFile="$(var.PackagePath)">
+        <MsiProperty Name="INSTALL_REVIT2023" Value="[InstallRevit2023]" />
         <MsiProperty Name="INSTALL_REVIT2024" Value="[InstallRevit2024]" />
         <MsiProperty Name="INSTALL_REVIT2025" Value="[InstallRevit2025]" />
         <MsiProperty Name="INSTALL_REVIT2026" Value="[InstallRevit2026]" />
