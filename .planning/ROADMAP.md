@@ -101,11 +101,12 @@ Plans:
   2. An .exe installer is generated that detects installed Revit versions and lets the user choose which to target
   3. After installation, the add-in loads correctly in each selected Revit version (assemblies and .addin file in correct folders)
   4. The installer works on both Windows 10 and Windows 11
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [ ] 05-01-PLAN.md -- Complete Olympe dark theme with missing control styles (ContextMenu, MenuItem, ToolTip, CheckBox, etc.) and View audit
+- [ ] 05-02-PLAN.md -- WiX v5 installer project with Burn Bundle, MSI Features, registry detection, French UI, and build staging
+**UI hint**: yes
 
 ## Progress
 
@@ -118,4 +119,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Read Path -- Scene and Layer Display | 0/3 | Planned | - |
 | 3. Preset Panel and Set Mat | 0/3 | Planned | - |
 | 4. Material Editing and 3D Pick | 0/3 | Planned | - |
-| 5. Polish and Installer | 0/2 | Not started | - |
+| 5. Polish and Installer | 0/2 | Planned | - |
