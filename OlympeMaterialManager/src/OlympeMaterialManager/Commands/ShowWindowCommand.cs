@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Interop;
 using Autodesk.Revit.Attributes;
@@ -54,6 +55,37 @@ public class ShowWindowCommand : IExternalCommand
             PresetService.SetProjectDirectory(folder!);
         }
 
+        // FIA-01 : valider l'accessibilite du repertoire projet AVANT de construire
+        // les ViewModels (repertoire OneDrive/reseau deconnecte, droits insuffisants...).
+        // En cas d'echec, proposer de re-choisir un repertoire au lieu de propager l'exception.
+        while (!IsProjectDirectoryAccessible(out var currentDir))
+        {
+            var retry = MessageBox.Show(
+                $"Le repertoire de projet est inaccessible :\n{currentDir}\n\n" +
+                "Il est peut-etre deconnecte (reseau, OneDrive) ou vous n'avez pas les droits d'ecriture.\n\n" +
+                "Voulez-vous choisir un autre repertoire de projet ?",
+                "Olympe MaterialManager - Repertoire inaccessible",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (retry != MessageBoxResult.Yes)
+                return Result.Cancelled;
+
+            var newFolder = DialogService.ShowFolderBrowser("Choisir le repertoire de projet");
+            if (string.IsNullOrEmpty(newFolder))
+                return Result.Cancelled;
+
+            try
+            {
+                PresetService.SetProjectDirectory(newFolder!);
+            }
+            catch (Exception ex)
+            {
+                // Repertoire choisi lui-meme inaccessible : la boucle re-validera
+                LogService.Error($"Echec de definition du repertoire de projet : {newFolder}", ex);
+            }
+        }
+
         if (App.MainWindow == null)
         {
             var vm = new MainWindowViewModel(App.EventBridge);
@@ -77,5 +109,34 @@ public class ShowWindowCommand : IExternalCommand
         App.MainWindow.Show();
         App.MainWindow.Activate();
         return Result.Succeeded;
+    }
+
+    /// <summary>
+    /// Verifie que le repertoire de projet existe et est accessible en ecriture
+    /// (ecriture puis suppression immediate d'un fichier temporaire). FIA-01.
+    /// Si aucun repertoire n'est defini, le service retombe sur %APPDATA% : considere accessible.
+    /// </summary>
+    private static bool IsProjectDirectoryAccessible(out string directory)
+    {
+        var dir = PresetService.GetProjectDirectory();
+        if (string.IsNullOrEmpty(dir))
+        {
+            directory = string.Empty;
+            return true;
+        }
+
+        directory = dir!;
+        try
+        {
+            if (!Directory.Exists(dir)) return false;
+            var probe = Path.Combine(dir!, ".olympe-write-probe-" + Guid.NewGuid().ToString("N") + ".tmp");
+            File.WriteAllText(probe, string.Empty);
+            File.Delete(probe);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
