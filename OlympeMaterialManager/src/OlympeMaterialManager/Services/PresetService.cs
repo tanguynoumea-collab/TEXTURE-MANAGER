@@ -242,8 +242,21 @@ public class PresetService
     public static void MigrateProjectDirectory(string newPath)
     {
         var oldPath = GetProjectDirectory() ?? _appDataDir;
-        if (string.Equals(oldPath, newPath, StringComparison.OrdinalIgnoreCase))
+
+        // TST-06 : normaliser puis rejeter un nouveau chemin identique ou imbrique
+        // dans l'ancien — la copie recursive s'auto-repliquerait a l'infini.
+        var oldFull = Path.GetFullPath(oldPath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var newFull = Path.GetFullPath(newPath)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        if (string.Equals(oldFull, newFull, StringComparison.OrdinalIgnoreCase))
             return;
+
+        if (newFull.StartsWith(oldFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException(
+                $"Le nouveau repertoire de projet ne peut pas etre situe a l'interieur de l'ancien " +
+                $"(\"{newFull}\" est dans \"{oldFull}\"). Choisissez un dossier en dehors.");
 
         Directory.CreateDirectory(newPath);
 
