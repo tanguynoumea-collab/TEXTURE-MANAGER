@@ -26,6 +26,25 @@
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
 
+    <!-- === Visuel de focus clavier (UI-C1) ===
+         Pointille accent visible sur fond sombre, affiche par WPF uniquement
+         lors de la navigation clavier (Tab / fleches). Applique a tous les
+         templates custom qui n'ont pas de visuel IsFocused propre. -->
+    <Style x:Key="OlympeFocusVisualStyle">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="1"
+                               RadiusX="3" RadiusY="3"
+                               Stroke="{StaticResource AccentBrush}"
+                               StrokeThickness="1"
+                               StrokeDashArray="1 2"
+                               SnapsToDevicePixels="True" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- === Style Window (keyed - OlympeWindowStyle) === -->
     <Style x:Key="OlympeWindowStyle" TargetType="Window">
         <Setter Property="Background" Value="{StaticResource BackgroundBrush}" />
@@ -36,6 +55,7 @@
 
     <!-- === Style Button (implicit - ControlTemplate with CornerRadius=4) === -->
     <Style TargetType="Button">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -119,6 +139,7 @@
     <!-- ComboBox requires ToggleButton + Popup internals. Minimal version here with
          Background/Foreground/Border. Full ControlTemplate refinement in Phase 5 (UI-03). -->
     <Style TargetType="ComboBox">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -264,6 +285,7 @@
 
     <!-- === Style ListBoxItem === -->
     <Style TargetType="ListBoxItem">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="Padding" Value="8,4" />
@@ -305,6 +327,7 @@
 
     <!-- === Style TreeViewItem === -->
     <Style TargetType="TreeViewItem">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="Padding" Value="4,2" />
@@ -725,6 +748,7 @@
                                           Focusable="True">
                                 <ToggleButton.Style>
                                     <Style TargetType="ToggleButton">
+                                        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
                                         <Setter Property="Background" Value="Transparent" />
                                         <Setter Property="Template">
                                             <Setter.Value>
