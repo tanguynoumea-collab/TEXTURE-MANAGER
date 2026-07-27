@@ -24,6 +24,13 @@ public partial class RightPanelViewModel : ObservableObject
 
     private PresetCollectionDto? _collection;
 
+    /// <summary>
+    /// True si le dernier chargement du preset actif a echoue (fichier illisible, DON-02).
+    /// Tant que ce flag est leve, l'AutoSave est bloque pour ne pas ecraser de donnees.
+    /// Reinitialise des qu'un chargement reussit.
+    /// </summary>
+    private bool _presetLoadFailed;
+
     [ObservableProperty]
     private string _panelTitle = "Materiaux Preset";
 
@@ -445,7 +452,19 @@ public partial class RightPanelViewModel : ObservableObject
             if (string.IsNullOrEmpty(targetName) || !availablePresets.Contains(targetName))
                 targetName = availablePresets[0];
 
-            _collection = _presetService.LoadPreset(targetName);
+            var loaded = _presetService.LoadPreset(targetName);
+            if (loaded == null)
+            {
+                // Fichier illisible : quarantaine faite cote service, AutoSave bloque (DON-02)
+                _presetLoadFailed = true;
+                _collection = PresetService.GetDefaultCollection();
+                StatusMessage = $"Preset \"{targetName}\" illisible : fichier mis de cote (.corrupt), sauvegarde automatique desactivee.";
+            }
+            else
+            {
+                _presetLoadFailed = false;
+                _collection = loaded;
+            }
             ActivePresetName = targetName;
         }
         else
@@ -482,7 +501,19 @@ public partial class RightPanelViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(value)) return;
 
-        _collection = _presetService.LoadPreset(value!);
+        var loaded = _presetService.LoadPreset(value!);
+        if (loaded == null)
+        {
+            // Fichier illisible : quarantaine faite cote service, AutoSave bloque (DON-02)
+            _presetLoadFailed = true;
+            _collection = PresetService.GetDefaultCollection();
+            StatusMessage = $"Preset \"{value}\" illisible : fichier mis de cote (.corrupt), sauvegarde automatique desactivee.";
+        }
+        else
+        {
+            _presetLoadFailed = false;
+            _collection = loaded;
+        }
         PresetGroups = _collection.Groups;
 
         // Persister le choix dans les settings
@@ -500,6 +531,8 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     private void AutoSave()
     {
+        // Chargement en echec : ne surtout pas ecraser le fichier (DON-02)
+        if (_presetLoadFailed) return;
         if (_collection == null || string.IsNullOrEmpty(ActivePresetName)) return;
 
         _presetService.SavePreset(ActivePresetName!, _collection);

@@ -62,6 +62,28 @@ public class PresetService
             File.Move(tmpPath, path);
     }
 
+    /// <summary>
+    /// Met en quarantaine un fichier illisible en le renommant en
+    /// &lt;nom&gt;.corrupt-&lt;yyyyMMdd-HHmmss&gt; (DON-02). Le fichier original est
+    /// ainsi preserve au lieu d'etre ecrase par une sauvegarde ulterieure.
+    /// Retourne true si le renommage a reussi (false si le fichier est verrouille).
+    /// </summary>
+    private static bool TryQuarantineCorruptFile(string path)
+    {
+        try
+        {
+            var corruptPath = path + ".corrupt-" + DateTime.Now.ToString("yyyyMMdd-HHmmss");
+            File.Move(path, corruptPath);
+            LogService.Log($"Fichier illisible mis en quarantaine : {corruptPath}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            LogService.Error($"Echec de mise en quarantaine du fichier illisible : {path}", ex);
+            return false;
+        }
+    }
+
     public PresetService()
     {
         _projectDir = GetProjectDirectory() ?? _appDataDir;
@@ -177,14 +199,18 @@ public class PresetService
     /// </summary>
     public AppSettingsDto LoadSettings()
     {
+        // Fichier absent : cas normal (premier lancement), defaut silencieux.
+        if (!File.Exists(_settingsPath)) return new AppSettingsDto();
         try
         {
-            if (!File.Exists(_settingsPath)) return new AppSettingsDto();
             var json = File.ReadAllText(_settingsPath);
             return JsonSerializer.Deserialize<AppSettingsDto>(json, _options) ?? new AppSettingsDto();
         }
-        catch
+        catch (Exception ex)
         {
+            // Fichier present mais illisible : quarantaine + defaut (DON-02).
+            LogService.Error($"settings.json illisible : {_settingsPath}", ex);
+            TryQuarantineCorruptFile(_settingsPath);
             return new AppSettingsDto();
         }
     }
@@ -249,20 +275,25 @@ public class PresetService
 
     /// <summary>
     /// Charge un preset par nom depuis le dossier des presets.
+    /// Fichier absent : retourne la collection par defaut (cas normal).
+    /// Fichier present mais illisible (DON-02) : quarantaine en .corrupt-&lt;ts&gt;
+    /// et retourne null pour que l'appelant signale l'erreur et bloque l'AutoSave.
     /// </summary>
-    public PresetCollectionDto LoadPreset(string name)
+    public PresetCollectionDto? LoadPreset(string name)
     {
         var path = Path.Combine(GetPresetsDirectory(), name + ".json");
+        if (!File.Exists(path)) return GetDefaultCollection();
         try
         {
-            if (!File.Exists(path)) return GetDefaultCollection();
             var json = File.ReadAllText(path);
             return JsonSerializer.Deserialize<PresetCollectionDto>(json, _options)
                    ?? GetDefaultCollection();
         }
-        catch
+        catch (Exception ex)
         {
-            return GetDefaultCollection();
+            LogService.Error($"Preset illisible : {path}", ex);
+            TryQuarantineCorruptFile(path);
+            return null;
         }
     }
 
@@ -370,20 +401,25 @@ public class PresetService
 
     /// <summary>
     /// Charge une scene par nom depuis le dossier des scenes.
+    /// Fichier absent : retourne une scene vide (cas normal).
+    /// Fichier present mais illisible (DON-02) : quarantaine en .corrupt-&lt;ts&gt;
+    /// et retourne null pour que l'appelant signale l'erreur et bloque l'AutoSave.
     /// </summary>
-    public SceneDto LoadScene(string name)
+    public SceneDto? LoadScene(string name)
     {
         var path = Path.Combine(GetScenesDirectory(), name + ".json");
+        if (!File.Exists(path)) return new SceneDto { Name = name };
         try
         {
-            if (!File.Exists(path)) return new SceneDto { Name = name };
             var json = File.ReadAllText(path);
             var scene = JsonSerializer.Deserialize<SceneDto>(json, _options);
             return scene ?? new SceneDto { Name = name };
         }
-        catch
+        catch (Exception ex)
         {
-            return new SceneDto { Name = name };
+            LogService.Error($"Scene illisible : {path}", ex);
+            TryQuarantineCorruptFile(path);
+            return null;
         }
     }
 
@@ -427,24 +463,36 @@ public class PresetService
 
     /// <summary>
     /// Charge les scenes depuis l'ancien fichier unique (migration).
+    /// loadFailed passe a true si au moins un fichier present etait illisible (DON-02) :
+    /// l'appelant doit alors signaler l'erreur et bloquer l'AutoSave des scenes.
     /// </summary>
-    public SceneCollectionDto LoadScenes()
+    public SceneCollectionDto LoadScenes(out bool loadFailed)
     {
+        loadFailed = false;
+
         // Essayer d'abord le nouveau systeme multi-fichier
         var scenes = ListScenes();
         if (scenes.Count > 0)
         {
             var collection = new SceneCollectionDto();
             foreach (var name in scenes)
-                collection.Scenes.Add(LoadScene(name));
+            {
+                var scene = LoadScene(name);
+                if (scene == null)
+                {
+                    loadFailed = true;
+                    continue;
+                }
+                collection.Scenes.Add(scene);
+            }
             return collection;
         }
 
         // Fallback : ancien fichier unique
         var legacyPath = Path.Combine(_projectDir, "scenes.json");
+        if (!File.Exists(legacyPath)) return new SceneCollectionDto();
         try
         {
-            if (!File.Exists(legacyPath)) return new SceneCollectionDto();
             var json = File.ReadAllText(legacyPath);
             var result = JsonSerializer.Deserialize<SceneCollectionDto>(json, _options)
                          ?? new SceneCollectionDto();
@@ -458,8 +506,11 @@ public class PresetService
 
             return result;
         }
-        catch
+        catch (Exception ex)
         {
+            LogService.Error($"Fichier de scenes legacy illisible : {legacyPath}", ex);
+            TryQuarantineCorruptFile(legacyPath);
+            loadFailed = true;
             return new SceneCollectionDto();
         }
     }

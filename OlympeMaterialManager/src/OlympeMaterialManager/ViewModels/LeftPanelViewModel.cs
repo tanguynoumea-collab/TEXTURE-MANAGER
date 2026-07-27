@@ -127,12 +127,24 @@ public partial class LeftPanelViewModel : ObservableObject
     private void LoadScenes()
     {
         if (_presetService == null) return;
-        var collection = _presetService.LoadScenes();
+        var collection = _presetService.LoadScenes(out var loadFailed);
+        _scenesLoadFailed = loadFailed;
         foreach (var scene in collection.Scenes)
             Scenes.Add(scene);
         if (Scenes.Count > 0)
             ActiveScene = Scenes[0];
+
+        if (loadFailed)
+        {
+            ErrorMessage = "Une ou plusieurs scenes sont illisibles : fichiers mis de cote (.corrupt), sauvegarde automatique des scenes desactivee.";
+        }
     }
+
+    /// <summary>
+    /// True si le dernier chargement des scenes a rencontre un fichier illisible (DON-02).
+    /// Tant que ce flag est leve, l'AutoSave des scenes est bloque pour ne pas ecraser de donnees.
+    /// </summary>
+    private bool _scenesLoadFailed;
 
     /// <summary>
     /// Sauvegarde toutes les scenes dans le fichier JSON.
@@ -140,6 +152,8 @@ public partial class LeftPanelViewModel : ObservableObject
     private void AutoSaveScenes()
     {
         if (_presetService == null) return;
+        // Chargement en echec : ne surtout pas ecraser les fichiers (DON-02)
+        if (_scenesLoadFailed) return;
         var collection = new SceneCollectionDto { Scenes = Scenes };
         _presetService.SaveScenes(collection);
     }
@@ -216,6 +230,12 @@ public partial class LeftPanelViewModel : ObservableObject
 
             // Charger la scene depuis le fichier copie
             var scene = _presetService.LoadScene(sceneName);
+            if (scene == null)
+            {
+                // Fichier illisible : quarantaine faite cote service (DON-02)
+                ErrorMessage = $"Scene \"{sceneName}\" illisible : fichier mis de cote (.corrupt).";
+                return;
+            }
             if (string.IsNullOrEmpty(scene.Name))
                 scene.Name = sceneName;
 
