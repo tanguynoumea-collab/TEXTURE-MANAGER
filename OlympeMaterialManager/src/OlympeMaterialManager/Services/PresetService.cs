@@ -84,9 +84,14 @@ public class PresetService
         }
     }
 
-    public PresetService()
+    /// <summary>
+    /// Constructeur. Le repertoire de donnees est injectable pour les tests ;
+    /// par defaut (null), comportement inchange : repertoire de projet de
+    /// config.json, ou %APPDATA% en fallback.
+    /// </summary>
+    public PresetService(string? projectDirectory = null)
     {
-        _projectDir = GetProjectDirectory() ?? _appDataDir;
+        _projectDir = projectDirectory ?? GetProjectDirectory() ?? _appDataDir;
         Directory.CreateDirectory(_projectDir);
         _settingsPath = Path.Combine(_projectDir, "settings.json");
     }
