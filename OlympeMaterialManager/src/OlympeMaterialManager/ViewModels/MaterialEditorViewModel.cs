@@ -415,9 +415,17 @@ public partial class MaterialEditorViewModel : ObservableObject
     /// </summary>
     private void OnEditResult(object? result)
     {
-        if (result is Exception)
+        if (result is Exception ex)
         {
-            // Gestion gracieuse : ne rien faire de bloquant
+            // FIA-05 : signaler l'echec a l'utilisateur puis resynchroniser les champs
+            // avec l'etat reel du materiau Revit (la transaction a ete rollback).
+            Services.LogService.Error("Echec d'edition du materiau", ex);
+            System.Windows.MessageBox.Show(
+                $"Echec de la modification du materiau :\n{ex.Message}",
+                "Olympe MaterialManager",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            FetchMaterialDetails();
             return;
         }
 
