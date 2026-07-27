@@ -88,7 +88,7 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Cree un nouveau preset via un dialog de saisie.
+    /// Supprime le preset actif et son fichier apres confirmation (action destructive).
     /// </summary>
     [RelayCommand]
     private void SupprimerPreset()
@@ -118,6 +118,9 @@ public partial class RightPanelViewModel : ObservableObject
         StatusMessage = $"Preset \"{name}\" supprime.";
     }
 
+    /// <summary>
+    /// Cree un nouveau preset via un dialog de saisie.
+    /// </summary>
     [RelayCommand]
     private void CreerPreset()
     {
