@@ -47,6 +47,7 @@
                           MinWidth="160" />
                 <Button Content="+"
                         Command="{Binding CreerSceneCommand}"
+                        AutomationProperties.Name="Créer une scène"
                         ToolTip="Créer une nouvelle scène"
                         Width="32" Height="32"
                         Padding="0"
@@ -55,6 +56,7 @@
                         Margin="4,0,0,0" />
                 <Button Content="-"
                         Command="{Binding SupprimerSceneCommand}"
+                        AutomationProperties.Name="Supprimer la scène active"
                         ToolTip="Supprimer la scène active"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"
@@ -64,6 +66,7 @@
                         Margin="4,0,0,0" />
                 <Button Content="..."
                         Command="{Binding ChargerSceneExterneCommand}"
+                        AutomationProperties.Name="Charger une scène externe"
                         ToolTip="Charger une scène depuis un fichier externe"
                         Width="32" Height="32"
                         Padding="0"
@@ -92,6 +95,7 @@
                         Padding="8,4" />
                 <Button Content="-"
                         Command="{Binding SupprimerTypeCommand}"
+                        AutomationProperties.Name="Retirer le type sélectionné de la scène"
                         ToolTip="Retirer le type sélectionné de la scène"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"

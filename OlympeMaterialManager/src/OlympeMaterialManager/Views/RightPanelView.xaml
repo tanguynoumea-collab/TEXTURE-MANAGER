@@ -30,6 +30,7 @@
                           MinWidth="160" />
                 <Button Content="+"
                         Command="{Binding CreerPresetCommand}"
+                        AutomationProperties.Name="Créer un preset"
                         ToolTip="Créer un nouveau preset"
                         Width="32" Height="32"
                         Padding="0"
@@ -38,6 +39,7 @@
                         Margin="4,0,0,0" />
                 <Button Content="-"
                         Command="{Binding SupprimerPresetCommand}"
+                        AutomationProperties.Name="Supprimer le preset actif"
                         ToolTip="Supprimer le preset actif"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"
@@ -47,6 +49,7 @@
                         Margin="4,0,0,0" />
                 <Button Content="..."
                         Command="{Binding ChargerPresetExterneCommand}"
+                        AutomationProperties.Name="Charger un preset externe"
                         ToolTip="Charger un preset depuis un fichier externe"
                         Width="32" Height="32"
                         Padding="0"
@@ -63,6 +66,7 @@
                         Command="{Binding CreerGroupeCommand}" />
                 <Button Content="+"
                         Command="{Binding AjouterMateriauCommand}"
+                        AutomationProperties.Name="Ajouter un matériau au preset"
                         ToolTip="Ajouter un matériau au preset"
                         Width="32" Height="32"
                         Padding="0"
@@ -71,6 +75,7 @@
                         Margin="8,0,0,0" />
                 <Button Content="-"
                         Command="{Binding SupprimerSelectionCommand}"
+                        AutomationProperties.Name="Supprimer le groupe ou matériau sélectionné"
                         ToolTip="Supprimer le groupe ou matériau sélectionné"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"
@@ -176,6 +181,7 @@
                             <!-- Bouton color picker -->
                             <Button Content="..."
                                     Command="{Binding MaterialEditorVM.PickSurfaceColorCommand}"
+                                    AutomationProperties.Name="Choisir la couleur de surface"
                                     Width="32" Height="28"
                                     Padding="0"
                                     VerticalAlignment="Center"
@@ -253,6 +259,7 @@
                                     <!-- Bouton color picker teinte -->
                                     <Button Content="..."
                                             Command="{Binding MaterialEditorVM.PickTintColorCommand}"
+                                            AutomationProperties.Name="Choisir la couleur de teinte"
                                             Width="32" Height="28"
                                             Padding="0"
                                             VerticalAlignment="Center"
