@@ -7,7 +7,7 @@ namespace Olympe.MaterialManager.Helpers;
 public static class UiLabels
 {
     /// <summary>Materiau non assigne sur une couche : herite de la categorie.</summary>
-    public const string ByCategory = "< Par categorie >";
+    public const string ByCategory = "< Par catégorie >";
 
     /// <summary>Element reference par un id qui ne resout plus vers un nom.</summary>
     public const string Inconnu = "< Inconnu >";

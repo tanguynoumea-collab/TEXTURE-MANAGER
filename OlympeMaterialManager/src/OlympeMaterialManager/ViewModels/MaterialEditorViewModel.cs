@@ -299,7 +299,7 @@ public partial class MaterialEditorViewModel : ObservableObject
             // avec l'etat reel du materiau Revit (la transaction a ete rollback).
             Services.LogService.Error("Echec d'edition du materiau", ex);
             Services.DialogService.ShowError(
-                $"Echec de la modification du materiau :\n{ex.Message}");
+                $"Échec de la modification du matériau :\n{ex.Message}");
             FetchMaterialDetails();
             return;
         }

@@ -40,7 +40,7 @@ public class ShowWindowCommand : IExternalCommand
         {
             var result = MessageBox.Show(
                 "Bienvenue dans Olympe MaterialManager !\n\n" +
-                "Veuillez choisir un repertoire de projet pour stocker vos presets, scenes et parametres.",
+                "Veuillez choisir un répertoire de projet pour stocker vos presets, scènes et paramètres.",
                 "Olympe MaterialManager - Premier lancement",
                 MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
@@ -48,7 +48,7 @@ public class ShowWindowCommand : IExternalCommand
             if (result != MessageBoxResult.OK)
                 return Result.Cancelled;
 
-            var folder = DialogService.ShowFolderBrowser("Choisir le repertoire de projet");
+            var folder = DialogService.ShowFolderBrowser("Choisir le répertoire de projet");
             if (string.IsNullOrEmpty(folder))
                 return Result.Cancelled;
 
@@ -61,17 +61,17 @@ public class ShowWindowCommand : IExternalCommand
         while (!IsProjectDirectoryAccessible(out var currentDir))
         {
             var retry = MessageBox.Show(
-                $"Le repertoire de projet est inaccessible :\n{currentDir}\n\n" +
-                "Il est peut-etre deconnecte (reseau, OneDrive) ou vous n'avez pas les droits d'ecriture.\n\n" +
-                "Voulez-vous choisir un autre repertoire de projet ?",
-                "Olympe MaterialManager - Repertoire inaccessible",
+                $"Le répertoire de projet est inaccessible :\n{currentDir}\n\n" +
+                "Il est peut-être déconnecté (réseau, OneDrive) ou vous n'avez pas les droits d'écriture.\n\n" +
+                "Voulez-vous choisir un autre répertoire de projet ?",
+                "Olympe MaterialManager - Répertoire inaccessible",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
             if (retry != MessageBoxResult.Yes)
                 return Result.Cancelled;
 
-            var newFolder = DialogService.ShowFolderBrowser("Choisir le repertoire de projet");
+            var newFolder = DialogService.ShowFolderBrowser("Choisir le répertoire de projet");
             if (string.IsNullOrEmpty(newFolder))
                 return Result.Cancelled;
 
@@ -99,7 +99,7 @@ public class ShowWindowCommand : IExternalCommand
                 LogService.Error("Exception WPF non geree (dernier filet FIA-03)", args.Exception);
                 MessageBox.Show(
                     "Une erreur inattendue s'est produite :\n" + args.Exception.Message +
-                    "\n\nL'operation a ete annulee. Details dans le journal :\n" + LogService.LogPath,
+                    "\n\nL'opération a été annulée. Détails dans le journal :\n" + LogService.LogPath,
                     "Olympe MaterialManager - Erreur",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);

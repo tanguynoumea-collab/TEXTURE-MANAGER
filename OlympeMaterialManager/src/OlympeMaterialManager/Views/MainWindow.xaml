@@ -31,14 +31,14 @@
                 Padding="8,6">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Left"
-                           Text="Repertoire de projet :"
+                           Text="Répertoire de projet :"
                            VerticalAlignment="Center"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            Margin="0,0,8,0" />
                 <Button DockPanel.Dock="Right"
                         Content="Migrer"
                         Command="{Binding MigrerRepertoireCommand}"
-                        ToolTip="Migrer le repertoire"
+                        ToolTip="Migrer le répertoire"
                         Padding="12,4"
                         Margin="4,0,0,0" />
                 <Button DockPanel.Dock="Right"
@@ -97,7 +97,7 @@
                 Padding="8,6">
             <DockPanel>
                 <Button DockPanel.Dock="Right"
-                        Content="Appliquer le materiau"
+                        Content="Appliquer le matériau"
                         Command="{Binding AppliquerMateriauCommand}"
                         Style="{StaticResource SetMatButtonStyle}"
                         Margin="8,0,0,0" />

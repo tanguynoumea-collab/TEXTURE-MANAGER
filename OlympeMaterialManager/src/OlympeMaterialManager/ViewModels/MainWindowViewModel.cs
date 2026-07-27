@@ -116,7 +116,7 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void MigrerRepertoire()
     {
-        var newPath = DialogService.ShowFolderBrowser("Choisir le nouveau repertoire de projet");
+        var newPath = DialogService.ShowFolderBrowser("Choisir le nouveau répertoire de projet");
         if (string.IsNullOrEmpty(newPath)) return;
 
         try
@@ -125,7 +125,7 @@ public partial class MainWindowViewModel : ObservableObject
             ProjectDirectoryPath = newPath!;
 
             DialogService.ShowInfo(
-                $"Repertoire de projet migre avec succes vers :\n{newPath}");
+                $"Répertoire de projet migré avec succès vers :\n{newPath}");
         }
         catch (Exception ex)
         {
@@ -228,12 +228,12 @@ public partial class MainWindowViewModel : ObservableObject
             // D-18 : erreur avec message francais
             SetMatStatusText = $"Erreur : {ex.Message}";
             DialogService.ShowError(
-                $"Erreur lors de l'application du materiau :\n{ex.Message}");
+                $"Erreur lors de l'application du matériau :\n{ex.Message}");
         }
         else
         {
             // D-19 : retour visuel succes
-            SetMatStatusText = "Materiau applique !";
+            SetMatStatusText = "Matériau appliqué !";
 
             // D-25 : rafraichir le panneau central pour afficher les nouveaux noms de materiaux
             WeakReferenceMessenger.Default.Send(

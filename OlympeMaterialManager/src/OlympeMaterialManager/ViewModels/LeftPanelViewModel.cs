@@ -62,6 +62,9 @@ public partial class LeftPanelViewModel : ObservableObject
     [ObservableProperty]
     private string _pickButtonTooltip = "Ajouter un type par clic dans la vue 3D";
 
+    // Note UI-M7 : les identifiants de code restent sans accents ; seules les chaines
+    // visibles par l'utilisateur sont accentuees.
+
     /// <summary>
     /// Types de la scene active, utilise pour le binding du TreeView.
     /// Non genere par [ObservableProperty] -- leve PropertyChanged manuellement.
@@ -100,7 +103,7 @@ public partial class LeftPanelViewModel : ObservableObject
 
         if (loadFailed)
         {
-            ErrorMessage = "Une ou plusieurs scenes sont illisibles : fichiers mis de cote (.corrupt), sauvegarde automatique des scenes desactivee.";
+            ErrorMessage = "Une ou plusieurs scènes sont illisibles : fichiers mis de côté (.corrupt), sauvegarde automatique des scènes désactivée.";
         }
     }
 
@@ -129,7 +132,7 @@ public partial class LeftPanelViewModel : ObservableObject
         catch (Exception ex)
         {
             LogService.Error("Echec de sauvegarde des scenes", ex);
-            ErrorMessage = $"Echec de sauvegarde des scenes : {ex.Message}";
+            ErrorMessage = $"Échec de sauvegarde des scènes : {ex.Message}";
         }
     }
 
@@ -142,8 +145,8 @@ public partial class LeftPanelViewModel : ObservableObject
         if (ActiveScene == null || _presetService == null) return;
 
         if (!DialogService.Confirm(
-                $"Supprimer la scene \"{ActiveScene.Name}\" ?",
-                "Supprimer la scene"))
+                $"Supprimer la scène \"{ActiveScene.Name}\" ?",
+                "Supprimer la scène"))
             return;
 
         var name = ActiveScene.Name;
@@ -161,8 +164,8 @@ public partial class LeftPanelViewModel : ObservableObject
     private void CreerScene()
     {
         var dialog = new CreateNameDialog();
-        dialog.Title = "Nouvelle scene";
-        dialog.SetPrompt("Nom de la scene :");
+        dialog.Title = "Nouvelle scène";
+        dialog.SetPrompt("Nom de la scène :");
         dialog.Owner = App.MainWindow;
 
         if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.EnteredName))
@@ -183,7 +186,7 @@ public partial class LeftPanelViewModel : ObservableObject
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Charger une scene depuis un fichier externe",
+            Title = "Charger une scène depuis un fichier externe",
             Filter = "Fichiers JSON (*.json)|*.json",
             DefaultExt = ".json"
         };
@@ -201,14 +204,14 @@ public partial class LeftPanelViewModel : ObservableObject
             var json = File.ReadAllText(sourcePath);
             if (!PresetService.IsValidSceneJson(json))
             {
-                ErrorMessage = $"Fichier invalide : \"{Path.GetFileName(sourcePath)}\" n'est pas une scene JSON lisible. Import abandonne.";
+                ErrorMessage = $"Fichier invalide : \"{Path.GetFileName(sourcePath)}\" n'est pas une scène JSON lisible. Import abandonné.";
                 return;
             }
 
             // DON-09 : collision avec une scene existante -> confirmation avant ecrasement
             if (File.Exists(destPath) && !DialogService.Confirm(
-                    $"Une scene nommee \"{sceneName}\" existe deja.\nL'ecraser avec le fichier importe ?",
-                    "Scene existante"))
+                    $"Une scène nommée \"{sceneName}\" existe déjà.\nL'écraser avec le fichier importé ?",
+                    "Scène existante"))
             {
                 return;
             }
@@ -221,7 +224,7 @@ public partial class LeftPanelViewModel : ObservableObject
             if (scene == null)
             {
                 // Fichier illisible : quarantaine faite cote service (DON-02)
-                ErrorMessage = $"Scene \"{sceneName}\" illisible : fichier mis de cote (.corrupt).";
+                ErrorMessage = $"Scène \"{sceneName}\" illisible : fichier mis de côté (.corrupt).";
                 return;
             }
             // SEC-01 : le nom de la scene est TOUJOURS le nom du fichier importe,
@@ -234,7 +237,7 @@ public partial class LeftPanelViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Erreur chargement scene externe : {ex.Message}";
+            ErrorMessage = $"Erreur chargement scène externe : {ex.Message}";
         }
     }
 

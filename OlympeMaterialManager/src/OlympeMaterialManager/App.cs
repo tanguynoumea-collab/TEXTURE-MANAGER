@@ -38,11 +38,11 @@ public class App : IExternalApplication
         var panel = application.CreateRibbonPanel("Olympe MaterialManager");
         var buttonData = new PushButtonData(
             "ShowMaterialManager",
-            "Materiaux",
+            "Matériaux",
             assemblyPath,
             commandTypeName)
         {
-            ToolTip = "Ouvrir l'editeur de materiaux Olympe",
+            ToolTip = "Ouvrir l'éditeur de matériaux Olympe",
             LargeImage = LoadIcon("olympe-icon-32.png"),
             Image = LoadIcon("olympe-icon-16.png")
         };

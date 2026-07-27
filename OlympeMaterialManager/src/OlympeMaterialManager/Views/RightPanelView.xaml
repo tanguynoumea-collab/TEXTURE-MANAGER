@@ -30,7 +30,7 @@
                           MinWidth="160" />
                 <Button Content="+"
                         Command="{Binding CreerPresetCommand}"
-                        ToolTip="Creer un nouveau preset"
+                        ToolTip="Créer un nouveau preset"
                         Width="32" Height="32"
                         Padding="0"
                         FontSize="16"
@@ -59,11 +59,11 @@
             <StackPanel DockPanel.Dock="Top"
                         Orientation="Horizontal"
                         Margin="0,4,0,8">
-                <Button Content="Creer un groupe"
+                <Button Content="Créer un groupe"
                         Command="{Binding CreerGroupeCommand}" />
                 <Button Content="+"
                         Command="{Binding AjouterMateriauCommand}"
-                        ToolTip="Ajouter un materiau au preset"
+                        ToolTip="Ajouter un matériau au preset"
                         Width="32" Height="32"
                         Padding="0"
                         FontSize="16"
@@ -71,7 +71,7 @@
                         Margin="8,0,0,0" />
                 <Button Content="-"
                         Command="{Binding SupprimerSelectionCommand}"
-                        ToolTip="Supprimer le groupe ou materiau selectionne"
+                        ToolTip="Supprimer le groupe ou matériau sélectionné"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"
                         Padding="0"
@@ -108,7 +108,7 @@
                     <StackPanel>
 
                         <!-- Titre de la section -->
-                        <TextBlock Text="Editeur de materiau"
+                        <TextBlock Text="Éditeur de matériau"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"
                                    Margin="0,0,0,8" />

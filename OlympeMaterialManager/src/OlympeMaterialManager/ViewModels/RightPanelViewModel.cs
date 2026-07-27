@@ -32,7 +32,7 @@ public partial class RightPanelViewModel : ObservableObject
     private bool _presetLoadFailed;
 
     [ObservableProperty]
-    private string _panelTitle = "Materiaux Preset";
+    private string _panelTitle = "Matériaux Preset";
 
     [ObservableProperty]
     private ObservableCollection<PresetGroupDto> _presetGroups = new();
@@ -116,7 +116,7 @@ public partial class RightPanelViewModel : ObservableObject
             _collection = null;
         }
 
-        StatusMessage = $"Preset \"{name}\" supprime.";
+        StatusMessage = $"Preset \"{name}\" supprimé.";
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ public partial class RightPanelViewModel : ObservableObject
             // Verifier si le nom existe deja
             if (PresetNames.Contains(name))
             {
-                StatusMessage = $"Le preset \"{name}\" existe deja.";
+                StatusMessage = $"Le preset \"{name}\" existe déjà.";
                 return;
             }
 
@@ -145,7 +145,7 @@ public partial class RightPanelViewModel : ObservableObject
             PresetNames.Add(name);
             ActivePresetName = name;
             PresetGroups = _collection.Groups;
-            StatusMessage = $"Preset \"{name}\" cree.";
+            StatusMessage = $"Preset \"{name}\" créé.";
         }
     }
 
@@ -176,13 +176,13 @@ public partial class RightPanelViewModel : ObservableObject
             var json = File.ReadAllText(sourcePath);
             if (!PresetService.IsValidPresetJson(json))
             {
-                StatusMessage = $"Fichier invalide : \"{Path.GetFileName(sourcePath)}\" n'est pas un preset JSON lisible. Import abandonne.";
+                StatusMessage = $"Fichier invalide : \"{Path.GetFileName(sourcePath)}\" n'est pas un preset JSON lisible. Import abandonné.";
                 return;
             }
 
             // DON-09 : collision avec un preset existant -> confirmation avant ecrasement
             if (File.Exists(destPath) && !DialogService.Confirm(
-                    $"Un preset nomme \"{presetName}\" existe deja.\nL'ecraser avec le fichier importe ?",
+                    $"Un preset nommé \"{presetName}\" existe déjà.\nL'écraser avec le fichier importé ?",
                     "Preset existant"))
             {
                 return;
@@ -196,7 +196,7 @@ public partial class RightPanelViewModel : ObservableObject
                 PresetNames.Add(presetName);
 
             ActivePresetName = presetName;
-            StatusMessage = $"Preset \"{presetName}\" charge depuis fichier externe.";
+            StatusMessage = $"Preset \"{presetName}\" chargé depuis fichier externe.";
         }
         catch (Exception ex)
         {
@@ -220,7 +220,7 @@ public partial class RightPanelViewModel : ObservableObject
             var group = new PresetGroupDto { GroupName = dialog.EnteredName };
             PresetGroups.Add(group);
             _collection?.Groups.Add(group);
-            StatusMessage = $"Groupe \"{group.GroupName}\" cree.";
+            StatusMessage = $"Groupe \"{group.GroupName}\" créé.";
             AutoSave();
         }
     }
@@ -244,7 +244,7 @@ public partial class RightPanelViewModel : ObservableObject
 
         if (targetGroup == null)
         {
-            StatusMessage = "Creez d'abord un groupe de presets.";
+            StatusMessage = "Créez d'abord un groupe de presets.";
             return;
         }
 
@@ -271,8 +271,8 @@ public partial class RightPanelViewModel : ObservableObject
                         dialog.SelectedGroup.Materials.Add(mat);
                     }
                     StatusMessage = dialog.SelectedMaterials.Count == 1
-                        ? $"\"{dialog.SelectedMaterials[0].MaterialName}\" ajoute a \"{dialog.SelectedGroup.GroupName}\"."
-                        : $"{dialog.SelectedMaterials.Count} materiaux ajoutes a \"{dialog.SelectedGroup.GroupName}\".";
+                        ? $"\"{dialog.SelectedMaterials[0].MaterialName}\" ajouté à \"{dialog.SelectedGroup.GroupName}\"."
+                        : $"{dialog.SelectedMaterials.Count} matériaux ajoutés à \"{dialog.SelectedGroup.GroupName}\".";
                     AutoSave();
                 }
             }
@@ -292,7 +292,7 @@ public partial class RightPanelViewModel : ObservableObject
 
         sourceGroup.Materials.Remove(material);
         targetGroup.Materials.Add(material);
-        StatusMessage = $"\"{material.MaterialName}\" deplace vers \"{targetGroup.GroupName}\".";
+        StatusMessage = $"\"{material.MaterialName}\" déplacé vers \"{targetGroup.GroupName}\".";
         AutoSave();
     }
 
@@ -319,7 +319,7 @@ public partial class RightPanelViewModel : ObservableObject
                 if (group != null)
                 {
                     group.Materials.Add(newMat);
-                    StatusMessage = $"\"{newMat.MaterialName}\" duplique dans \"{group.GroupName}\".";
+                    StatusMessage = $"\"{newMat.MaterialName}\" dupliqué dans \"{group.GroupName}\".";
                     AutoSave();
                 }
             }
@@ -342,7 +342,7 @@ public partial class RightPanelViewModel : ObservableObject
         if (group != null)
         {
             group.Materials.Remove(material);
-            StatusMessage = $"\"{material.MaterialName}\" supprime de \"{group.GroupName}\".";
+            StatusMessage = $"\"{material.MaterialName}\" supprimé de \"{group.GroupName}\".";
 
             if (SelectedPresetMaterial == material)
                 SelectedPresetMaterial = null;
@@ -383,7 +383,7 @@ public partial class RightPanelViewModel : ObservableObject
         PresetGroups.Remove(group);
         SelectedGroup = null;
         SelectedPresetMaterial = null;
-        StatusMessage = $"Groupe \"{group.GroupName}\" supprime.";
+        StatusMessage = $"Groupe \"{group.GroupName}\" supprimé.";
         AutoSave();
     }
 
@@ -401,9 +401,9 @@ public partial class RightPanelViewModel : ObservableObject
             return true;
 
         var result = DialogService.ConfirmWithCancel(
-            $"Le groupe \"{group.GroupName}\" contient {group.Materials.Count} materiau(x).\n\n" +
-            "Oui = Transferer les materiaux dans un autre groupe\n" +
-            "Non = Supprimer le groupe et ses materiaux\n" +
+            $"Le groupe \"{group.GroupName}\" contient {group.Materials.Count} matériau(x).\n\n" +
+            "Oui = Transférer les matériaux dans un autre groupe\n" +
+            "Non = Supprimer le groupe et ses matériaux\n" +
             "Annuler = Ne rien faire",
             "Supprimer le groupe");
 
@@ -423,7 +423,7 @@ public partial class RightPanelViewModel : ObservableObject
         {
             targetGroup.Materials.Add(mat);
         }
-        StatusMessage = $"{group.Materials.Count} materiau(x) transfere(s) dans \"{targetGroup.GroupName}\".";
+        StatusMessage = $"{group.Materials.Count} matériau(x) transféré(s) dans \"{targetGroup.GroupName}\".";
         return true;
     }
 
@@ -493,7 +493,7 @@ public partial class RightPanelViewModel : ObservableObject
                 // Fichier illisible : quarantaine faite cote service, AutoSave bloque (DON-02)
                 _presetLoadFailed = true;
                 _collection = PresetService.GetDefaultCollection();
-                StatusMessage = $"Preset \"{targetName}\" illisible : fichier mis de cote (.corrupt), sauvegarde automatique desactivee.";
+                StatusMessage = $"Preset \"{targetName}\" illisible : fichier mis de côté (.corrupt), sauvegarde automatique désactivée.";
             }
             else
             {
@@ -542,7 +542,7 @@ public partial class RightPanelViewModel : ObservableObject
             // Fichier illisible : quarantaine faite cote service, AutoSave bloque (DON-02)
             _presetLoadFailed = true;
             _collection = PresetService.GetDefaultCollection();
-            StatusMessage = $"Preset \"{value}\" illisible : fichier mis de cote (.corrupt), sauvegarde automatique desactivee.";
+            StatusMessage = $"Preset \"{value}\" illisible : fichier mis de côté (.corrupt), sauvegarde automatique désactivée.";
         }
         else
         {
@@ -562,11 +562,11 @@ public partial class RightPanelViewModel : ObservableObject
         catch (Exception ex)
         {
             LogService.Error("Echec de sauvegarde des parametres (preset actif)", ex);
-            StatusMessage = $"Echec de sauvegarde des parametres : {ex.Message}";
+            StatusMessage = $"Échec de sauvegarde des paramètres : {ex.Message}";
         }
 
         // Mettre a jour le titre
-        PanelTitle = $"Materiaux Preset - {value}";
+        PanelTitle = $"Matériaux Preset - {value}";
     }
 
     /// <summary>
@@ -588,7 +588,7 @@ public partial class RightPanelViewModel : ObservableObject
         catch (Exception ex)
         {
             LogService.Error($"Echec de sauvegarde du preset \"{ActivePresetName}\"", ex);
-            StatusMessage = $"Echec de sauvegarde du preset \"{ActivePresetName}\" : {ex.Message}";
+            StatusMessage = $"Échec de sauvegarde du preset \"{ActivePresetName}\" : {ex.Message}";
         }
     }
 

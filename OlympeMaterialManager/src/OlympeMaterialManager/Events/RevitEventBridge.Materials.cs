@@ -43,7 +43,7 @@ public partial class RevitEventBridge
         }
 
         throw new InvalidOperationException(
-            $"Le materiau '{materialName}' n'existe pas dans ce document.");
+            $"Le matériau '{materialName}' n'existe pas dans ce document.");
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public partial class RevitEventBridge
     private static void HandleSetMaterialOnLayers(UIApplication uiApp, SetMatRequestDto request)
     {
         var doc = GetActiveDocument(uiApp);
-        using var tx = new Transaction(doc, "Olympe : Appliquer materiau aux couches");
+        using var tx = new Transaction(doc, "Olympe : Appliquer matériau aux couches");
         tx.Start();
 
         try
@@ -61,12 +61,12 @@ public partial class RevitEventBridge
             var typeId = ElementIdHelper.FromValue(request.TargetTypeIdValue);
             var hostAttrs = doc.GetElement(typeId) as HostObjAttributes;
             if (hostAttrs == null)
-                throw new InvalidOperationException("Le type selectionne n'est pas un type a couches.");
+                throw new InvalidOperationException("Le type sélectionné n'est pas un type à couches.");
 
             // COPY -- must call SetCompoundStructure() to persist
             var cs = hostAttrs.GetCompoundStructure();
             if (cs == null)
-                throw new InvalidOperationException("Le type n'a pas de structure composee.");
+                throw new InvalidOperationException("Le type n'a pas de structure composée.");
 
             // DON-04 : valider id + nom avant application (jamais de materiau silencieusement errone)
             var matId = ResolveMaterial(doc, request.MaterialIdValue, request.MaterialName).Id;
@@ -94,7 +94,7 @@ public partial class RevitEventBridge
     private static void HandleSetMaterialOnParameter(UIApplication uiApp, SetMatParamRequestDto request)
     {
         var doc = GetActiveDocument(uiApp);
-        using var tx = new Transaction(doc, "Olympe : Appliquer materiau aux parametres");
+        using var tx = new Transaction(doc, "Olympe : Appliquer matériau aux paramètres");
         tx.Start();
 
         try
@@ -109,12 +109,12 @@ public partial class RevitEventBridge
                 var param = element.LookupParameter(paramName);
                 if (param == null || param.IsReadOnly)
                     throw new InvalidOperationException(
-                        $"Le parametre '{paramName}' est introuvable ou en lecture seule.");
+                        $"Le paramètre '{paramName}' est introuvable ou en lecture seule.");
 
                 bool success = param.Set(matId);
                 if (!success)
                     throw new InvalidOperationException(
-                        $"Echec de l'assignation du materiau au parametre '{paramName}'.");
+                        $"Échec de l'assignation du matériau au paramètre '{paramName}'.");
             }
 
             tx.Commit();
@@ -135,7 +135,7 @@ public partial class RevitEventBridge
     private static PresetMaterialDto HandleDuplicateMaterial(UIApplication uiApp, DuplicateMaterialRequestDto request)
     {
         var doc = GetActiveDocument(uiApp);
-        using var tx = new Transaction(doc, "Olympe : Dupliquer materiau");
+        using var tx = new Transaction(doc, "Olympe : Dupliquer matériau");
         tx.Start();
 
         try
@@ -143,7 +143,7 @@ public partial class RevitEventBridge
             var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
             var original = doc.GetElement(matId) as Material;
             if (original == null)
-                throw new InvalidOperationException("Materiau source introuvable.");
+                throw new InvalidOperationException("Matériau source introuvable.");
 
             string newName = $"{original.Name} copie";
             // Gestion des collisions de nom
@@ -181,7 +181,7 @@ public partial class RevitEventBridge
     private static void HandleEditMaterialName(UIApplication uiApp, EditMaterialNameRequestDto request)
     {
         var doc = GetActiveDocument(uiApp);
-        using var tx = new Transaction(doc, "Olympe : Renommer materiau");
+        using var tx = new Transaction(doc, "Olympe : Renommer matériau");
         tx.Start();
 
         try
@@ -189,7 +189,7 @@ public partial class RevitEventBridge
             var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
             var material = doc.GetElement(matId) as Material;
             if (material == null)
-                throw new InvalidOperationException("Materiau introuvable.");
+                throw new InvalidOperationException("Matériau introuvable.");
 
             material.Name = request.NewName;
             tx.Commit();
@@ -209,7 +209,7 @@ public partial class RevitEventBridge
     private static void HandleEditMaterialDescription(UIApplication uiApp, EditMaterialDescriptionRequestDto request)
     {
         var doc = GetActiveDocument(uiApp);
-        using var tx = new Transaction(doc, "Olympe : Modifier description materiau");
+        using var tx = new Transaction(doc, "Olympe : Modifier description matériau");
         tx.Start();
 
         try
@@ -217,11 +217,11 @@ public partial class RevitEventBridge
             var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
             var material = doc.GetElement(matId) as Material;
             if (material == null)
-                throw new InvalidOperationException("Materiau introuvable.");
+                throw new InvalidOperationException("Matériau introuvable.");
 
             var descParam = material.get_Parameter(BuiltInParameter.ALL_MODEL_DESCRIPTION);
             if (descParam == null || descParam.IsReadOnly)
-                throw new InvalidOperationException("Le parametre description est introuvable ou en lecture seule.");
+                throw new InvalidOperationException("Le paramètre description est introuvable ou en lecture seule.");
 
             descParam.Set(request.NewDescription);
             tx.Commit();
@@ -249,7 +249,7 @@ public partial class RevitEventBridge
             var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
             var material = doc.GetElement(matId) as Material;
             if (material == null)
-                throw new InvalidOperationException("Materiau introuvable.");
+                throw new InvalidOperationException("Matériau introuvable.");
 
             // Modifier la couleur de base du materiau (Material.Color)
             // ET la couleur du motif de surface (SurfaceForegroundPatternColor)
@@ -272,7 +272,7 @@ public partial class RevitEventBridge
     private static void HandleEditMaterialTint(UIApplication uiApp, EditMaterialTintRequestDto request)
     {
         var doc = GetActiveDocument(uiApp);
-        using var tx = new Transaction(doc, "Olympe : Modifier teinte materiau");
+        using var tx = new Transaction(doc, "Olympe : Modifier teinte matériau");
         tx.Start();
 
         try
@@ -280,7 +280,7 @@ public partial class RevitEventBridge
             var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
             var material = doc.GetElement(matId) as Material;
             if (material == null)
-                throw new InvalidOperationException("Materiau introuvable.");
+                throw new InvalidOperationException("Matériau introuvable.");
 
             var assetElemId = material.AppearanceAssetId;
             if (assetElemId == ElementId.InvalidElementId)
@@ -302,7 +302,7 @@ public partial class RevitEventBridge
                     as AssetPropertyBoolean;
                 if (tintToggle == null)
                     throw new InvalidOperationException(
-                        "La teinte n'est pas modifiable sur ce type de materiau.");
+                        "La teinte n'est pas modifiable sur ce type de matériau.");
                 tintToggle.Value = request.TintEnabled;
 
                 // Couleur de teinte (RGB en doubles normalises 0.0-1.0)
@@ -312,7 +312,7 @@ public partial class RevitEventBridge
                         as AssetPropertyDoubleArray4d;
                     if (tintColor == null)
                         throw new InvalidOperationException(
-                            "La teinte n'est pas modifiable sur ce type de materiau.");
+                            "La teinte n'est pas modifiable sur ce type de matériau.");
                     tintColor.SetValueAsDoubles(new double[]
                     {
                         request.Red / 255.0,

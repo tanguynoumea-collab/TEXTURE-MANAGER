@@ -112,7 +112,7 @@ public class SanitizationAndSchemaTests : IDisposable
 
         var ex = Assert.Throws<ArgumentException>(
             () => PresetService.MigrateProjectDirectory(nested));
-        Assert.Contains("interieur", ex.Message); // message francais explicite
+        Assert.Contains("intérieur", ex.Message); // message francais explicite (accentue, UI-M7)
 
         // La garde doit lever AVANT toute creation de dossier
         Assert.False(Directory.Exists(nested));

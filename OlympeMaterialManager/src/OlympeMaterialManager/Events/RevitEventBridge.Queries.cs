@@ -192,7 +192,7 @@ public partial class RevitEventBridge
             {
                 ParameterName = element.Name,
                 ParameterDefinitionName = "",
-                CurrentMaterialName = "Aucun parametre materiau",
+                CurrentMaterialName = "Aucun paramètre matériau",
                 CurrentMaterialIdValue = -1
             });
         }
@@ -277,7 +277,7 @@ public partial class RevitEventBridge
         var matId = ElementIdHelper.FromValue(materialIdValue);
         var material = doc.GetElement(matId) as Material;
         if (material == null)
-            throw new InvalidOperationException("Materiau introuvable.");
+            throw new InvalidOperationException("Matériau introuvable.");
 
         var dto = new MaterialDetailsDto
         {

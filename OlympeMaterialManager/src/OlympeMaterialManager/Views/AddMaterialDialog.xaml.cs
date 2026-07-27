@@ -98,8 +98,8 @@ public partial class AddMaterialDialog : Window
 
         if (SelectedMaterials.Count == 0 || SelectedGroup == null)
         {
-            MessageBox.Show("Selectionnez au moins un materiau et un groupe cible.",
-                "Selection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Sélectionnez au moins un matériau et un groupe cible.",
+                "Sélection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 

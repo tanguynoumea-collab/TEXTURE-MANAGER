@@ -89,13 +89,13 @@
 
             <!-- Section 4 : Placeholder (aucun type selectionne) -->
             <TextBlock DockPanel.Dock="Top"
-                       Text="Selectionnez un type pour voir ses couches"
+                       Text="Sélectionnez un type pour voir ses couches"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        Visibility="{Binding ShowPlaceholder, Converter={StaticResource BoolToVis}}" />
 
             <!-- Section 4b : Message type compose -->
             <TextBlock DockPanel.Dock="Top"
-                       Text="Type compose — selectionnez un sous-type pour editer ses couches"
+                       Text="Type composé — sélectionnez un sous-type pour éditer ses couches"
                        Foreground="{StaticResource TextSecondaryBrush}"
                        FontStyle="Italic"
                        TextWrapping="Wrap"

@@ -20,7 +20,7 @@ public partial class CenterPanelViewModel : ObservableObject
     private readonly RevitEventBridge? _eventBridge;
 
     [ObservableProperty]
-    private string _panelTitle = "Couches / Parametres";
+    private string _panelTitle = "Couches / Paramètres";
 
     [ObservableProperty]
     private ObservableCollection<LayerDto> _layers = new();
@@ -125,7 +125,7 @@ public partial class CenterPanelViewModel : ObservableObject
             ShowLayers = false;
             ShowParameters = false;
             ShowCompositeMessage = true;
-            ModeLabel = "Type compose";
+            ModeLabel = "Type composé";
             return;
         }
 
@@ -171,7 +171,7 @@ public partial class CenterPanelViewModel : ObservableObject
     private void FetchMaterialParameters(long typeIdValue)
     {
         IsLoading = true;
-        ModeLabel = "Parametres materiaux";
+        ModeLabel = "Paramètres matériaux";
         ShowParameters = true;
         ShowLayers = false;
 

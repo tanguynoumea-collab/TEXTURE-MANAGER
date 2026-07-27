@@ -40,8 +40,8 @@ public partial class ChooseGroupDialog : Window
     {
         if (GroupComboBox.SelectedItem is not PresetGroupDto selected)
         {
-            MessageBox.Show("Veuillez selectionner un groupe.",
-                "Selection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("Veuillez sélectionner un groupe.",
+                "Sélection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 

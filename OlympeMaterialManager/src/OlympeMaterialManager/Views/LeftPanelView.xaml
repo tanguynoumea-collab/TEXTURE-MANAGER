@@ -47,7 +47,7 @@
                           MinWidth="160" />
                 <Button Content="+"
                         Command="{Binding CreerSceneCommand}"
-                        ToolTip="Creer une nouvelle scene"
+                        ToolTip="Créer une nouvelle scène"
                         Width="32" Height="32"
                         Padding="0"
                         FontSize="16"
@@ -55,7 +55,7 @@
                         Margin="4,0,0,0" />
                 <Button Content="-"
                         Command="{Binding SupprimerSceneCommand}"
-                        ToolTip="Supprimer la scene active"
+                        ToolTip="Supprimer la scène active"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"
                         Padding="0"
@@ -64,7 +64,7 @@
                         Margin="4,0,0,0" />
                 <Button Content="..."
                         Command="{Binding ChargerSceneExterneCommand}"
-                        ToolTip="Charger une scene depuis un fichier externe"
+                        ToolTip="Charger une scène depuis un fichier externe"
                         Width="32" Height="32"
                         Padding="0"
                         FontSize="12"
@@ -92,7 +92,7 @@
                         Padding="8,4" />
                 <Button Content="-"
                         Command="{Binding SupprimerTypeCommand}"
-                        ToolTip="Retirer le type selectionne de la scene"
+                        ToolTip="Retirer le type sélectionné de la scène"
                         Style="{StaticResource DangerButtonStyle}"
                         Width="32" Height="32"
                         Padding="0"
@@ -141,7 +141,7 @@
                                 <Run Text=" : " />
                                 <Run Text="{Binding TypeName, Mode=OneWay}" />
                             </TextBlock>
-                            <TextBlock Text="  [Compose]"
+                            <TextBlock Text="  [Composé]"
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        FontStyle="Italic"
                                        FontSize="11">

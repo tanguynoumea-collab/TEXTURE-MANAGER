@@ -89,15 +89,15 @@ public class PresetService
     public static string? ValidateFileName(string? name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return "Le nom ne peut pas etre vide.";
+            return "Le nom ne peut pas être vide.";
 
         // net48 : IsNullOrWhiteSpace n'a pas [NotNullWhen(false)], name est prouve non null ici.
         var trimmed = name!.Trim();
         if (trimmed.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            return "Le nom contient des caracteres interdits (\\ / : * ? \" < > | ...).";
+            return "Le nom contient des caractères interdits (\\ / : * ? \" < > | ...).";
 
         if (Array.Exists(_reservedFileNames, r => string.Equals(r, trimmed, StringComparison.OrdinalIgnoreCase)))
-            return $"\"{trimmed}\" est un nom reserve par Windows.";
+            return $"\"{trimmed}\" est un nom réservé par Windows.";
 
         return null;
     }
@@ -264,7 +264,7 @@ public class PresetService
 
         if (newFull.StartsWith(oldFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException(
-                $"Le nouveau repertoire de projet ne peut pas etre situe a l'interieur de l'ancien " +
+                $"Le nouveau répertoire de projet ne peut pas être situé à l'intérieur de l'ancien " +
                 $"(\"{newFull}\" est dans \"{oldFull}\"). Choisissez un dossier en dehors.");
 
         Directory.CreateDirectory(newPath);

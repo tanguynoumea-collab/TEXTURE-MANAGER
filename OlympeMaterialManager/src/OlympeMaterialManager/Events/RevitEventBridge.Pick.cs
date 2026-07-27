@@ -32,7 +32,7 @@ public partial class RevitEventBridge
         var doc = uiDoc.Document;
 
         if (uiDoc.ActiveView is not View3D)
-            throw new InvalidOperationException("Vue 3D requise pour la selection par clic.");
+            throw new InvalidOperationException("Vue 3D requise pour la sélection par clic.");
 
         ShowPickInstructions();
 
@@ -70,12 +70,12 @@ public partial class RevitEventBridge
     /// </summary>
     private static void ShowPickInstructions()
     {
-        var td = new TaskDialog("Selection 3D")
+        var td = new TaskDialog("Sélection 3D")
         {
-            MainInstruction = "Selection d'elements dans la vue 3D",
-            MainContent = "Cliquez sur les elements a ajouter a la scene.\n" +
-                          "Toutes les occurences du type seront marquees en vert.\n\n" +
-                          "Appuyez sur ECHAP pour valider.",
+            MainInstruction = "Sélection d'éléments dans la vue 3D",
+            MainContent = "Cliquez sur les éléments à ajouter à la scène.\n" +
+                          "Toutes les occurrences du type seront marquées en vert.\n\n" +
+                          "Appuyez sur ÉCHAP pour valider.",
             CommonButtons = TaskDialogCommonButtons.Ok
         };
         td.Show();
@@ -217,7 +217,7 @@ public partial class RevitEventBridge
             // FIA-07 : echec de nettoyage logge et signale a l'utilisateur
             // (la surbrillance verte resterait commitee sans explication).
             LogService.Error("HandlePickElementInView: echec du nettoyage des overrides verts", cleanEx);
-            return "La surbrillance verte n'a pas pu etre retiree de la vue 3D. " +
+            return "La surbrillance verte n'a pas pu être retirée de la vue 3D. " +
                    "Utilisez Annuler (Ctrl+Z) dans Revit pour la retirer.";
         }
     }
