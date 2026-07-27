@@ -813,27 +813,32 @@ public class RevitEventBridge : IExternalEventHandler
             {
                 Asset editableAsset = scope.Start(assetElemId);
 
-                // Toggle teinte on/off
+                // ADK-02 : sur les assets PBR modernes, les proprietes generiques
+                // common_Tint_* n'existent pas et FindByName retourne null. Echec
+                // explicite plutot que no-op silencieux : la transaction rollback,
+                // le VM affiche le message et resynchronise l'UI (FIA-05).
                 var tintToggle = editableAsset.FindByName(RevitAssetProps.TintToggle)
                     as AssetPropertyBoolean;
-                if (tintToggle != null)
-                    tintToggle.Value = request.TintEnabled;
+                if (tintToggle == null)
+                    throw new InvalidOperationException(
+                        "La teinte n'est pas modifiable sur ce type de materiau.");
+                tintToggle.Value = request.TintEnabled;
 
                 // Couleur de teinte (RGB en doubles normalises 0.0-1.0)
                 if (request.TintEnabled)
                 {
                     var tintColor = editableAsset.FindByName(RevitAssetProps.TintColor)
                         as AssetPropertyDoubleArray4d;
-                    if (tintColor != null)
+                    if (tintColor == null)
+                        throw new InvalidOperationException(
+                            "La teinte n'est pas modifiable sur ce type de materiau.");
+                    tintColor.SetValueAsDoubles(new double[]
                     {
-                        tintColor.SetValueAsDoubles(new double[]
-                        {
-                            request.Red / 255.0,
-                            request.Green / 255.0,
-                            request.Blue / 255.0,
-                            1.0 // Alpha
-                        });
-                    }
+                        request.Red / 255.0,
+                        request.Green / 255.0,
+                        request.Blue / 255.0,
+                        1.0 // Alpha
+                    });
                 }
 
                 scope.Commit(true); // true = forcer la mise a jour des vues
