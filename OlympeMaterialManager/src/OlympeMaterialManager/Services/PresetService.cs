@@ -16,6 +16,15 @@ namespace Olympe.MaterialManager.Services;
 /// </summary>
 public class PresetService
 {
+    /// <summary>
+    /// Noms des sous-dossiers de persistance du repertoire de projet (MAINT-08).
+    /// </summary>
+    private static class StorageFolders
+    {
+        public const string Presets = "presets";
+        public const string Scenes = "scenes";
+    }
+
     private static readonly JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
@@ -228,8 +237,8 @@ public class PresetService
     public static void SetProjectDirectory(string path)
     {
         Directory.CreateDirectory(path);
-        Directory.CreateDirectory(Path.Combine(path, "presets"));
-        Directory.CreateDirectory(Path.Combine(path, "scenes"));
+        Directory.CreateDirectory(Path.Combine(path, StorageFolders.Presets));
+        Directory.CreateDirectory(Path.Combine(path, StorageFolders.Scenes));
 
         var config = new ProjectConfigDto { ProjectDirectory = path };
         WriteJsonAtomic(_configPath, config);
@@ -266,10 +275,12 @@ public class PresetService
             File.Copy(oldSettings, Path.Combine(newPath, "settings.json"), overwrite: true);
 
         // Copier le dossier presets/
-        CopyDirectoryContents(Path.Combine(oldPath, "presets"), Path.Combine(newPath, "presets"));
+        CopyDirectoryContents(
+            Path.Combine(oldPath, StorageFolders.Presets), Path.Combine(newPath, StorageFolders.Presets));
 
         // Copier le dossier scenes/
-        CopyDirectoryContents(Path.Combine(oldPath, "scenes"), Path.Combine(newPath, "scenes"));
+        CopyDirectoryContents(
+            Path.Combine(oldPath, StorageFolders.Scenes), Path.Combine(newPath, StorageFolders.Scenes));
 
         // Mettre a jour config.json
         SetProjectDirectory(newPath);
@@ -362,7 +373,7 @@ public class PresetService
     /// </summary>
     public string GetPresetsDirectory()
     {
-        var dir = Path.Combine(_projectDir, "presets");
+        var dir = Path.Combine(_projectDir, StorageFolders.Presets);
         Directory.CreateDirectory(dir);
         return dir;
     }
@@ -484,7 +495,7 @@ public class PresetService
     /// </summary>
     public string GetScenesDirectory()
     {
-        var dir = Path.Combine(_projectDir, "scenes");
+        var dir = Path.Combine(_projectDir, StorageFolders.Scenes);
         Directory.CreateDirectory(dir);
         return dir;
     }

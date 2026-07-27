@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using Olympe.MaterialManager.Helpers;
 
 namespace Olympe.MaterialManager.Converters;
 
@@ -14,8 +15,8 @@ public class ArgbToColorConverter : IValueConverter
     {
         if (value is int argb)
         {
-            var color = System.Drawing.Color.FromArgb(argb);
-            return Color.FromArgb(color.A, color.R, color.G, color.B);
+            var (a, r, g, b) = ArgbUtils.UnpackArgb(argb);
+            return Color.FromArgb(a, r, g, b);
         }
         return Colors.Gray;
     }

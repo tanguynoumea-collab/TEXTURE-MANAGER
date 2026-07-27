@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Olympe.MaterialManager.Events;
+using Olympe.MaterialManager.Helpers;
 using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
 
@@ -134,16 +135,12 @@ public partial class MaterialEditorViewModel : ObservableObject
                 HasAppearanceAsset = dto.HasAppearanceAsset;
 
                 // Extraire les composantes RGB de la couleur de surface
-                ColorR = (byte)((dto.ColorArgb >> 16) & 0xFF);
-                ColorG = (byte)((dto.ColorArgb >> 8) & 0xFF);
-                ColorB = (byte)(dto.ColorArgb & 0xFF);
+                (_, ColorR, ColorG, ColorB) = ArgbUtils.UnpackArgb(dto.ColorArgb);
 
                 // Extraire les composantes RGB de la teinte
                 // Utiliser le flag _isFetching pour eviter de declencher OnTintEnabledChanged
                 _isFetching = true;
-                TintR = (byte)((dto.TintColorArgb >> 16) & 0xFF);
-                TintG = (byte)((dto.TintColorArgb >> 8) & 0xFF);
-                TintB = (byte)(dto.TintColorArgb & 0xFF);
+                (_, TintR, TintG, TintB) = ArgbUtils.UnpackArgb(dto.TintColorArgb);
                 TintColorArgb = dto.TintColorArgb;
                 TintEnabled = dto.TintEnabled;
                 _isFetching = false;
@@ -230,7 +227,7 @@ public partial class MaterialEditorViewModel : ObservableObject
             ColorG = dialog.Color.G;
             ColorB = dialog.Color.B;
             // Mettre a jour le ColorArgb pour rafraichir le carre de couleur
-            ColorArgb = System.Drawing.Color.FromArgb(255, ColorR, ColorG, ColorB).ToArgb();
+            ColorArgb = ArgbUtils.PackArgb(ColorR, ColorG, ColorB);
             EditColorCommand.Execute(null);
         }
     }
@@ -254,7 +251,7 @@ public partial class MaterialEditorViewModel : ObservableObject
             TintG = dialog.Color.G;
             TintB = dialog.Color.B;
             // Mettre a jour le TintColorArgb pour rafraichir le carre de teinte
-            TintColorArgb = System.Drawing.Color.FromArgb(255, TintR, TintG, TintB).ToArgb();
+            TintColorArgb = ArgbUtils.PackArgb(TintR, TintG, TintB);
             EditTintCommand.Execute(null);
         }
     }

@@ -198,13 +198,13 @@ public class RevitEventBridge : IExternalEventHandler
             {
                 var layer = layers[i];
                 var matId = layer.MaterialId;
-                string matName = "< Par categorie >";
+                string matName = UiLabels.ByCategory;
                 long matIdValue = ElementIdHelper.GetValue(matId);
 
                 if (matId != ElementId.InvalidElementId)
                 {
                     var mat = doc.GetElement(matId);
-                    matName = mat?.Name ?? "< Inconnu >";
+                    matName = mat?.Name ?? UiLabels.Inconnu;
                 }
 
                 double widthMm = UnitUtils.ConvertFromInternalUnits(
@@ -265,13 +265,13 @@ public class RevitEventBridge : IExternalEventHandler
                         {
                             var layer = subLayers[i];
                             var matId = layer.MaterialId;
-                            string matName = "< Par categorie >";
+                            string matName = UiLabels.ByCategory;
                             long matIdValue = ElementIdHelper.GetValue(matId);
 
                             if (matId != ElementId.InvalidElementId)
                             {
                                 var mat = doc.GetElement(matId);
-                                matName = mat?.Name ?? "< Inconnu >";
+                                matName = mat?.Name ?? UiLabels.Inconnu;
                             }
 
                             double widthMm = UnitUtils.ConvertFromInternalUnits(
@@ -376,13 +376,13 @@ public class RevitEventBridge : IExternalEventHandler
             seenNames.Add(paramKey);
 
             var matId = param.AsElementId();
-            string matName = "< Aucun >";
+            string matName = UiLabels.Aucun;
             long matIdValue = ElementIdHelper.GetValue(matId);
 
             if (matId != ElementId.InvalidElementId)
             {
                 var mat = doc.GetElement(matId);
-                matName = mat?.Name ?? "< Inconnu >";
+                matName = mat?.Name ?? UiLabels.Inconnu;
             }
 
             result.Add(new MaterialParamDto
@@ -589,7 +589,7 @@ public class RevitEventBridge : IExternalEventHandler
     private static int ExtractColorArgb(Material m)
     {
         if (m.Color.IsValid)
-            return System.Drawing.Color.FromArgb(255, m.Color.Red, m.Color.Green, m.Color.Blue).ToArgb();
+            return ArgbUtils.PackArgb(m.Color.Red, m.Color.Green, m.Color.Blue);
         return System.Drawing.Color.Gray.ToArgb();
     }
 
@@ -632,11 +632,11 @@ public class RevitEventBridge : IExternalEventHandler
             {
                 var renderAsset = assetElem.GetRenderingAsset();
 
-                var tintToggle = renderAsset.FindByName("common_Tint_toggle")
+                var tintToggle = renderAsset.FindByName(RevitAssetProps.TintToggle)
                     as AssetPropertyBoolean;
                 dto.TintEnabled = tintToggle?.Value ?? false;
 
-                var tintColor = renderAsset.FindByName("common_Tint_color")
+                var tintColor = renderAsset.FindByName(RevitAssetProps.TintColor)
                     as AssetPropertyDoubleArray4d;
                 if (tintColor != null)
                 {
@@ -646,7 +646,7 @@ public class RevitEventBridge : IExternalEventHandler
                         byte r = (byte)(values[0] * 255);
                         byte g = (byte)(values[1] * 255);
                         byte b = (byte)(values[2] * 255);
-                        dto.TintColorArgb = System.Drawing.Color.FromArgb(255, r, g, b).ToArgb();
+                        dto.TintColorArgb = ArgbUtils.PackArgb(r, g, b);
                     }
                 }
             }
@@ -776,7 +776,7 @@ public class RevitEventBridge : IExternalEventHandler
                 Asset editableAsset = scope.Start(assetElemId);
 
                 // Toggle teinte on/off
-                var tintToggle = editableAsset.FindByName("common_Tint_toggle")
+                var tintToggle = editableAsset.FindByName(RevitAssetProps.TintToggle)
                     as AssetPropertyBoolean;
                 if (tintToggle != null)
                     tintToggle.Value = request.TintEnabled;
@@ -784,7 +784,7 @@ public class RevitEventBridge : IExternalEventHandler
                 // Couleur de teinte (RGB en doubles normalises 0.0-1.0)
                 if (request.TintEnabled)
                 {
-                    var tintColor = editableAsset.FindByName("common_Tint_color")
+                    var tintColor = editableAsset.FindByName(RevitAssetProps.TintColor)
                         as AssetPropertyDoubleArray4d;
                     if (tintColor != null)
                     {
@@ -1049,8 +1049,8 @@ public class RevitEventBridge : IExternalEventHandler
     {
         var patternId = material.SurfaceForegroundPatternId;
         if (patternId == ElementId.InvalidElementId)
-            return "< Aucun >";
+            return UiLabels.Aucun;
         var pattern = doc.GetElement(patternId) as FillPatternElement;
-        return pattern?.Name ?? "< Inconnu >";
+        return pattern?.Name ?? UiLabels.Inconnu;
     }
 }
