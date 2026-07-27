@@ -23,13 +23,46 @@ public class RevitEventBridge : IExternalEventHandler
     /// <summary>
     /// Envoie une requete au thread Revit via ExternalEvent.
     /// Utilise une file d'attente pour supporter plusieurs requetes simultanees.
+    /// FIA-04 : si Raise() ne retourne ni Accepted ni Pending, la requete ne sera
+    /// jamais executee — elle est retiree de la queue et le callback recoit une
+    /// exception pour que les flags d'occupation (busy/pick) se liberent.
     /// </summary>
     public void MakeRequest(RevitRequestType type, object? data, Action<object?> callback)
     {
         LogService.Log($"MakeRequest: {type}, data={data?.GetType().Name ?? "null"}");
-        _queue.Enqueue(new RequestEntry(type, data, callback));
+        var entry = new RequestEntry(type, data, callback);
+        _queue.Enqueue(entry);
         var raiseResult = App.RevitEvent.Raise();
         LogService.Log($"MakeRequest: Raise() returned {raiseResult}, queue size={_queue.Count}");
+
+        if (raiseResult != ExternalEventRequest.Accepted && raiseResult != ExternalEventRequest.Pending)
+        {
+            RemoveFromQueue(entry);
+            LogService.Error($"MakeRequest: Raise() refuse ({raiseResult}) pour {type}, requete abandonnee");
+            callback(new InvalidOperationException(
+                $"Revit n'a pas accepte la requete (etat : {raiseResult})."));
+        }
+    }
+
+    /// <summary>
+    /// Retire une entree precise de la queue (drain + re-enqueue des autres, FIA-04).
+    /// Appele uniquement depuis le thread UI quand Raise() vient d'echouer.
+    /// </summary>
+    private void RemoveFromQueue(RequestEntry entry)
+    {
+        var kept = new List<RequestEntry>();
+        bool removed = false;
+        while (_queue.TryDequeue(out var e))
+        {
+            if (!removed && e.Equals(entry))
+            {
+                removed = true;
+                continue;
+            }
+            kept.Add(e);
+        }
+        foreach (var e in kept)
+            _queue.Enqueue(e);
     }
 
     /// <summary>
