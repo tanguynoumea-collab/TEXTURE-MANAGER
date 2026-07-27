@@ -89,10 +89,24 @@
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Style>
-                <Button Content="Ajouter par clic dans la vue"
-                        Command="{Binding AjouterParClicCommand}"
+                <!-- UI-m10 : le bouton reflete l'etat du mode pick (IsPickMode) -->
+                <Button Command="{Binding AjouterParClicCommand}"
                         ToolTip="{Binding PickButtonTooltip}"
-                        Padding="8,4" />
+                        Padding="8,4">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Content" Value="Ajouter par clic dans la vue" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPickMode}" Value="True">
+                                    <Setter Property="Content" Value="Sélection en cours — cliquez dans la vue" />
+                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                    <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 <Button Content="-"
                         Command="{Binding SupprimerTypeCommand}"
                         AutomationProperties.Name="Retirer le type sélectionné de la scène"
