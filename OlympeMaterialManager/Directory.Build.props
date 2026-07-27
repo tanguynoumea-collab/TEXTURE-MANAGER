@@ -6,4 +6,13 @@
   <PropertyGroup>
     <Version>1.4.0</Version>
   </PropertyGroup>
+
+  <!-- ARC-08 + MAINT-15 : analyseurs CA actives (jeu recommande le plus recent)
+       et regles de style .editorconfig verifiees au build. La baseline exigee
+       reste 0 warning : les regles bruyantes non pertinentes sont abaissees en
+       suggestion dans .editorconfig, jamais desactivees en silence. -->
+  <PropertyGroup>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 </Project>

@@ -85,7 +85,7 @@ public partial class RightPanelView : UserControl
     /// <summary>
     /// Determine le groupe cible sous le curseur lors du drop.
     /// </summary>
-    private PresetGroupDto? GetTargetGroup(DragEventArgs e)
+    private static PresetGroupDto? GetTargetGroup(DragEventArgs e)
     {
         if (e.OriginalSource is not DependencyObject source) return null;
         var treeViewItem = FindAncestor<TreeViewItem>(source);

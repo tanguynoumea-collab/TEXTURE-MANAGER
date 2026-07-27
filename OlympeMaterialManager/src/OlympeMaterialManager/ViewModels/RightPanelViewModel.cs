@@ -508,7 +508,7 @@ public partial class RightPanelViewModel : ObservableObject
             var storedPath = settings.PresetFilePath;
             if (storedPath != null && File.Exists(storedPath))
             {
-                _collection = _presetService.Load(storedPath);
+                _collection = PresetService.Load(storedPath);
 
                 // Migrer vers le nouveau systeme
                 var migratedName = "Preset migre";

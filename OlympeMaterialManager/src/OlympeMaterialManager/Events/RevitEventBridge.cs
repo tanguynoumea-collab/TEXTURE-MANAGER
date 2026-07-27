@@ -101,7 +101,7 @@ public partial class RevitEventBridge : IExternalEventHandler
     /// <summary>
     /// Traite une seule requete sur le thread Revit.
     /// </summary>
-    private void ProcessSingleRequest(UIApplication uiApp, RevitRequestType type, object? data, Action<object?> callback)
+    private static void ProcessSingleRequest(UIApplication uiApp, RevitRequestType type, object? data, Action<object?> callback)
     {
         if (type == RevitRequestType.None)
         {

@@ -454,7 +454,7 @@ public class PresetService
     /// Charge une collection de presets depuis un fichier JSON.
     /// Retourne la collection par defaut en cas d'erreur.
     /// </summary>
-    public PresetCollectionDto Load(string path)
+    public static PresetCollectionDto Load(string path)
     {
         try
         {
@@ -645,7 +645,7 @@ public class PresetService
 
     // ---- DTO interne pour config.json ----
 
-    private class ProjectConfigDto
+    private sealed class ProjectConfigDto
     {
         public string? ProjectDirectory { get; set; }
     }

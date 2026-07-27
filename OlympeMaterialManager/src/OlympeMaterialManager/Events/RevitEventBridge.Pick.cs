@@ -25,7 +25,7 @@ public partial class RevitEventBridge
     /// ARC-05 : le hide/show de la fenetre WPF est gere par le ViewModel appelant
     /// (LeftPanelViewModel.AjouterParClic) — le bridge ne touche jamais a la fenetre.
     /// </summary>
-    private static object? HandlePickElementInView(UIApplication uiApp)
+    private static List<SceneTypeDto>? HandlePickElementInView(UIApplication uiApp)
     {
         var uiDoc = uiApp.ActiveUIDocument;
         if (uiDoc == null) return null;

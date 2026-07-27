@@ -100,7 +100,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// Ouvre le repertoire de projet dans l'Explorateur Windows.
     /// </summary>
     [RelayCommand]
-    private void OuvrirRepertoire()
+    private static void OuvrirRepertoire()
     {
         var path = PresetService.GetProjectDirectory();
         if (!string.IsNullOrEmpty(path) && System.IO.Directory.Exists(path))

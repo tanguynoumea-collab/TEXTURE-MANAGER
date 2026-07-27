@@ -1,0 +1,52 @@
+# ARC-08 / MAINT-15 — style fige sur l'existant du projet (constate, pas invente).
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{xml,xaml,wxs,wixproj,csproj,props,targets}]
+indent_size = 2
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# --- Style constate dans le code ---
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+dotnet_sort_system_directives_first = true
+
+# Champs prives en _camelCase (convention CLAUDE.md)
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case
+dotnet_naming_rule.private_fields_underscore.severity = warning
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+
+# --- Regles CA abaissees en suggestion (une ligne de justification chacune) ---
+# CA1031 : les catch(Exception) generiques sont le pattern voulu du bridge (resultat=Exception -> callback)
+dotnet_diagnostic.CA1031.severity = suggestion
+# CA1303 : UI 100 % francaise en dur, pas de pipeline de localisation prevu en alpha
+dotnet_diagnostic.CA1303.severity = suggestion
+# CA1305/CA1310/CA1311 : chaines internes (logs, noms Revit) — culture invariante non critique, a traiter en beta
+dotnet_diagnostic.CA1305.severity = suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+dotnet_diagnostic.CA1311.severity = suggestion
+# CA1848 : LoggerMessage delegates sans objet, LogService est un simple fichier texte
+dotnet_diagnostic.CA1848.severity = suggestion
+# CA1707 : underscores dans les noms de tests xunit (convention Methode_Cas_Attendu)
+dotnet_diagnostic.CA1707.severity = suggestion
+# CA2249 : Contains(string, StringComparison) n'existe pas sur net48 — IndexOf conserve pour le multi-target
+dotnet_diagnostic.CA2249.severity = suggestion
