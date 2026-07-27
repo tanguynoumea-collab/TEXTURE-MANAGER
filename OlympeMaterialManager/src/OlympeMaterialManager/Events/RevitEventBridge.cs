@@ -892,6 +892,11 @@ public class RevitEventBridge : IExternalEventHandler
         greenOverride.SetSurfaceForegroundPatternColor(new Color(0, 180, 0));
         greenOverride.SetProjectionLineWeight(5);
 
+        // FIA-09 : UN seul FilteredElementCollector pour toute la session de pick.
+        // Le dictionnaire typeId -> instances est construit une fois et reutilise a
+        // chaque clic (l'ancien code relancait un collector complet par type clique).
+        var instancesByType = BuildInstancesByTypeMap(doc);
+
         try
         {
             while (true)
@@ -944,12 +949,10 @@ public class RevitEventBridge : IExternalEventHandler
                     IsComposite = isStackedWall
                 };
 
-                // Marquer en vert TOUTES les instances de ce type
-                var instanceIds = new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .Where(e => e.GetTypeId() == typeId)
-                    .Select(e => e.Id)
-                    .ToList();
+                // Marquer en vert TOUTES les instances de ce type (FIA-09 : map pre-construite)
+                var instanceIds = instancesByType.TryGetValue(typeId, out var ids)
+                    ? ids
+                    : new List<ElementId>();
 
                 using (var tx = new Transaction(doc, "Olympe - Marquer selection"))
                 {
@@ -1002,6 +1005,28 @@ public class RevitEventBridge : IExternalEventHandler
             throw new InvalidOperationException(cleanupError);
 
         return selectedTypes.Values.ToList();
+    }
+
+    /// <summary>
+    /// Construit en un seul passage de collector le dictionnaire
+    /// typeId -> ids des instances du document (FIA-09).
+    /// </summary>
+    private static Dictionary<ElementId, List<ElementId>> BuildInstancesByTypeMap(Document doc)
+    {
+        var map = new Dictionary<ElementId, List<ElementId>>();
+        foreach (var element in new FilteredElementCollector(doc).WhereElementIsNotElementType())
+        {
+            var typeId = element.GetTypeId();
+            if (typeId == ElementId.InvalidElementId) continue;
+
+            if (!map.TryGetValue(typeId, out var list))
+            {
+                list = new List<ElementId>();
+                map[typeId] = list;
+            }
+            list.Add(element.Id);
+        }
+        return map;
     }
 
     /// <summary>
