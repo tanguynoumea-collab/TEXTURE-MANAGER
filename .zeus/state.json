@@ -1,0 +1,60 @@
+{
+  "$schema_note": "État du pipeline ZEUS — commité avec le projet. Mis à jour à chaque transition de phase.",
+  "projet": "Olympe MaterialManager",
+  "version_courante": "Alpha 1.3",
+  "route": "audit",
+  "phase": "CORRECTION (dev-council-fix)",
+  "phase_status": "en_cours",
+  "cycle": {
+    "numero": 1,
+    "demarre_le": "2026-07-27",
+    "idees": [
+      "Audit complet : revue UI (Daedalus), audit code (dev-council), exploration ameliorations"
+    ],
+    "impact_ui": true,
+    "mode_daedalus": "REFONTE-AUDIT"
+  },
+  "iterations": {
+    "design_review": 0,
+    "design_review_max": 3,
+    "dev_council": 1,
+    "dev_council_max": 3
+  },
+  "checkpoints": {
+    "plan_design_valide": false,
+    "triage_findings": true,
+    "go_publication": false,
+    "confirmation_roadmap": false
+  },
+  "pending": {
+    "findings_critiques": [
+      "DON-02 (Bloquant) perte silencieuse presets/scenes sur JSON corrompu + AutoSave",
+      "PKG-01 (Bloquant) MSI net8 sans dependances NuGet - add-in mort Revit 2025/2026",
+      "11 Majeurs - voir dev-council-1.md LOT 1/LOT 2",
+      "UI : 3 critiques Daedalus (focus clavier, accent surexploite, contraste bouton primaire)"
+    ],
+    "pour_roadmap": [
+      "Voir .zeus/reports/ameliorations-1.md (A1-A4 consolidation, B1-B7 UX, C1-C5 ambitieux, D1-D6 technique)"
+    ]
+  },
+  "artefacts": {
+    "design_plan": null,
+    "rapports": [
+      ".zeus/reports/design-review-1.md",
+      ".zeus/reports/dev-council-1.md",
+      ".zeus/reports/ameliorations-1.md"
+    ],
+    "dod": null,
+    "audit_points": null
+  },
+  "phases_sautees": [
+    "ROADMAP (cycle d'audit, pas de nouvelles idees)",
+    "LLM-COUNCIL (pas d'implementation prevue ce cycle)",
+    "GSD (audit seul, corrections apres triage humain)"
+  ],
+  "historique": [
+    "2026-07-27 — Initialisation ZEUS sur projet existant (Alpha 1.3). Cycle d'audit demande : UI review + dev-council + exploration roadmap.",
+    "2026-07-27 — DESIGN-REVIEW (audit Daedalus mode degrade, XAML statique) termine : 3 critiques, 6 majeurs, 6 mineurs. Ampleur recommandee : RAFRAICHISSEMENT. -> DEV-COUNCIL lance (9 auditeurs).",
+    "2026-07-27 — DEV-COUNCIL termine : 84 findings bruts -> 45 canoniques apres sceptique (2 Bloquants DON-02/PKG-01, 11 Majeurs). Cross-challenges 3 paires OK. Arbitrage ARC-03 unanime : couture presets maintenant, DI en beta. Exploration ameliorations produite. -> CHECKPOINT HUMAIN : triage findings + confirmation roadmap."
+  ]
+}
