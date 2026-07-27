@@ -63,6 +63,60 @@ public class PresetService
     }
 
     /// <summary>
+    /// Noms de fichiers reserves par Windows (SEC-01).
+    /// </summary>
+    private static readonly string[] _reservedFileNames =
+    {
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    };
+
+    /// <summary>
+    /// Valide un nom destine a devenir un nom de fichier (SEC-01).
+    /// Retourne null si le nom est valide, sinon un message d'erreur en francais.
+    /// Point de verite unique : utilise par GetSafeFilePath et par les dialogs de saisie.
+    /// </summary>
+    public static string? ValidateFileName(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return "Le nom ne peut pas etre vide.";
+
+        // net48 : IsNullOrWhiteSpace n'a pas [NotNullWhen(false)], name est prouve non null ici.
+        var trimmed = name!.Trim();
+        if (trimmed.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            return "Le nom contient des caracteres interdits (\\ / : * ? \" < > | ...).";
+
+        if (Array.Exists(_reservedFileNames, r => string.Equals(r, trimmed, StringComparison.OrdinalIgnoreCase)))
+            return $"\"{trimmed}\" est un nom reserve par Windows.";
+
+        return null;
+    }
+
+    /// <summary>
+    /// Construit le chemin &lt;directory&gt;\&lt;name&gt;.json apres validation du nom (SEC-01).
+    /// Rejette les noms vides, les caracteres interdits, les noms reserves Windows,
+    /// et verifie que le chemin resolu reste bien sous le dossier attendu (anti-traversal).
+    /// </summary>
+    private static string GetSafeFilePath(string directory, string name)
+    {
+        var error = ValidateFileName(name);
+        if (error != null)
+            throw new ArgumentException($"Nom de fichier invalide : {error}", nameof(name));
+
+        var safeName = name.Trim();
+        var fullPath = Path.GetFullPath(Path.Combine(directory, safeName + ".json"));
+        var dirPrefix = Path.GetFullPath(directory)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+
+        if (!fullPath.StartsWith(dirPrefix, StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException(
+                $"Le nom \"{name}\" produit un chemin en dehors du dossier attendu.", nameof(name));
+
+        return fullPath;
+    }
+
+    /// <summary>
     /// Met en quarantaine un fichier illisible en le renommant en
     /// &lt;nom&gt;.corrupt-&lt;yyyyMMdd-HHmmss&gt; (DON-02). Le fichier original est
     /// ainsi preserve au lieu d'etre ecrase par une sauvegarde ulterieure.
@@ -267,7 +321,7 @@ public class PresetService
     /// </summary>
     public PresetCollectionDto? LoadPreset(string name)
     {
-        var path = Path.Combine(GetPresetsDirectory(), name + ".json");
+        var path = GetSafeFilePath(GetPresetsDirectory(), name);
         if (!File.Exists(path)) return GetDefaultCollection();
         try
         {
@@ -288,7 +342,7 @@ public class PresetService
     /// </summary>
     public void SavePreset(string name, PresetCollectionDto collection)
     {
-        var path = Path.Combine(GetPresetsDirectory(), name + ".json");
+        var path = GetSafeFilePath(GetPresetsDirectory(), name);
         WriteJsonAtomic(path, collection);
     }
 
@@ -385,7 +439,7 @@ public class PresetService
     /// </summary>
     public SceneDto? LoadScene(string name)
     {
-        var path = Path.Combine(GetScenesDirectory(), name + ".json");
+        var path = GetSafeFilePath(GetScenesDirectory(), name);
         if (!File.Exists(path)) return new SceneDto { Name = name };
         try
         {
@@ -406,7 +460,7 @@ public class PresetService
     /// </summary>
     public void SaveScene(string name, SceneDto scene)
     {
-        var path = Path.Combine(GetScenesDirectory(), name + ".json");
+        var path = GetSafeFilePath(GetScenesDirectory(), name);
         scene.Name = name;
         WriteJsonAtomic(path, scene);
     }
@@ -416,7 +470,7 @@ public class PresetService
     /// </summary>
     public void DeleteScene(string name)
     {
-        var path = Path.Combine(GetScenesDirectory(), name + ".json");
+        var path = GetSafeFilePath(GetScenesDirectory(), name);
         try { if (File.Exists(path)) File.Delete(path); } catch { }
     }
 
@@ -427,7 +481,7 @@ public class PresetService
     /// </summary>
     public void DeletePreset(string name)
     {
-        var path = Path.Combine(GetPresetsDirectory(), name + ".json");
+        var path = GetSafeFilePath(GetPresetsDirectory(), name);
         try { if (File.Exists(path)) File.Delete(path); } catch { }
 
         var settings = LoadSettings();

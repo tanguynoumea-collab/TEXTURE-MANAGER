@@ -208,8 +208,10 @@ public partial class LeftPanelViewModel : ObservableObject
                 ErrorMessage = $"Scene \"{sceneName}\" illisible : fichier mis de cote (.corrupt).";
                 return;
             }
-            if (string.IsNullOrEmpty(scene.Name))
-                scene.Name = sceneName;
+            // SEC-01 : le nom de la scene est TOUJOURS le nom du fichier importe,
+            // jamais le champ Name du JSON externe (empeche l'injection d'un nom
+            // arbitraire qui deviendrait un nom de fichier a la prochaine sauvegarde).
+            scene.Name = sceneName;
 
             Scenes.Add(scene);
             ActiveScene = scene;

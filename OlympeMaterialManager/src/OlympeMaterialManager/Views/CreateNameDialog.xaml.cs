@@ -29,11 +29,14 @@ public partial class CreateNameDialog : Window
 
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
-        var name = NameTextBox.Text?.Trim();
-        if (string.IsNullOrWhiteSpace(name))
+        var name = NameTextBox.Text?.Trim() ?? string.Empty;
+
+        // SEC-01 : validation canonique (vide, caracteres interdits, noms reserves Windows)
+        var error = Services.PresetService.ValidateFileName(name);
+        if (error != null)
         {
-            MessageBox.Show("Le nom ne peut pas etre vide.",
-                "Nom requis", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(error, "Nom invalide",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
