@@ -197,6 +197,22 @@ public partial class LeftPanelViewModel : ObservableObject
             var sceneName = Path.GetFileNameWithoutExtension(sourcePath);
             var destPath = Path.Combine(destDir, sceneName + ".json");
 
+            // DON-09 : valider le JSON AVANT toute copie dans le dossier projet
+            var json = File.ReadAllText(sourcePath);
+            if (!PresetService.IsValidSceneJson(json))
+            {
+                ErrorMessage = $"Fichier invalide : \"{Path.GetFileName(sourcePath)}\" n'est pas une scene JSON lisible. Import abandonne.";
+                return;
+            }
+
+            // DON-09 : collision avec une scene existante -> confirmation avant ecrasement
+            if (File.Exists(destPath) && !DialogService.Confirm(
+                    $"Une scene nommee \"{sceneName}\" existe deja.\nL'ecraser avec le fichier importe ?",
+                    "Scene existante"))
+            {
+                return;
+            }
+
             // Copier le fichier dans le dossier scenes
             File.Copy(sourcePath, destPath, overwrite: true);
 

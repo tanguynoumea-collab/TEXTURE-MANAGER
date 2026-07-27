@@ -168,6 +168,22 @@ public partial class RightPanelViewModel : ObservableObject
             var destDir = _presetService.GetPresetsDirectory();
             var destPath = Path.Combine(destDir, presetName + ".json");
 
+            // DON-09 : valider le JSON AVANT toute copie dans le dossier projet
+            var json = File.ReadAllText(sourcePath);
+            if (!PresetService.IsValidPresetJson(json))
+            {
+                StatusMessage = $"Fichier invalide : \"{Path.GetFileName(sourcePath)}\" n'est pas un preset JSON lisible. Import abandonne.";
+                return;
+            }
+
+            // DON-09 : collision avec un preset existant -> confirmation avant ecrasement
+            if (File.Exists(destPath) && !DialogService.Confirm(
+                    $"Un preset nomme \"{presetName}\" existe deja.\nL'ecraser avec le fichier importe ?",
+                    "Preset existant"))
+            {
+                return;
+            }
+
             // Copier le fichier dans le dossier presets
             File.Copy(sourcePath, destPath, overwrite: true);
 

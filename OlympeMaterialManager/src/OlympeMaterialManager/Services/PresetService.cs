@@ -117,6 +117,38 @@ public class PresetService
     }
 
     /// <summary>
+    /// Valide qu'un contenu JSON est un preset lisible (DON-09).
+    /// Utilise AVANT de copier un fichier externe dans le dossier projet.
+    /// </summary>
+    public static bool IsValidPresetJson(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<PresetCollectionDto>(json, _options) != null;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Valide qu'un contenu JSON est une scene lisible (DON-09).
+    /// Utilise AVANT de copier un fichier externe dans le dossier projet.
+    /// </summary>
+    public static bool IsValidSceneJson(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<SceneDto>(json, _options) != null;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Met en quarantaine un fichier illisible en le renommant en
     /// &lt;nom&gt;.corrupt-&lt;yyyyMMdd-HHmmss&gt; (DON-02). Le fichier original est
     /// ainsi preserve au lieu d'etre ecrase par une sauvegarde ulterieure.
