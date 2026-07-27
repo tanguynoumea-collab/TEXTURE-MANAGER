@@ -14,7 +14,15 @@ public static class ElementIdHelper
 #if REVIT2023_OR_2024
     public static long GetValue(ElementId id) => (long)id.IntegerValue;
 
-    public static ElementId FromValue(long value) => new ElementId((int)value);
+    /// <summary>
+    /// DON-05 : une valeur persistee hors plage int (id venant d'un document Revit 2025+)
+    /// ne doit pas etre tronquee silencieusement en int — on retourne InvalidElementId,
+    /// les consommateurs echouent alors proprement (validation ResolveMaterial, GetElement null).
+    /// </summary>
+    public static ElementId FromValue(long value) =>
+        value > int.MaxValue || value < int.MinValue
+            ? ElementId.InvalidElementId
+            : new ElementId((int)value);
 #else
     public static long GetValue(ElementId id) => id.Value;
 
