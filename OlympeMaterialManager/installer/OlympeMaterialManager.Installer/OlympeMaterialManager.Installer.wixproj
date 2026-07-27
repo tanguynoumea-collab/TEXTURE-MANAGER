@@ -5,9 +5,8 @@
     <InstallerPlatform>x64</InstallerPlatform>
     <!-- PKG-03 : Version vient de Directory.Build.props via $(Version) -->
     <DefineConstants>StagingDir=staging;Version=$(Version)</DefineConstants>
-    <!-- ICE64: Autodesk/Revit/Addins are shared directories we must NOT remove on uninstall -->
-    <!-- ICE91: Per-user .addin files in per-machine install is the standard Revit addin pattern -->
-    <SuppressIces>ICE64;ICE91</SuppressIces>
+    <!-- PKG-05 : plus de SuppressIces — les .addin sont en CommonAppDataFolder
+         (perMachine coherent), ICE64/ICE91 ne s'appliquent plus -->
   </PropertyGroup>
 
   <ItemGroup>
