@@ -332,11 +332,18 @@ public partial class RightPanelViewModel : ObservableObject
 
     /// <summary>
     /// Supprime un materiau d'un groupe preset (D-12).
+    /// UI-m11 : confirmation prealable, coherente avec les autres suppressions
+    /// (couvre le menu contextuel ET le bouton "-" via SupprimerSelection).
     /// </summary>
     [RelayCommand]
     private void SupprimerMateriau(PresetMaterialDto? material)
     {
         if (material == null) return;
+
+        if (!DialogService.Confirm(
+                $"Supprimer \"{material.MaterialName}\" du preset ?",
+                "Supprimer du preset"))
+            return;
 
         var group = FindGroupContaining(material);
         if (group != null)
