@@ -527,8 +527,10 @@
     <!-- === Style Set Mat : bouton proemirent accent ambre (UI-05, D-14) === -->
     <Style x:Key="SetMatButtonStyle" TargetType="Button"
            BasedOn="{StaticResource {x:Type Button}}">
-        <Setter Property="Background" Value="#FF9800" />
-        <Setter Property="Foreground" Value="White" />
+        <!-- UI-C3 : texte sombre sur ambre (~7:1, meme pattern que ComboBoxItem selectionne)
+             et Background via token AccentBrush au lieu du #FF9800 en dur. -->
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Padding" Value="20,10" />
