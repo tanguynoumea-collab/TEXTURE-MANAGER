@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "installer", "installer", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OlympeMaterialManager.Installer", "installer\OlympeMaterialManager.Installer\OlympeMaterialManager.Installer.wixproj", "{7D62BE8F-DF6B-4BE5-99E8-FB3942B8F78C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{48ACE618-A2EE-4F46-BDC1-4EFE05389D11} = {48ACE618-A2EE-4F46-BDC1-4EFE05389D11}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C4E9A1F2-5B3D-4E76-9A8C-1D2F3E4A5B6C}"
 EndProject

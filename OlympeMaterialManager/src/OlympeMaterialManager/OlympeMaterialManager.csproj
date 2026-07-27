@@ -70,6 +70,10 @@
     <PropertyGroup>
       <StagingDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\installer\OlympeMaterialManager.Installer\staging'))</StagingDir>
     </PropertyGroup>
+    <!-- PKG-02 : purger le staging du TFM courant avant la copie pour eliminer
+         les DLL fantomes d'anciens builds (la cible s'execute une fois par TFM,
+         on ne purge donc pas le staging de l'autre TFM). -->
+    <RemoveDir Directories="$(StagingDir)\$(TargetFramework)" />
     <ItemGroup>
       <StagingFiles Include="$(OutputPath)**\*.*"
                     Exclude="$(OutputPath)**\*.pdb;$(OutputPath)**\*.xml;$(OutputPath)publish\**" />
