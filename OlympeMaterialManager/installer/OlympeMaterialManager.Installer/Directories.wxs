@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
 
   <!-- Directory structure -->
   <Fragment>
@@ -41,9 +42,18 @@
   <Fragment>
     <Component Id="Revit2023Addin" Directory="Addins2023"
                Guid="A8C3F291-5D74-4E62-B8A1-9F0E12D36C85">
-      <File Source="addin\OlympeMaterialManager.2023.addin"
+      <File Id="Addin2023File"
+            Source="addin\OlympeMaterialManager.2023.addin"
             Name="OlympeMaterialManager.addin"
             KeyPath="no" />
+      <!-- PKG-06 : reecrit <Assembly> avec le dossier d'installation reel
+           au lieu du chemin C:\Program Files\... fige dans le fichier source -->
+      <util:XmlFile Id="SetAssemblyPath2023"
+                    File="[#Addin2023File]"
+                    Action="setValue"
+                    ElementPath="/RevitAddIns/AddIn/Assembly"
+                    Value="[INSTALLFOLDER]net48\OlympeMaterialManager.dll"
+                    Permanent="yes" />
       <RegistryValue Root="HKCU"
                      Key="Software\Olympe\MaterialManager"
                      Name="Revit2023Installed"
@@ -57,9 +67,17 @@
   <Fragment>
     <Component Id="Revit2024Addin" Directory="Addins2024"
                Guid="1ECD2C68-EE1A-4B7D-B0D7-355F83A34079">
-      <File Source="addin\OlympeMaterialManager.2024.addin"
+      <File Id="Addin2024File"
+            Source="addin\OlympeMaterialManager.2024.addin"
             Name="OlympeMaterialManager.addin"
             KeyPath="no" />
+      <!-- PKG-06 : reecrit <Assembly> avec le dossier d'installation reel -->
+      <util:XmlFile Id="SetAssemblyPath2024"
+                    File="[#Addin2024File]"
+                    Action="setValue"
+                    ElementPath="/RevitAddIns/AddIn/Assembly"
+                    Value="[INSTALLFOLDER]net48\OlympeMaterialManager.dll"
+                    Permanent="yes" />
       <RegistryValue Root="HKCU"
                      Key="Software\Olympe\MaterialManager"
                      Name="Revit2024Installed"
@@ -80,9 +98,17 @@
   <Fragment>
     <Component Id="Revit2025Addin" Directory="Addins2025"
                Guid="7675ACE1-F35D-4371-9182-D0DD32929BA5">
-      <File Source="addin\OlympeMaterialManager.2025.addin"
+      <File Id="Addin2025File"
+            Source="addin\OlympeMaterialManager.2025.addin"
             Name="OlympeMaterialManager.addin"
             KeyPath="no" />
+      <!-- PKG-06 : reecrit <Assembly> avec le dossier d'installation reel -->
+      <util:XmlFile Id="SetAssemblyPath2025"
+                    File="[#Addin2025File]"
+                    Action="setValue"
+                    ElementPath="/RevitAddIns/AddIn/Assembly"
+                    Value="[INSTALLFOLDER]net8.0-windows\OlympeMaterialManager.dll"
+                    Permanent="yes" />
       <RegistryValue Root="HKCU"
                      Key="Software\Olympe\MaterialManager"
                      Name="Revit2025Installed"
@@ -96,9 +122,17 @@
   <Fragment>
     <Component Id="Revit2026Addin" Directory="Addins2026"
                Guid="B3E14167-7B9A-4524-9F22-E1D0FFD4C477">
-      <File Source="addin\OlympeMaterialManager.2026.addin"
+      <File Id="Addin2026File"
+            Source="addin\OlympeMaterialManager.2026.addin"
             Name="OlympeMaterialManager.addin"
             KeyPath="no" />
+      <!-- PKG-06 : reecrit <Assembly> avec le dossier d'installation reel -->
+      <util:XmlFile Id="SetAssemblyPath2026"
+                    File="[#Addin2026File]"
+                    Action="setValue"
+                    ElementPath="/RevitAddIns/AddIn/Assembly"
+                    Value="[INSTALLFOLDER]net8.0-windows\OlympeMaterialManager.dll"
+                    Permanent="yes" />
       <RegistryValue Root="HKCU"
                      Key="Software\Olympe\MaterialManager"
                      Name="Revit2026Installed"
