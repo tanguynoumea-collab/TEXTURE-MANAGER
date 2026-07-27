@@ -128,30 +128,39 @@ public partial class MaterialEditorViewModel : ObservableObject
         {
             if (result is MaterialDetailsDto dto)
             {
-                MaterialName = dto.Name;
-                Description = dto.Description;
-                ColorArgb = dto.ColorArgb;
-                PatternName = dto.PatternName;
-                HasAppearanceAsset = dto.HasAppearanceAsset;
-
-                // Extraire les composantes RGB de la couleur de surface
-                (_, ColorR, ColorG, ColorB) = ArgbUtils.UnpackArgb(dto.ColorArgb);
-
-                // Extraire les composantes RGB de la teinte
-                // Utiliser le flag _isFetching pour eviter de declencher OnTintEnabledChanged
-                _isFetching = true;
-                (_, TintR, TintG, TintB) = ArgbUtils.UnpackArgb(dto.TintColorArgb);
-                TintColorArgb = dto.TintColorArgb;
-                TintEnabled = dto.TintEnabled;
-                _isFetching = false;
-
-                IsVisible = true;
+                ApplyMaterialDetails(dto);
             }
             else if (result is Exception)
             {
                 IsVisible = false;
             }
         });
+    }
+
+    /// <summary>
+    /// Reporte les details recus du bridge dans les proprietes bindees (MAINT-10).
+    /// Le flag _isFetching neutralise OnTintEnabledChanged pendant le report
+    /// (sinon chaque resynchronisation redeclencherait une edition de teinte).
+    /// </summary>
+    private void ApplyMaterialDetails(MaterialDetailsDto dto)
+    {
+        MaterialName = dto.Name;
+        Description = dto.Description;
+        ColorArgb = dto.ColorArgb;
+        PatternName = dto.PatternName;
+        HasAppearanceAsset = dto.HasAppearanceAsset;
+
+        // Extraire les composantes RGB de la couleur de surface
+        (_, ColorR, ColorG, ColorB) = ArgbUtils.UnpackArgb(dto.ColorArgb);
+
+        // Extraire les composantes RGB de la teinte
+        _isFetching = true;
+        (_, TintR, TintG, TintB) = ArgbUtils.UnpackArgb(dto.TintColorArgb);
+        TintColorArgb = dto.TintColorArgb;
+        TintEnabled = dto.TintEnabled;
+        _isFetching = false;
+
+        IsVisible = true;
     }
 
     // ---- Commandes d'edition ----

@@ -368,64 +368,84 @@ public partial class RightPanelViewModel : ObservableObject
         // Cas 2 : un groupe est selectionne
         if (SelectedGroup != null && PresetGroups.Contains(SelectedGroup))
         {
-            var group = SelectedGroup;
-
-            if (group.Materials.Count > 0)
-            {
-                // Demander a l'utilisateur quoi faire des materiaux
-                var otherGroups = PresetGroups.Where(g => g != group).ToList();
-
-                if (otherGroups.Count > 0)
-                {
-                    var result = DialogService.ConfirmWithCancel(
-                        $"Le groupe \"{group.GroupName}\" contient {group.Materials.Count} materiau(x).\n\n" +
-                        "Oui = Transferer les materiaux dans un autre groupe\n" +
-                        "Non = Supprimer le groupe et ses materiaux\n" +
-                        "Annuler = Ne rien faire",
-                        "Supprimer le groupe");
-
-                    if (result == null)
-                        return;
-
-                    if (result == true)
-                    {
-                        // Transferer dans un autre groupe choisi par l'utilisateur
-                        PresetGroupDto targetGroup;
-                        if (otherGroups.Count == 1)
-                        {
-                            targetGroup = otherGroups[0];
-                        }
-                        else
-                        {
-                            // Dialog de choix de groupe avec ComboBox
-                            var dialog = new ChooseGroupDialog();
-                            dialog.Owner = App.MainWindow;
-                            dialog.SetGroups(otherGroups);
-                            dialog.PreselectGroup(otherGroups[0]);
-
-                            if (dialog.ShowDialog() != true || dialog.SelectedGroup == null)
-                                return;
-
-                            targetGroup = dialog.SelectedGroup;
-                        }
-
-                        // Transferer tous les materiaux
-                        foreach (var mat in group.Materials.ToList())
-                        {
-                            targetGroup.Materials.Add(mat);
-                        }
-                        StatusMessage = $"{group.Materials.Count} materiau(x) transfere(s) dans \"{targetGroup.GroupName}\".";
-                    }
-                    // Si "Non" : on supprime tout
-                }
-            }
-
-            PresetGroups.Remove(group);
-            SelectedGroup = null;
-            SelectedPresetMaterial = null;
-            StatusMessage = $"Groupe \"{group.GroupName}\" supprime.";
-            AutoSave();
+            SupprimerGroupe(SelectedGroup);
         }
+    }
+
+    /// <summary>
+    /// Supprime un groupe apres avoir resolu le sort de ses materiaux (MAINT-10).
+    /// </summary>
+    private void SupprimerGroupe(PresetGroupDto group)
+    {
+        if (group.Materials.Count > 0 && !ResoudreSortDesMateriaux(group))
+            return;
+
+        PresetGroups.Remove(group);
+        SelectedGroup = null;
+        SelectedPresetMaterial = null;
+        StatusMessage = $"Groupe \"{group.GroupName}\" supprime.";
+        AutoSave();
+    }
+
+    /// <summary>
+    /// Demande a l'utilisateur quoi faire des materiaux d'un groupe a supprimer (MAINT-10) :
+    /// transfert vers un autre groupe (Oui), suppression avec le groupe (Non),
+    /// ou abandon (Annuler). Retourne true si la suppression peut continuer.
+    /// S'il n'existe aucun autre groupe, la suppression continue directement
+    /// (comportement d'origine).
+    /// </summary>
+    private bool ResoudreSortDesMateriaux(PresetGroupDto group)
+    {
+        var otherGroups = PresetGroups.Where(g => g != group).ToList();
+        if (otherGroups.Count == 0)
+            return true;
+
+        var result = DialogService.ConfirmWithCancel(
+            $"Le groupe \"{group.GroupName}\" contient {group.Materials.Count} materiau(x).\n\n" +
+            "Oui = Transferer les materiaux dans un autre groupe\n" +
+            "Non = Supprimer le groupe et ses materiaux\n" +
+            "Annuler = Ne rien faire",
+            "Supprimer le groupe");
+
+        if (result == null)
+            return false;
+
+        // "Non" : supprimer le groupe et ses materiaux
+        if (result == false)
+            return true;
+
+        // "Oui" : transferer dans un autre groupe choisi par l'utilisateur
+        var targetGroup = ChoisirGroupeCible(otherGroups);
+        if (targetGroup == null)
+            return false;
+
+        foreach (var mat in group.Materials.ToList())
+        {
+            targetGroup.Materials.Add(mat);
+        }
+        StatusMessage = $"{group.Materials.Count} materiau(x) transfere(s) dans \"{targetGroup.GroupName}\".";
+        return true;
+    }
+
+    /// <summary>
+    /// Choisit le groupe cible d'un transfert de materiaux (MAINT-10) :
+    /// choix direct s'il n'y a qu'un candidat, sinon dialog avec ComboBox.
+    /// Retourne null si l'utilisateur annule.
+    /// </summary>
+    private static PresetGroupDto? ChoisirGroupeCible(List<PresetGroupDto> otherGroups)
+    {
+        if (otherGroups.Count == 1)
+            return otherGroups[0];
+
+        var dialog = new ChooseGroupDialog();
+        dialog.Owner = App.MainWindow;
+        dialog.SetGroups(otherGroups);
+        dialog.PreselectGroup(otherGroups[0]);
+
+        if (dialog.ShowDialog() != true || dialog.SelectedGroup == null)
+            return null;
+
+        return dialog.SelectedGroup;
     }
 
     /// <summary>
