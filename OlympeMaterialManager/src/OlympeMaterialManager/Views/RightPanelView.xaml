@@ -18,7 +18,7 @@
                        Text="{Binding PanelTitle}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource AccentBrush}"
+                       Foreground="{StaticResource TextPrimaryBrush}"
                        Margin="0,0,0,8" />
 
             <!-- Section 1b : Selecteur de preset + bouton creation + bouton dossier -->
@@ -31,7 +31,6 @@
                 <Button Content="+"
                         Command="{Binding CreerPresetCommand}"
                         ToolTip="Creer un nouveau preset"
-                        Background="{StaticResource AccentBrush}"
                         Width="28" Height="28"
                         Padding="0"
                         FontSize="16"
@@ -60,12 +59,10 @@
                         Orientation="Horizontal"
                         Margin="0,4,0,8">
                 <Button Content="Creer un groupe"
-                        Command="{Binding CreerGroupeCommand}"
-                        Background="{StaticResource AccentBrush}" />
+                        Command="{Binding CreerGroupeCommand}" />
                 <Button Content="+"
                         Command="{Binding AjouterMateriauCommand}"
                         ToolTip="Ajouter un materiau au preset"
-                        Background="{StaticResource AccentBrush}"
                         Width="28" Height="28"
                         Padding="0"
                         FontSize="16"
@@ -111,7 +108,7 @@
                         <!-- Titre de la section -->
                         <TextBlock Text="Editeur de materiau"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource AccentBrush}"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
                                    Margin="0,0,0,8" />
 
                         <!-- Preview couleur de surface -->
@@ -326,7 +323,7 @@
                 <TreeView.ItemTemplate>
                     <!-- Template groupe : meme style que les categories du panneau gauche -->
                     <HierarchicalDataTemplate ItemsSource="{Binding Materials}">
-                        <TextBlock Foreground="{StaticResource AccentBrush}"
+                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
                                    FontWeight="SemiBold"
                                    Padding="4,2">
                             <Run Text="{Binding GroupName, Mode=OneWay}" />

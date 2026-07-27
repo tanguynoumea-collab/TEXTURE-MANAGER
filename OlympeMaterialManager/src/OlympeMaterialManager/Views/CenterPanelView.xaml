@@ -15,7 +15,7 @@
                        Text="{Binding PanelTitle}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource AccentBrush}"
+                       Foreground="{StaticResource TextPrimaryBrush}"
                        Margin="0,0,0,8" />
 
             <!-- Section 2 : Nom du type selectionne -->
@@ -63,7 +63,7 @@
             <!-- Section 4b : Message type compose -->
             <TextBlock DockPanel.Dock="Top"
                        Text="Type compose — selectionnez un sous-type pour editer ses couches"
-                       Foreground="{StaticResource AccentBrush}"
+                       Foreground="{StaticResource TextSecondaryBrush}"
                        FontStyle="Italic"
                        TextWrapping="Wrap"
                        Margin="0,8,0,0"
@@ -155,7 +155,7 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Column="0" Grid.Row="0"
                                        Text="{Binding Function}"
-                                       Foreground="{StaticResource AccentBrush}"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
                                        FontSize="14" />
                             <TextBlock Grid.Column="1" Grid.Row="0"
@@ -229,7 +229,7 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0"
                                        Text="{Binding ParameterName}"
-                                       Foreground="{StaticResource AccentBrush}"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
                                        FontSize="14" />
                             <TextBlock Grid.Row="1"

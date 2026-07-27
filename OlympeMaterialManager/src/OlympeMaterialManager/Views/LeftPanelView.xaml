@@ -34,7 +34,7 @@
                        Text="{Binding PanelTitle}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource AccentBrush}"
+                       Foreground="{StaticResource TextPrimaryBrush}"
                        Margin="0,0,0,8" />
 
             <!-- Section 2: Selecteur de scene + bouton creation (SCENE-01, SCENE-02) -->
@@ -48,7 +48,6 @@
                 <Button Content="+"
                         Command="{Binding CreerSceneCommand}"
                         ToolTip="Creer une nouvelle scene"
-                        Background="{StaticResource AccentBrush}"
                         Width="28" Height="28"
                         Padding="0"
                         FontSize="16"
@@ -89,7 +88,6 @@
                 <Button Content="Ajouter par clic dans la vue"
                         Command="{Binding AjouterParClicCommand}"
                         ToolTip="{Binding PickButtonTooltip}"
-                        Background="{StaticResource AccentBrush}"
                         Padding="8,4" />
                 <Button Content="-"
                         Command="{Binding SupprimerTypeCommand}"
@@ -124,7 +122,7 @@
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"
-                                           Foreground="{StaticResource AccentBrush}"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
                                            FontWeight="SemiBold"
                                            Padding="4,2" />
                             </DataTemplate>
