@@ -100,7 +100,8 @@ public partial class RightPanelViewModel : ObservableObject
                 "Supprimer le preset"))
             return;
 
-        var name = ActivePresetName;
+        // net48 : IsNullOrEmpty n'a pas [NotNullWhen(false)], ActivePresetName est prouve non null ici.
+        var name = ActivePresetName!;
         _presetService.DeletePreset(name);
         PresetNames.Remove(name);
 
