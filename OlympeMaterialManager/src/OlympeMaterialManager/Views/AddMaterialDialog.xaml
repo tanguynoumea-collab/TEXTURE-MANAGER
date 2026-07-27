@@ -48,9 +48,9 @@
             </TextBlock>
         </Grid>
 
-        <!-- Row 1 : Liste des materiaux -->
+        <!-- Row 1 : Liste des materiaux + etat "aucun resultat" (UI-m14) -->
+        <Grid Grid.Row="1">
         <ListBox x:Name="MaterialList"
-                 Grid.Row="1"
                  Background="{StaticResource SurfaceBrush}"
                  BorderThickness="0"
                  SelectionMode="Extended">
@@ -80,6 +80,15 @@
                 </Style>
             </ListBox.ItemContainerStyle>
         </ListBox>
+        <TextBlock x:Name="NoResultText"
+                   Text="Aucun matériau ne correspond à la recherche"
+                   Foreground="{StaticResource TextSecondaryBrush}"
+                   FontStyle="Italic"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   IsHitTestVisible="False"
+                   Visibility="Collapsed" />
+        </Grid>
 
         <!-- Row 2 : Groupe cible + boutons -->
         <StackPanel Grid.Row="2" Margin="0,8,0,0">

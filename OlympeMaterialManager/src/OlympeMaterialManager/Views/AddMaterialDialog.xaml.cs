@@ -57,6 +57,8 @@ public partial class AddMaterialDialog : Window
 
         if (PresetGroups.Count > 0)
             GroupCombo.SelectedIndex = 0;
+
+        UpdateNoResultVisibility();
     }
 
     /// <summary>
@@ -79,6 +81,18 @@ public partial class AddMaterialDialog : Window
     private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
         _materialsView?.Refresh();
+        UpdateNoResultVisibility();
+    }
+
+    /// <summary>
+    /// Affiche "Aucun matériau ne correspond à la recherche" quand la liste filtree
+    /// est vide et que la recherche n'est pas vide (UI-m14).
+    /// </summary>
+    private void UpdateNoResultVisibility()
+    {
+        bool noResult = _materialsView is { IsEmpty: true }
+                        && !string.IsNullOrWhiteSpace(SearchBox.Text);
+        NoResultText.Visibility = noResult ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void Ajouter_Click(object sender, RoutedEventArgs e)
