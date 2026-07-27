@@ -1,0 +1,9 @@
+<Project>
+  <!-- PKG-03 : source de version unique pour toute la solution.
+       Consommee par le csproj (Version -> AssemblyVersion/FileVersion derivees)
+       et par l'installeur WiX (DefineConstants Version=$(Version) -> Package.wxs).
+       Incrementer a chaque livraison pour que MajorUpgrade fonctionne. -->
+  <PropertyGroup>
+    <Version>1.4.0</Version>
+  </PropertyGroup>
+</Project>

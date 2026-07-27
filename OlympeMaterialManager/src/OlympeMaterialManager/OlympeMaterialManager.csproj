@@ -7,9 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Olympe.MaterialManager</RootNamespace>
     <AssemblyName>OlympeMaterialManager</AssemblyName>
-    <Version>2.0.0</Version>
-    <AssemblyVersion>2.0.0.0</AssemblyVersion>
-    <FileVersion>2.0.0.0</FileVersion>
+    <!-- PKG-03 : la version vient de Directory.Build.props (source unique) -->
     <!-- PKG-01 : copier les dependances NuGet (CommunityToolkit.Mvvm, Microsoft.Xaml.Behaviors...)
          dans le dossier de sortie — sur net8, 'dotnet build' ne le fait pas par defaut et le MSI
          livrait un add-in sans ses dependances. Les assemblies Revit (Nice3point) ne sont pas

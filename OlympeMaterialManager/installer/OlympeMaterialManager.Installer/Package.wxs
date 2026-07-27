@@ -2,7 +2,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
 
   <Package Name="Olympe MaterialManager"
-           Version="1.0.0.0"
+           Version="$(var.Version)"
            Manufacturer="Olympe"
            UpgradeCode="0FFD79DA-9EB1-4D42-9F3C-9B5CDFD98FFE"
            InstallerVersion="500"
