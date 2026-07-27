@@ -91,6 +91,21 @@ public class ShowWindowCommand : IExternalCommand
             var vm = new MainWindowViewModel(App.EventBridge);
             App.MainWindow = new MainWindow { DataContext = vm };
 
+            // FIA-03 : dernier filet — toute exception WPF non geree est loggee et
+            // neutralisee (e.Handled = true) pour ne jamais faire tomber le process
+            // Revit hote. Enregistre une seule fois, a la creation de la fenetre.
+            App.MainWindow.Dispatcher.UnhandledException += (_, args) =>
+            {
+                LogService.Error("Exception WPF non geree (dernier filet FIA-03)", args.Exception);
+                MessageBox.Show(
+                    "Une erreur inattendue s'est produite :\n" + args.Exception.Message +
+                    "\n\nL'operation a ete annulee. Details dans le journal :\n" + LogService.LogPath,
+                    "Olympe MaterialManager - Erreur",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                args.Handled = true;
+            };
+
             // Definir Revit comme fenetre proprietaire pour le Z-order
             var helper = new WindowInteropHelper(App.MainWindow);
             helper.Owner = commandData.Application.MainWindowHandle;

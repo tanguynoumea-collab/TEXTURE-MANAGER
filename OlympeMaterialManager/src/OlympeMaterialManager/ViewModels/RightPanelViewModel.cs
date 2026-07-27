@@ -517,9 +517,18 @@ public partial class RightPanelViewModel : ObservableObject
         PresetGroups = _collection.Groups;
 
         // Persister le choix dans les settings
-        var settings = _presetService.LoadSettings();
-        settings.ActivePresetName = value;
-        _presetService.SaveSettings(settings);
+        // FIA-03 : setter binde sur le thread UI du process Revit — proteger l'ecriture.
+        try
+        {
+            var settings = _presetService.LoadSettings();
+            settings.ActivePresetName = value;
+            _presetService.SaveSettings(settings);
+        }
+        catch (Exception ex)
+        {
+            LogService.Error("Echec de sauvegarde des parametres (preset actif)", ex);
+            StatusMessage = $"Echec de sauvegarde des parametres : {ex.Message}";
+        }
 
         // Mettre a jour le titre
         PanelTitle = $"Materiaux Preset - {value}";
@@ -535,7 +544,17 @@ public partial class RightPanelViewModel : ObservableObject
         if (_presetLoadFailed) return;
         if (_collection == null || string.IsNullOrEmpty(ActivePresetName)) return;
 
-        _presetService.SavePreset(ActivePresetName!, _collection);
+        // FIA-03 : ecriture declenchee depuis le thread UI du process Revit —
+        // toute exception I/O doit etre signalee, jamais propagee a l'hote.
+        try
+        {
+            _presetService.SavePreset(ActivePresetName!, _collection);
+        }
+        catch (Exception ex)
+        {
+            LogService.Error($"Echec de sauvegarde du preset \"{ActivePresetName}\"", ex);
+            StatusMessage = $"Echec de sauvegarde du preset \"{ActivePresetName}\" : {ex.Message}";
+        }
     }
 
     /// <summary>

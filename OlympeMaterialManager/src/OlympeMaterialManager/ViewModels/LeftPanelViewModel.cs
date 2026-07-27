@@ -154,8 +154,19 @@ public partial class LeftPanelViewModel : ObservableObject
         if (_presetService == null) return;
         // Chargement en echec : ne surtout pas ecraser les fichiers (DON-02)
         if (_scenesLoadFailed) return;
-        var collection = new SceneCollectionDto { Scenes = Scenes };
-        _presetService.SaveScenes(collection);
+
+        // FIA-03 : ecriture declenchee depuis le thread UI du process Revit —
+        // toute exception I/O doit etre signalee, jamais propagee a l'hote.
+        try
+        {
+            var collection = new SceneCollectionDto { Scenes = Scenes };
+            _presetService.SaveScenes(collection);
+        }
+        catch (Exception ex)
+        {
+            LogService.Error("Echec de sauvegarde des scenes", ex);
+            ErrorMessage = $"Echec de sauvegarde des scenes : {ex.Message}";
+        }
     }
 
     /// <summary>
