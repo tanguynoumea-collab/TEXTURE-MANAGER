@@ -196,28 +196,7 @@ public class RevitEventBridge : IExternalEventHandler
 
             for (int i = 0; i < layers.Count; i++)
             {
-                var layer = layers[i];
-                var matId = layer.MaterialId;
-                string matName = UiLabels.ByCategory;
-                long matIdValue = ElementIdHelper.GetValue(matId);
-
-                if (matId != ElementId.InvalidElementId)
-                {
-                    var mat = doc.GetElement(matId);
-                    matName = mat?.Name ?? UiLabels.Inconnu;
-                }
-
-                double widthMm = UnitUtils.ConvertFromInternalUnits(
-                    layer.Width, UnitTypeId.Millimeters);
-
-                result.Add(new LayerDto
-                {
-                    LayerIndex = i,
-                    Function = LayerFunctionMapper.ToFrench(layer.Function),
-                    Width = Math.Round(widthMm, 1),
-                    MaterialName = matName,
-                    MaterialElementIdValue = matIdValue
-                });
+                result.Add(BuildLayerDto(doc, layers[i], i));
             }
 
             return result;
@@ -263,28 +242,8 @@ public class RevitEventBridge : IExternalEventHandler
 
                         for (int i = 0; i < subLayers.Count; i++)
                         {
-                            var layer = subLayers[i];
-                            var matId = layer.MaterialId;
-                            string matName = UiLabels.ByCategory;
-                            long matIdValue = ElementIdHelper.GetValue(matId);
-
-                            if (matId != ElementId.InvalidElementId)
-                            {
-                                var mat = doc.GetElement(matId);
-                                matName = mat?.Name ?? UiLabels.Inconnu;
-                            }
-
-                            double widthMm = UnitUtils.ConvertFromInternalUnits(
-                                layer.Width, UnitTypeId.Millimeters);
-
-                            allLayers.Add(new LayerDto
-                            {
-                                LayerIndex = globalIndex++,
-                                Function = $"[{subName}] {LayerFunctionMapper.ToFrench(layer.Function)}",
-                                Width = Math.Round(widthMm, 1),
-                                MaterialName = matName,
-                                MaterialElementIdValue = matIdValue
-                            });
+                            allLayers.Add(BuildLayerDto(
+                                doc, subLayers[i], globalIndex++, $"[{subName}] "));
                         }
                     }
 
@@ -296,6 +255,37 @@ public class RevitEventBridge : IExternalEventHandler
 
         LogService.Log("HandleGetLayersForType: no layers found, returning empty list");
         return new List<LayerDto>();
+    }
+
+    /// <summary>
+    /// Construit le LayerDto d'une couche CompoundStructure (MAINT-04) :
+    /// resolution du nom de materiau (par categorie / inconnu), conversion pieds -> mm,
+    /// nom de fonction francais optionnellement prefixe (sous-murs des murs empiles).
+    /// </summary>
+    private static LayerDto BuildLayerDto(Document doc, CompoundStructureLayer layer,
+        int index, string? functionPrefix = null)
+    {
+        var matId = layer.MaterialId;
+        string matName = UiLabels.ByCategory;
+        long matIdValue = ElementIdHelper.GetValue(matId);
+
+        if (matId != ElementId.InvalidElementId)
+        {
+            var mat = doc.GetElement(matId);
+            matName = mat?.Name ?? UiLabels.Inconnu;
+        }
+
+        double widthMm = UnitUtils.ConvertFromInternalUnits(
+            layer.Width, UnitTypeId.Millimeters);
+
+        return new LayerDto
+        {
+            LayerIndex = index,
+            Function = functionPrefix + LayerFunctionMapper.ToFrench(layer.Function),
+            Width = Math.Round(widthMm, 1),
+            MaterialName = matName,
+            MaterialElementIdValue = matIdValue
+        };
     }
 
     /// <summary>
