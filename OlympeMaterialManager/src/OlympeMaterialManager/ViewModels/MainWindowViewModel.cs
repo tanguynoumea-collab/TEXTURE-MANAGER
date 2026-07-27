@@ -183,7 +183,9 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
                 LayerIndices = layerIndices,
-                MaterialIdValue = presetMat.MaterialElementIdValue
+                MaterialIdValue = presetMat.MaterialElementIdValue,
+                // DON-04 : le nom est la cle logique de validation cote handler
+                MaterialName = presetMat.MaterialName
             };
 
             _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnLayers, request, OnSetMatResult);
@@ -206,7 +208,9 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
                 MaterialIdValue = presetMat.MaterialElementIdValue,
-                ParameterDefinitionNames = paramNames
+                ParameterDefinitionNames = paramNames,
+                // DON-04 : le nom est la cle logique de validation cote handler
+                MaterialName = presetMat.MaterialName
             };
 
             _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnParameter, request, OnSetMatResult);

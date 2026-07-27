@@ -604,6 +604,39 @@ public class RevitEventBridge : IExternalEventHandler
     }
 
     /// <summary>
+    /// Resout le materiau a appliquer de maniere sure (DON-04).
+    /// L'ElementId persiste n'est qu'un cache : sur un autre document, le meme id
+    /// peut designer un autre element. Regle : si l'id ne resout pas un Material
+    /// portant exactement le nom attendu, re-resolution par nom dans le document ;
+    /// si le nom est introuvable, echec propre — jamais d'application silencieuse
+    /// d'un materiau dont le nom ne correspond pas.
+    /// </summary>
+    private static Material ResolveMaterial(Document doc, long materialIdValue, string materialName)
+    {
+        var matId = ElementIdHelper.FromValue(materialIdValue);
+
+        if (doc.GetElement(matId) is Material byId &&
+            (string.IsNullOrEmpty(materialName) || byId.Name == materialName))
+        {
+            return byId;
+        }
+
+        // Id invalide ou nom divergent : re-resolution par nom (comparaison exacte)
+        if (!string.IsNullOrEmpty(materialName))
+        {
+            var byName = new FilteredElementCollector(doc)
+                .OfClass(typeof(Material))
+                .Cast<Material>()
+                .FirstOrDefault(m => m.Name == materialName);
+            if (byName != null)
+                return byName;
+        }
+
+        throw new InvalidOperationException(
+            $"Le materiau '{materialName}' n'existe pas dans ce document.");
+    }
+
+    /// <summary>
     /// Applique un materiau aux couches CompoundStructure selectionnees (D-16, D-22).
     /// Pattern Get-Modify-Set : GetCompoundStructure retourne une COPIE.
     /// </summary>
@@ -625,7 +658,8 @@ public class RevitEventBridge : IExternalEventHandler
             if (cs == null)
                 throw new InvalidOperationException("Le type n'a pas de structure composee.");
 
-            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            // DON-04 : valider id + nom avant application (jamais de materiau silencieusement errone)
+            var matId = ResolveMaterial(doc, request.MaterialIdValue, request.MaterialName).Id;
 
             foreach (int layerIndex in request.LayerIndices)
             {
@@ -657,7 +691,8 @@ public class RevitEventBridge : IExternalEventHandler
         {
             var typeId = ElementIdHelper.FromValue(request.TargetTypeIdValue);
             var element = doc.GetElement(typeId);
-            var matId = ElementIdHelper.FromValue(request.MaterialIdValue);
+            // DON-04 : valider id + nom avant application (jamais de materiau silencieusement errone)
+            var matId = ResolveMaterial(doc, request.MaterialIdValue, request.MaterialName).Id;
 
             foreach (string paramName in request.ParameterDefinitionNames)
             {
