@@ -84,6 +84,19 @@ public class RevitEventBridge : IExternalEventHandler
     public string GetName() => "Olympe MaterialManager Bridge";
 
     /// <summary>
+    /// Retourne le document actif ou leve une InvalidOperationException avec un
+    /// message francais si aucun document n'est ouvert (FIA-06). Utilise par les
+    /// handlers d'ecriture a la place de ActiveUIDocument! (NRE technique).
+    /// </summary>
+    private static Document GetActiveDocument(UIApplication uiApp)
+    {
+        var doc = uiApp.ActiveUIDocument?.Document;
+        if (doc == null)
+            throw new InvalidOperationException("Aucun document actif.");
+        return doc;
+    }
+
+    /// <summary>
     /// Traite une seule requete sur le thread Revit.
     /// </summary>
     private void ProcessSingleRequest(UIApplication uiApp, RevitRequestType type, object? data, Action<object?> callback)
@@ -483,7 +496,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static void HandleSetMaterialOnLayers(UIApplication uiApp, SetMatRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Appliquer materiau aux couches");
         tx.Start();
 
@@ -524,7 +537,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static void HandleSetMaterialOnParameter(UIApplication uiApp, SetMatParamRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Appliquer materiau aux parametres");
         tx.Start();
 
@@ -565,7 +578,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static PresetMaterialDto HandleDuplicateMaterial(UIApplication uiApp, DuplicateMaterialRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Dupliquer materiau");
         tx.Start();
 
@@ -684,7 +697,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static void HandleEditMaterialName(UIApplication uiApp, EditMaterialNameRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Renommer materiau");
         tx.Start();
 
@@ -712,7 +725,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static void HandleEditMaterialDescription(UIApplication uiApp, EditMaterialDescriptionRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Modifier description materiau");
         tx.Start();
 
@@ -744,7 +757,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static void HandleEditMaterialColor(UIApplication uiApp, EditMaterialColorRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Modifier couleur de surface");
         tx.Start();
 
@@ -775,7 +788,7 @@ public class RevitEventBridge : IExternalEventHandler
     /// </summary>
     private static void HandleEditMaterialTint(UIApplication uiApp, EditMaterialTintRequestDto request)
     {
-        var doc = uiApp.ActiveUIDocument!.Document;
+        var doc = GetActiveDocument(uiApp);
         using var tx = new Transaction(doc, "Olympe : Modifier teinte materiau");
         tx.Start();
 
