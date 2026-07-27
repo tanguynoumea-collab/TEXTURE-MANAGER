@@ -7,7 +7,7 @@
 
     <UserControl.Resources>
         <converters:ArgbToColorConverter x:Key="ArgbToColorConverter" />
-        <converters:BoolToVisibilityConverter x:Key="BoolToVis" />
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
 
     <Border Background="{StaticResource BackgroundBrush}" Padding="8">
