@@ -3,22 +3,36 @@
 ## Contexte
 Add-in Revit WPF pour la gestion visuelle des materiaux sur une vue 3D active.
 Trois panneaux : Familles/Types (gauche) | Couches (centre) | Materiaux preset (droite).
-Multi-version : Revit 2024, 2025, 2026.
+Multi-version : Revit 2023, 2024, 2025 et 2026 (2 builds : net48 et net8.0-windows).
 
 ## Stack
-- C# / .NET Framework 4.8
-- WPF + MVVM (CommunityToolkit.Mvvm)
-- Revit API (2024 / 2025 / 2026 — CopyLocal = false)
-- WiX Toolset v4 (installer .exe)
+- C# 12 (LangVersion) / multi-target net48 + net8.0-windows (PolySharp pour net48)
+- WPF + MVVM (CommunityToolkit.Mvvm 8.4.2)
+- Revit API via NuGet Nice3point.Revit.Api.* (pas de CopyLocal de RevitAPI.dll)
+- System.Text.Json (persistance presets/scenes/settings)
+- WiX Toolset v5 (WixToolset.Sdk 5.0.2, installeur MSI — pas v4, pas .exe)
 
-## Structure solution
+### Mapping TFM -> package Revit API -> symbole de compilation
+| TFM             | Nice3point.Revit.Api.* | Symbole `#if`          | Couvre Revit |
+|-----------------|------------------------|------------------------|--------------|
+| net48           | 2023.1.80              | REVIT2023_OR_2024      | 2023 + 2024  |
+| net8.0-windows  | 2025.0.2               | REVIT2025_OR_GREATER   | 2025 + 2026  |
+
+## Structure solution (mono-projet multi-target)
 OlympeMaterialManager/
-├── OlympeMaterialManager.Shared/     <- Logique + ViewModels + Views XAML
-├── OlympeMaterialManager.2024/       <- Cible Revit 2024, reference RevitAPI 2024
-├── OlympeMaterialManager.2025/       <- Cible Revit 2025, reference RevitAPI 2025
-├── OlympeMaterialManager.2026/       <- Cible Revit 2026, reference RevitAPI 2026
-├── OlympeMaterialManager.Installer/  <- Projet WiX, genere le .exe
-└── CLAUDE.md
+├── Directory.Build.props                      <- Version unique (csproj + MSI WiX)
+├── OlympeMaterialManager.sln
+├── src/OlympeMaterialManager/                 <- UN seul csproj, TargetFrameworks net48;net8.0-windows
+│   (App, Commands, Events, Helpers = seuls dossiers touchant l'API Revit ;
+│    ViewModels/Views/Models/Services = MVVM pur, DTOs uniquement)
+├── tests/OlympeMaterialManager.Tests/         <- xunit (net8.0-windows), persistance PresetService
+├── installer/OlympeMaterialManager.Installer/ <- WiX v5, genere le MSI (staging par TFM)
+└── addin/                                     <- manifests .addin
+
+## Build (obligatoire)
+- TOUJOURS builder par TFM, jamais les deux ensemble (CS2001 en simultane) :
+  `dotnet build -f net48` PUIS `dotnet build -f net8.0-windows` (depuis src/OlympeMaterialManager/)
+- Tests : `dotnet test` depuis tests/OlympeMaterialManager.Tests/
 
 ## Conventions
 - MVVM strict : pas de code-behind metier, RelayCommand, ObservableCollection
@@ -26,6 +40,7 @@ OlympeMaterialManager/
 - Un ViewModel par vue/panneau
 - IExternalEventHandler pour toute interaction Revit depuis l'UI
 - Langue interface : francais
+- Les codes D-xx/SCENE-xx/MATEDIT-xx des commentaires renvoient aux decisions dans .planning/phases/
 
 ## Git
 - Repo : https://github.com/tanguynoumea-collab/TEXTURE-MANAGER
