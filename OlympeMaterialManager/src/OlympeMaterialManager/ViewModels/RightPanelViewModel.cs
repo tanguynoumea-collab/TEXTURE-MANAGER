@@ -601,8 +601,9 @@ public partial class RightPanelViewModel : ObservableObject
 
     /// <summary>
     /// Trouve le groupe contenant un materiau donne.
+    /// Internal (MAINT-09) : reutilise par le code-behind drag-and-drop de RightPanelView.
     /// </summary>
-    private PresetGroupDto? FindGroupContaining(PresetMaterialDto material)
+    internal PresetGroupDto? FindGroupContaining(PresetMaterialDto material)
     {
         foreach (var group in PresetGroups)
         {

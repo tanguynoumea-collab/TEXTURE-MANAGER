@@ -75,7 +75,7 @@ public partial class RightPanelView : UserControl
         if (vm == null) return;
 
         // Trouver le groupe source
-        var sourceGroup = FindGroupContaining(vm, _draggedMaterial);
+        var sourceGroup = vm.FindGroupContaining(_draggedMaterial);
         if (sourceGroup == null) return;
 
         vm.MoveMaterial(_draggedMaterial, sourceGroup, targetGroup);
@@ -102,16 +102,6 @@ public partial class RightPanelView : UserControl
             return parentItem?.DataContext as PresetGroupDto;
         }
 
-        return null;
-    }
-
-    private PresetGroupDto? FindGroupContaining(RightPanelViewModel vm, PresetMaterialDto material)
-    {
-        foreach (var group in vm.PresetGroups)
-        {
-            if (group.Materials.Contains(material))
-                return group;
-        }
         return null;
     }
 
