@@ -5,6 +5,39 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <!-- UI-M6 : style de carte partage par les deux ListBox (couches et parametres),
+             couleurs via les tokens CardBrush / CardHoverBrush / CardSelectedBrush du theme. -->
+        <Style x:Key="CardItemStyle" TargetType="ListBoxItem">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Card"
+                                Background="{StaticResource CardBrush}"
+                                CornerRadius="6"
+                                Padding="12,10"
+                                BorderThickness="2"
+                                BorderBrush="Transparent"
+                                Cursor="Hand">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter TargetName="Card" Property="Background" Value="{StaticResource CardSelectedBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Card" Property="Background" Value="{StaticResource CardHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <Border Background="{StaticResource BackgroundBrush}" Padding="8">
@@ -111,36 +144,7 @@
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
                 <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0,3" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListBoxItem">
-                                    <Border x:Name="Card"
-                                            Background="#FF383850"
-                                            CornerRadius="6"
-                                            Padding="12,10"
-                                            BorderThickness="2"
-                                            BorderBrush="Transparent"
-                                            Cursor="Hand">
-                                        <ContentPresenter />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                            <Setter TargetName="Card" Property="Background" Value="#FF424260" />
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Card" Property="Background" Value="#FF3E3E56" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource CardItemStyle}" />
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -189,36 +193,7 @@
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
                 <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        <Setter Property="Padding" Value="0" />
-                        <Setter Property="Margin" Value="0,3" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListBoxItem">
-                                    <Border x:Name="Card"
-                                            Background="#FF383850"
-                                            CornerRadius="6"
-                                            Padding="12,10"
-                                            BorderThickness="2"
-                                            BorderBrush="Transparent"
-                                            Cursor="Hand">
-                                        <ContentPresenter />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                            <Setter TargetName="Card" Property="Background" Value="#FF424260" />
-                                        </Trigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Card" Property="Background" Value="#FF3E3E56" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
+                    <Style TargetType="ListBoxItem" BasedOn="{StaticResource CardItemStyle}" />
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
                     <DataTemplate>

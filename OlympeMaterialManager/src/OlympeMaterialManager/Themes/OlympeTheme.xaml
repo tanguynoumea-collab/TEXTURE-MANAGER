@@ -11,6 +11,10 @@
     <Color x:Key="SurfaceColor">#2D2D3D</Color>
     <!-- UI-M4 : hover discret (fond legerement eclairci, pas d'ambre plein) -->
     <Color x:Key="SurfaceHoverColor">#3A3A4E</Color>
+    <!-- UI-M6 : cartes de couches / parametres (panneau central) -->
+    <Color x:Key="CardColor">#FF383850</Color>
+    <Color x:Key="CardHoverColor">#FF3E3E56</Color>
+    <Color x:Key="CardSelectedColor">#FF424260</Color>
     <Color x:Key="AccentColor">#FF9800</Color>
     <Color x:Key="AccentHoverColor">#FFA726</Color>
     <Color x:Key="TextPrimaryColor">#E0E0E0</Color>
@@ -22,6 +26,9 @@
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
     <SolidColorBrush x:Key="SurfaceHoverBrush" Color="{StaticResource SurfaceHoverColor}" />
+    <SolidColorBrush x:Key="CardBrush" Color="{StaticResource CardColor}" />
+    <SolidColorBrush x:Key="CardHoverBrush" Color="{StaticResource CardHoverColor}" />
+    <SolidColorBrush x:Key="CardSelectedBrush" Color="{StaticResource CardSelectedColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
     <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
