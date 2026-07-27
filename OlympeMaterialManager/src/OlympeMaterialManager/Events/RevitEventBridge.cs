@@ -11,7 +11,9 @@ namespace Olympe.MaterialManager.Events;
 /// <summary>
 /// Handler ExternalEvent avec dispatch par enum (D-09, D-10).
 /// Point de passage unique entre les ViewModels et l'API Revit.
-/// Thread-safe : les requetes sont protegees par lock.
+/// Thread-safe : les requetes sont empilees dans une ConcurrentQueue depuis le
+/// thread UI, drainees sur le thread Revit dans Execute(), et les callbacks sont
+/// marshalles vers le thread UI WPF via Dispatcher.BeginInvoke.
 /// </summary>
 public class RevitEventBridge : IExternalEventHandler
 {
@@ -810,8 +812,9 @@ public class RevitEventBridge : IExternalEventHandler
     }
 
     /// <summary>
-    /// Selection toggle dans la vue 3D via PickObject en boucle.
-    /// Chaque clic sur un element selectionne/deselectionne son type (toggle).
+    /// Selection additive dans la vue 3D via PickObject en boucle.
+    /// Chaque clic sur un element ajoute son type a la selection ; un clic sur un
+    /// type deja selectionne est ignore (pas de deselection).
     /// Toutes les instances du type sont mises en surbrillance dans la vue Revit.
     /// Echap ou Entree (OperationCanceledException) valide la selection courante.
     /// Retourne List&lt;SceneTypeDto&gt; des types actuellement selectionnes.
