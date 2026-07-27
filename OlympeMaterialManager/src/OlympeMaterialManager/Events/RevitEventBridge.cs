@@ -65,9 +65,6 @@ public class RevitEventBridge : IExternalEventHandler
         {
             switch (type)
             {
-                case RevitRequestType.GetDocumentInfo:
-                    result = HandleGetDocumentInfo(uiApp);
-                    break;
                 case RevitRequestType.GetFamilyList:
                     result = HandleGetFamilyList(uiApp);
                     break;
@@ -162,17 +159,6 @@ public class RevitEventBridge : IExternalEventHandler
             LogService.Error($"ProcessRequest: Dispatcher.BeginInvoke failed for {type}", dispEx);
             try { callback(result); } catch { }
         }
-    }
-
-    private static RevitDocInfoDto HandleGetDocumentInfo(UIApplication uiApp)
-    {
-        var doc = uiApp.ActiveUIDocument?.Document;
-        return new RevitDocInfoDto
-        {
-            Title = doc?.Title ?? "(aucun document)",
-            PathName = doc?.PathName ?? "",
-            IsValid = doc != null
-        };
     }
 
     /// <summary>

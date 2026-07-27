@@ -10,7 +10,6 @@ namespace Olympe.MaterialManager.Models;
 public class AppSettingsDto
 {
     public string? PresetFilePath { get; set; }
-    public string? ScenesFilePath { get; set; }
 
     /// <summary>
     /// Liste des noms de fichiers presets disponibles (sans extension).

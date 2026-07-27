@@ -228,25 +228,6 @@ public class PresetService
         WriteJsonAtomic(_settingsPath, settings);
     }
 
-    /// <summary>
-    /// Retourne le chemin du fichier de presets memorise, ou null si non defini.
-    /// </summary>
-    public string? GetStoredPresetPath()
-    {
-        var settings = LoadSettings();
-        return settings.PresetFilePath;
-    }
-
-    /// <summary>
-    /// Memorise le chemin du fichier de presets dans settings.json.
-    /// </summary>
-    public void StorePresetPath(string path)
-    {
-        var settings = LoadSettings();
-        settings.PresetFilePath = path;
-        SaveSettings(settings);
-    }
-
     // ---- Multi-Preset System ----
 
     /// <summary>
@@ -351,14 +332,6 @@ public class PresetService
         {
             return GetDefaultCollection();
         }
-    }
-
-    /// <summary>
-    /// Sauvegarde une collection de presets en JSON.
-    /// </summary>
-    public void Save(PresetCollectionDto collection, string path)
-    {
-        WriteJsonAtomic(path, collection);
     }
 
     /// <summary>
