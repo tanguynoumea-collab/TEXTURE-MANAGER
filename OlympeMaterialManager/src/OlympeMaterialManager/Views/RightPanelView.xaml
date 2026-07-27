@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:converters="clr-namespace:Olympe.MaterialManager.Converters"
-             xmlns:controls="clr-namespace:Olympe.MaterialManager.Controls"
              x:Name="RightPanelRoot">
 
     <UserControl.Resources>

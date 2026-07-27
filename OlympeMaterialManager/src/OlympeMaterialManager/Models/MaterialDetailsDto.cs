@@ -14,11 +14,4 @@ public class MaterialDetailsDto
     public bool HasAppearanceAsset { get; set; }
     public bool TintEnabled { get; set; }
     public int TintColorArgb { get; set; }
-    public string? ThumbnailPath { get; set; }
-
-    // Parametres supplementaires pour le rendu sphere
-    public int Transparency { get; set; }    // 0-100
-    public int Shininess { get; set; }       // 0-128
-    public int Smoothness { get; set; }      // 0-100
-    public string? TexturePath { get; set; } // Chemin de la texture bitmap diffuse
 }

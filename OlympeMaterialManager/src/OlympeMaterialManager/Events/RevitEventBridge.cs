@@ -117,9 +117,6 @@ public class RevitEventBridge : IExternalEventHandler
                 case RevitRequestType.HighlightElementsByType:
                     HandleHighlightElementsByType(uiApp, (long)data!);
                     break;
-                case RevitRequestType.RenderMaterialPreview:
-                    result = HandleRenderMaterialPreview(uiApp, (long)data!);
-                    break;
                 case RevitRequestType.GetCompositeSubTypes:
                     result = HandleGetCompositeSubTypes(uiApp, (long)data!);
                     break;
@@ -765,53 +762,6 @@ public class RevitEventBridge : IExternalEventHandler
     }
 
     /// <summary>
-    /// Cherche recursivement un chemin de texture bitmap dans un Asset Revit.
-    /// Parcourt les proprietes de type Asset (connectes) et String pour trouver
-    /// "unifiedbitmap_Bitmap" ou tout chemin finissant par une extension image.
-    /// </summary>
-    private static string? FindTexturePath(Asset asset)
-    {
-        if (asset == null) return null;
-
-        for (int i = 0; i < asset.Size; i++)
-        {
-            var prop = asset.Get(i);
-            if (prop == null) continue;
-
-            // Chercher dans les sous-assets connectes (ex: generic_diffuse -> unifiedbitmap)
-            if (prop.NumberOfConnectedProperties > 0)
-            {
-                for (int c = 0; c < prop.NumberOfConnectedProperties; c++)
-                {
-                    var connectedAsset = prop.GetConnectedProperty(c) as Asset;
-                    if (connectedAsset != null)
-                    {
-                        var found = FindTexturePath(connectedAsset);
-                        if (found != null) return found;
-                    }
-                }
-            }
-
-            // Chercher "unifiedbitmap_Bitmap" ou propriete String contenant un chemin image
-            if (prop is AssetPropertyString strProp && !string.IsNullOrEmpty(strProp.Value))
-            {
-                string val = strProp.Value;
-                if (strProp.Name == "unifiedbitmap_Bitmap" ||
-                    val.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ||
-                    val.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                    val.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase) ||
-                    val.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
-                    val.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
-                {
-                    return val;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
     /// Extrait la valeur ARGB (int) de la couleur d'un materiau Revit.
     /// Si la couleur est invalide, retourne le gris par defaut.
     /// </summary>
@@ -846,10 +796,7 @@ public class RevitEventBridge : IExternalEventHandler
             Name = material.Name,
             ColorArgb = ExtractColorArgb(material),
             PatternName = GetPatternName(doc, material),
-            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId,
-            Transparency = material.Transparency,       // 0-100
-            Shininess = material.Shininess,             // 0-128
-            Smoothness = material.Smoothness            // 0-100
+            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId
         };
 
         // Description via BuiltInParameter (D-08)
@@ -880,18 +827,6 @@ public class RevitEventBridge : IExternalEventHandler
                         byte b = (byte)(values[2] * 255);
                         dto.TintColorArgb = System.Drawing.Color.FromArgb(255, r, g, b).ToArgb();
                     }
-                }
-
-                // Tentative de lecture du chemin texture bitmap (best-effort)
-                try
-                {
-                    var texPath = FindTexturePath(renderAsset);
-                    dto.ThumbnailPath = texPath;
-                    dto.TexturePath = texPath;
-                }
-                catch
-                {
-                    // Best-effort : ignorer les erreurs de lecture
                 }
             }
         }
@@ -1282,196 +1217,6 @@ public class RevitEventBridge : IExternalEventHandler
 
         LogService.Log($"HandleGetCompositeSubTypes: returning {result.Count} sub-types");
         return result;
-    }
-
-    /// <summary>
-    /// Genere un rendu du materiau en utilisant le moteur de rendu Revit.
-    /// Cree un DirectShape sphere temporaire, applique le materiau, exporte la vue, rollback.
-    /// Retourne les octets PNG de l'image rendue, ou null si echec.
-    /// </summary>
-    private static byte[]? HandleRenderMaterialPreview(UIApplication uiApp, long materialIdValue)
-    {
-        var doc = uiApp.ActiveUIDocument?.Document;
-        if (doc == null) return null;
-
-        var matId = ElementIdHelper.FromValue(materialIdValue);
-        var material = doc.GetElement(matId) as Material;
-        if (material == null) return null;
-
-        // Chemin temporaire pour l'export image
-        var tempDir = System.IO.Path.Combine(
-            System.IO.Path.GetTempPath(), "OlympeMaterialPreview");
-        System.IO.Directory.CreateDirectory(tempDir);
-        var tempFileBase = System.IO.Path.Combine(tempDir, "preview");
-
-        byte[]? imageBytes = null;
-
-        using (var tx = new Transaction(doc, "Olympe - Rendu materiau"))
-        {
-            tx.Start();
-            try
-            {
-                // 1. Creer une sphere via DirectShape
-                var sphere = CreateSphereDirectShape(doc, matId);
-                if (sphere == null)
-                {
-                    tx.RollBack();
-                    return null;
-                }
-
-                // 2. Creer une vue 3D temporaire isolant uniquement la sphere
-                var view3d = CreateIsolatedView(doc, sphere.Id);
-                if (view3d == null)
-                {
-                    tx.RollBack();
-                    return null;
-                }
-
-                // Regenerer le document pour que la vue soit a jour
-                doc.Regenerate();
-
-                // 3. Exporter la vue en image
-                var exportOpts = new ImageExportOptions
-                {
-                    FilePath = tempFileBase,
-                    FitDirection = FitDirectionType.Horizontal,
-                    HLRandWFViewsFileType = ImageFileType.PNG,
-                    ImageResolution = ImageResolution.DPI_150,
-                    PixelSize = 256,
-                    ExportRange = ExportRange.SetOfViews,
-                    ZoomType = ZoomFitType.FitToPage,
-                    ShadowViewsFileType = ImageFileType.PNG
-                };
-                exportOpts.SetViewsAndSheets(new List<ElementId> { view3d.Id });
-
-                doc.ExportImage(exportOpts);
-
-                // 4. Lire l'image exportee
-                // Revit ajoute le nom de la vue au fichier
-                var pngFiles = System.IO.Directory.GetFiles(tempDir, "preview*.png");
-                if (pngFiles.Length > 0)
-                {
-                    imageBytes = System.IO.File.ReadAllBytes(pngFiles[0]);
-                    // Nettoyer les fichiers temporaires
-                    foreach (var f in pngFiles)
-                    {
-                        try { System.IO.File.Delete(f); } catch { }
-                    }
-                }
-            }
-            finally
-            {
-                // Rollback pour supprimer la sphere et la vue temporaires
-                if (tx.HasStarted() && !tx.HasEnded())
-                    tx.RollBack();
-            }
-        }
-
-        return imageBytes;
-    }
-
-    /// <summary>
-    /// Cree un DirectShape sphere avec le materiau specifie.
-    /// </summary>
-    private static DirectShape? CreateSphereDirectShape(Document doc, ElementId materialId)
-    {
-        // Creer un solide sphere via BRep
-        var center = XYZ.Zero;
-        double radius = 1.0; // 1 pied
-
-        // Utiliser un Frame pour definir le plan de la sphere
-        var frame = new Frame(center, XYZ.BasisX, XYZ.BasisY, XYZ.BasisZ);
-
-        // Creer la sphere via revolution d'un demi-cercle
-        var profileLoops = new List<CurveLoop>();
-        var loop = new CurveLoop();
-
-        // Demi-cercle dans le plan XZ
-        var arc = Arc.Create(
-            new XYZ(0, 0, -radius),
-            new XYZ(0, 0, radius),
-            new XYZ(radius, 0, 0));
-        var line = Line.CreateBound(
-            new XYZ(0, 0, radius),
-            new XYZ(0, 0, -radius));
-
-        loop.Append(arc);
-        loop.Append(line);
-        profileLoops.Add(loop);
-
-        // Revolution autour de l'axe Z
-        var solid = GeometryCreationUtilities.CreateRevolvedGeometry(
-            frame, profileLoops, 0, 2 * Math.PI);
-
-        // Appliquer le materialId directement sur le solide via Paint
-        var ds = DirectShape.CreateElement(doc, new ElementId(BuiltInCategory.OST_GenericModel));
-        ds.SetShape(new GeometryObject[] { solid });
-
-        // Peindre toutes les faces du DirectShape avec le materiau
-        // Document.Paint(ElementId elementId, Face face, ElementId materialId)
-        var opt = new Options { ComputeReferences = true };
-        var geomElem = ds.get_Geometry(opt);
-        if (geomElem != null)
-        {
-            foreach (var geomObj in geomElem)
-            {
-                if (geomObj is Solid s)
-                {
-                    foreach (Face face in s.Faces)
-                    {
-                        doc.Paint(ds.Id, face, materialId);
-                    }
-                }
-            }
-        }
-
-        return ds;
-    }
-
-    /// <summary>
-    /// Cree une vue 3D temporaire qui isole uniquement l'element specifie.
-    /// Configure un fond neutre et un eclairage standard.
-    /// </summary>
-    private static View3D? CreateIsolatedView(Document doc, ElementId elementToIsolate)
-    {
-        // Trouver un ViewFamilyType pour les vues 3D
-        var viewFamilyType = new FilteredElementCollector(doc)
-            .OfClass(typeof(ViewFamilyType))
-            .Cast<ViewFamilyType>()
-            .FirstOrDefault(vft => vft.ViewFamily == ViewFamily.ThreeDimensional);
-
-        if (viewFamilyType == null) return null;
-
-        var view3d = View3D.CreateIsometric(doc, viewFamilyType.Id);
-        view3d.Name = "Olympe_TempPreview_" + Guid.NewGuid().ToString("N")[..8];
-
-        // Isoler uniquement la sphere
-        view3d.IsolateElementTemporary(elementToIsolate);
-
-        // Configurer le style visuel : realiste
-        view3d.DisplayStyle = DisplayStyle.Realistic;
-
-        // Desactiver les annotations
-        view3d.AreAnnotationCategoriesHidden = true;
-
-        // Cadrer sur l'element
-        var boundingBox = doc.GetElement(elementToIsolate).get_BoundingBox(view3d);
-        if (boundingBox != null)
-        {
-            var min = boundingBox.Min;
-            var max = boundingBox.Max;
-            var center = (min + max) / 2;
-            var diagonal = max - min;
-            var dist = diagonal.GetLength() * 2;
-
-            var eyePos = center + new XYZ(dist * 0.5, -dist * 0.3, dist * 0.4);
-            var upDir = XYZ.BasisZ;
-            var forwardDir = (center - eyePos).Normalize();
-
-            view3d.SetOrientation(new ViewOrientation3D(eyePos, upDir, forwardDir));
-        }
-
-        return view3d;
     }
 
     /// <summary>

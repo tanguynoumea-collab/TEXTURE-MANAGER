@@ -1,6 +1,3 @@
-using System.IO;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -64,61 +61,6 @@ public partial class MaterialEditorViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isVisible;
-
-    [ObservableProperty]
-    private string? _thumbnailPath;
-
-    /// <summary>
-    /// Image de rendu (thumbnail de l'AppearanceAsset) pour la preview sphere.
-    /// </summary>
-    [ObservableProperty]
-    private ImageSource? _renderPreviewImageSource;
-
-    // ---- Parametres pour le rendu sphere 3D ----
-
-    /// <summary>
-    /// Transparence du materiau (0 = opaque, 100 = transparent).
-    /// </summary>
-    [ObservableProperty]
-    private int _transparency;
-
-    /// <summary>
-    /// Brillance/shininess du materiau (0 = mat, 128 = tres brillant).
-    /// Controle la puissance speculaire de la sphere.
-    /// </summary>
-    [ObservableProperty]
-    private int _shininess;
-
-    /// <summary>
-    /// Lissite du materiau (0 = rugueux, 100 = lisse).
-    /// </summary>
-    [ObservableProperty]
-    private int _smoothness;
-
-    /// <summary>
-    /// Couleur effective pour le rendu sphere : melange couleur de surface + teinte si active.
-    /// </summary>
-    [ObservableProperty]
-    private int _sphereColorArgb;
-
-    /// <summary>
-    /// Opacite pour le rendu sphere (derive de Transparency).
-    /// 1.0 = opaque, 0.0 = transparent.
-    /// </summary>
-    [ObservableProperty]
-    private double _sphereOpacity = 1.0;
-
-    /// <summary>
-    /// Puissance speculaire pour le rendu sphere (derive de Shininess).
-    /// </summary>
-    [ObservableProperty]
-    private double _sphereSpecularPower = 40.0;
-
-    /// <summary>
-    /// Image de texture pour le rendu sphere (si disponible).
-    /// </summary>
-    [ObservableProperty]
-    private ImageSource? _sphereTextureImage;
 
     // ---- Constructeurs ----
 
@@ -190,8 +132,6 @@ public partial class MaterialEditorViewModel : ObservableObject
                 ColorArgb = dto.ColorArgb;
                 PatternName = dto.PatternName;
                 HasAppearanceAsset = dto.HasAppearanceAsset;
-                ThumbnailPath = dto.ThumbnailPath;
-                RenderPreviewImageSource = LoadRenderPreview(dto.ThumbnailPath);
 
                 // Extraire les composantes RGB de la couleur de surface
                 ColorR = (byte)((dto.ColorArgb >> 16) & 0xFF);
@@ -208,80 +148,12 @@ public partial class MaterialEditorViewModel : ObservableObject
                 TintEnabled = dto.TintEnabled;
                 _isFetching = false;
 
-                // Parametres rendu sphere
-                Transparency = dto.Transparency;
-                Shininess = dto.Shininess;
-                Smoothness = dto.Smoothness;
-
-                // Opacite sphere (inverse de la transparence)
-                SphereOpacity = 1.0 - (dto.Transparency / 100.0);
-
-                // Puissance speculaire : mapper Shininess 0-128 vers 5-100
-                SphereSpecularPower = Math.Max(5, dto.Shininess * 0.8);
-
-                // Couleur effective sphere : si teinte active, melanger couleur + teinte
-                if (dto.TintEnabled && dto.TintColorArgb != 0)
-                {
-                    byte sr = (byte)((dto.ColorArgb >> 16) & 0xFF);
-                    byte sg = (byte)((dto.ColorArgb >> 8) & 0xFF);
-                    byte sb = (byte)(dto.ColorArgb & 0xFF);
-                    byte tr = (byte)((dto.TintColorArgb >> 16) & 0xFF);
-                    byte tg = (byte)((dto.TintColorArgb >> 8) & 0xFF);
-                    byte tb = (byte)(dto.TintColorArgb & 0xFF);
-                    // Blend 50/50 surface + teinte
-                    byte mr = (byte)((sr + tr) / 2);
-                    byte mg = (byte)((sg + tg) / 2);
-                    byte mb = (byte)((sb + tb) / 2);
-                    SphereColorArgb = System.Drawing.Color.FromArgb(255, mr, mg, mb).ToArgb();
-                }
-                else
-                {
-                    SphereColorArgb = dto.ColorArgb;
-                }
-
-                // Texture pour la sphere (fallback si le rendu Revit echoue)
-                SphereTextureImage = LoadRenderPreview(dto.TexturePath);
-
                 IsVisible = true;
-
             }
             else if (result is Exception)
             {
                 IsVisible = false;
             }
-        });
-    }
-
-    /// <summary>
-    /// Demande a Revit de generer un rendu sphere du materiau.
-    /// Le rendu utilise le moteur Revit natif (meme qualite que le Material Editor).
-    /// Retourne un byte[] PNG qui remplace l'image de la sphere WPF.
-    /// </summary>
-    private void RequestRevitRender()
-    {
-        if (_eventBridge == null || _currentMaterialIdValue < 0) return;
-
-        _eventBridge.MakeRequest(RevitRequestType.RenderMaterialPreview, _currentMaterialIdValue, result =>
-        {
-            if (result is byte[] pngBytes && pngBytes.Length > 0)
-            {
-                try
-                {
-                    using var ms = new MemoryStream(pngBytes);
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                    bitmap.StreamSource = ms;
-                    bitmap.EndInit();
-                    bitmap.Freeze();
-                    RenderPreviewImageSource = bitmap;
-                }
-                catch
-                {
-                    // Fallback : garder la sphere WPF 3D
-                }
-            }
-            // Si le rendu echoue, la sphere WPF 3D reste affichee (fallback)
         });
     }
 
@@ -444,60 +316,4 @@ public partial class MaterialEditorViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Charge l'image de rendu depuis le chemin du thumbnail.
-    /// Retourne null si le chemin est invalide ou le fichier introuvable (le XAML affichera le placeholder).
-    /// </summary>
-    private static ImageSource? LoadRenderPreview(string? thumbnailPath)
-    {
-        if (string.IsNullOrEmpty(thumbnailPath)) return null;
-
-        try
-        {
-            string fullPath = thumbnailPath;
-
-            // Resoudre les chemins relatifs via les dossiers standard Autodesk
-            if (!Path.IsPathRooted(fullPath))
-            {
-                // Dossiers standards ou Revit stocke les textures de materiaux
-                string[] searchPaths =
-                {
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                        "Autodesk", "Shared", "Materials", "Textures"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                        "Autodesk", "Shared", "Materials", "Textures", "1"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                        "Autodesk", "Shared", "Materials", "Textures", "2"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                        "Autodesk", "Shared", "Materials", "Textures", "3"),
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles),
-                        "Autodesk Shared", "Materials", "Textures"),
-                };
-
-                foreach (var basePath in searchPaths)
-                {
-                    var candidate = Path.Combine(basePath, fullPath);
-                    if (File.Exists(candidate))
-                    {
-                        fullPath = candidate;
-                        break;
-                    }
-                }
-            }
-
-            if (!File.Exists(fullPath)) return null;
-
-            var bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            bitmap.UriSource = new Uri(fullPath);
-            bitmap.EndInit();
-            bitmap.Freeze();
-            return bitmap;
-        }
-        catch
-        {
-            return null;
-        }
-    }
 }

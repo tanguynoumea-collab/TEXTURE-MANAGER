@@ -27,6 +27,5 @@ public enum RevitRequestType
     EditMaterialTint,              // data=EditMaterialTintRequestDto, returns null (success) or Exception
     PickElementInView,             // data=null, returns List<SceneTypeDto> (multi-selection)
     HighlightElementsByType,       // data=long (typeElementIdValue), returns null (selection visuelle)
-    RenderMaterialPreview,         // data=long (materialIdValue), returns byte[] (PNG image)
     GetCompositeSubTypes,          // data=long (typeElementIdValue), returns List<SceneTypeDto> (sous-types d'un composite)
 }
