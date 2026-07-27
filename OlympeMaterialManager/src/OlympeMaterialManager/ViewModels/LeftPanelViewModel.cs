@@ -256,7 +256,9 @@ public partial class LeftPanelViewModel : ObservableObject
 
     /// <summary>
     /// Ajoute un type a la scene active via clic dans la vue 3D (D-11, D-12, D-13, D-14, SCENE-04, SCENE-09).
-    /// Le handler RevitEventBridge gere : validation View3D, hide/show fenetre, PickObject.
+    /// Le handler RevitEventBridge gere : validation View3D, PickObject.
+    /// ARC-05 : le hide/show de la fenetre est gere ici, autour de la requete —
+    /// le bridge ne touche jamais a la fenetre WPF.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanAjouterParClic))]
     private void AjouterParClic()
@@ -266,8 +268,12 @@ public partial class LeftPanelViewModel : ObservableObject
         IsPickMode = true;
         ErrorMessage = string.Empty;
 
+        // ARC-05 : cacher la fenetre avant le pick, la re-afficher dans le callback.
+        WindowService.HideMainWindow();
+
         _eventBridge.MakeRequest(RevitRequestType.PickElementInView, null, result =>
         {
+            WindowService.ShowMainWindow();
             IsPickMode = false;
 
             if (result is List<SceneTypeDto> pickedTypes)

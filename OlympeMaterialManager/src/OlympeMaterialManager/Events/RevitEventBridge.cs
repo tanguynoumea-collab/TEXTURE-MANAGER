@@ -862,6 +862,8 @@ public class RevitEventBridge : IExternalEventHandler
     /// Echap ou Entree (OperationCanceledException) valide la selection courante.
     /// Retourne List&lt;SceneTypeDto&gt; des types actuellement selectionnes.
     /// CRITIQUE : catch Autodesk.Revit.Exceptions.OperationCanceledException (pas System).
+    /// ARC-05 : le hide/show de la fenetre WPF est gere par le ViewModel appelant
+    /// (LeftPanelViewModel.AjouterParClic) — le bridge ne touche jamais a la fenetre.
     /// </summary>
     private static object? HandlePickElementInView(UIApplication uiApp)
     {
@@ -881,10 +883,6 @@ public class RevitEventBridge : IExternalEventHandler
             CommonButtons = TaskDialogCommonButtons.Ok
         };
         td.Show();
-
-        var mainWindow = App.MainWindow;
-        // FIA-08 : meme null-check de Application.Current que ProcessSingleRequest
-        System.Windows.Application.Current?.Dispatcher.Invoke(() => mainWindow?.Hide());
 
         var selectedTypes = new Dictionary<long, SceneTypeDto>();
         var markedElementIds = new List<ElementId>();
@@ -1000,9 +998,6 @@ public class RevitEventBridge : IExternalEventHandler
                         "Utilisez Annuler (Ctrl+Z) dans Revit pour la retirer.";
                 }
             }
-
-            // FIA-08 : meme null-check de Application.Current que ProcessSingleRequest
-            System.Windows.Application.Current?.Dispatcher.Invoke(() => mainWindow?.Show());
         }
 
         // FIA-07 : remonter l'echec de nettoyage via le callback (ErrorMessage cote VM)
