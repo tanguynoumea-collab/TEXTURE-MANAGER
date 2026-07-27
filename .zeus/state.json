@@ -3,8 +3,8 @@
   "projet": "Olympe MaterialManager",
   "version_courante": "Alpha 1.3",
   "route": "audit",
-  "phase": "CORRECTION (dev-council-fix)",
-  "phase_status": "en_cours",
+  "phase": "GATE-TESTS",
+  "phase_status": "passe_-_attente_validation_revit",
   "cycle": {
     "numero": 1,
     "demarre_le": "2026-07-27",
@@ -27,11 +27,15 @@
     "confirmation_roadmap": false
   },
   "pending": {
-    "findings_critiques": [
-      "DON-02 (Bloquant) perte silencieuse presets/scenes sur JSON corrompu + AutoSave",
-      "PKG-01 (Bloquant) MSI net8 sans dependances NuGet - add-in mort Revit 2025/2026",
-      "11 Majeurs - voir dev-council-1.md LOT 1/LOT 2",
-      "UI : 3 critiques Daedalus (focus clavier, accent surexploite, contraste bouton primaire)"
+    "findings_critiques": [],
+    "validations_dues": [
+      "Install MSI machine vierge + Revit 2025 (cloture definitive PKG-01/05/06)",
+      "Session Revit reelle : partials bridge + design-review Phase 2 sur captures",
+      "Decision : AssemblyVersion 2.0->1.4 (applique, ajustable dans Directory.Build.props)"
+    ],
+    "reportes_beta": [
+      "SEC-02 signature (certificat a acheter)", "PKG-09 archivage MSI (phase PUBLICATION)",
+      "UI-m12 progression determinee", "UI-m15 MessageBox themees", "Refactor DI complet (arbitrage ARC-03)"
     ],
     "pour_roadmap": [
       "Voir .zeus/reports/ameliorations-1.md (A1-A4 consolidation, B1-B7 UX, C1-C5 ambitieux, D1-D6 technique)"
@@ -55,6 +59,7 @@
   "historique": [
     "2026-07-27 — Initialisation ZEUS sur projet existant (Alpha 1.3). Cycle d'audit demande : UI review + dev-council + exploration roadmap.",
     "2026-07-27 — DESIGN-REVIEW (audit Daedalus mode degrade, XAML statique) termine : 3 critiques, 6 majeurs, 6 mineurs. Ampleur recommandee : RAFRAICHISSEMENT. -> DEV-COUNCIL lance (9 auditeurs).",
-    "2026-07-27 — DEV-COUNCIL termine : 84 findings bruts -> 45 canoniques apres sceptique (2 Bloquants DON-02/PKG-01, 11 Majeurs). Cross-challenges 3 paires OK. Arbitrage ARC-03 unanime : couture presets maintenant, DI en beta. Exploration ameliorations produite. -> CHECKPOINT HUMAIN : triage findings + confirmation roadmap."
+    "2026-07-27 — DEV-COUNCIL termine : 84 findings bruts -> 45 canoniques apres sceptique (2 Bloquants DON-02/PKG-01, 11 Majeurs). Cross-challenges 3 paires OK. Arbitrage ARC-03 unanime : couture presets maintenant, DI en beta. Exploration ameliorations produite. -> CHECKPOINT HUMAIN : triage findings + confirmation roadmap.",
+    "2026-07-27 — Triage humain : TOUS les findings en correction. dev-council-fix en 5 lots : LOT1 7/7, LOT2 5/5, LOT3a 15/15, LOT3b 15/17 (2 reportes), LOT UI 12/14 (2 reportes). 0 annule. 59 commits. Tests 0->37/37. 0 warning avec analyseurs actifs. GATE final passe. Version unifiee 1.4.0. Restent : validation Revit reelle + install MSI vierge."
   ]
 }
