@@ -95,13 +95,10 @@ public partial class RightPanelViewModel : ObservableObject
     {
         if (string.IsNullOrEmpty(ActivePresetName)) return;
 
-        var result = System.Windows.MessageBox.Show(
-            $"Supprimer le preset \"{ActivePresetName}\" et son fichier ?",
-            "Supprimer le preset",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Question);
-
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!DialogService.Confirm(
+                $"Supprimer le preset \"{ActivePresetName}\" et son fichier ?",
+                "Supprimer le preset"))
+            return;
 
         var name = ActivePresetName;
         _presetService.DeletePreset(name);
@@ -360,19 +357,17 @@ public partial class RightPanelViewModel : ObservableObject
 
                 if (otherGroups.Count > 0)
                 {
-                    var result = System.Windows.MessageBox.Show(
+                    var result = DialogService.ConfirmWithCancel(
                         $"Le groupe \"{group.GroupName}\" contient {group.Materials.Count} materiau(x).\n\n" +
                         "Oui = Transferer les materiaux dans un autre groupe\n" +
                         "Non = Supprimer le groupe et ses materiaux\n" +
                         "Annuler = Ne rien faire",
-                        "Supprimer le groupe",
-                        System.Windows.MessageBoxButton.YesNoCancel,
-                        System.Windows.MessageBoxImage.Question);
+                        "Supprimer le groupe");
 
-                    if (result == System.Windows.MessageBoxResult.Cancel)
+                    if (result == null)
                         return;
 
-                    if (result == System.Windows.MessageBoxResult.Yes)
+                    if (result == true)
                     {
                         // Transferer dans un autre groupe choisi par l'utilisateur
                         PresetGroupDto targetGroup;

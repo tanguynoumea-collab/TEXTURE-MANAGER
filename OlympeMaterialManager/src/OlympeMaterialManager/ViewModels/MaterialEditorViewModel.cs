@@ -420,11 +420,8 @@ public partial class MaterialEditorViewModel : ObservableObject
             // FIA-05 : signaler l'echec a l'utilisateur puis resynchroniser les champs
             // avec l'etat reel du materiau Revit (la transaction a ete rollback).
             Services.LogService.Error("Echec d'edition du materiau", ex);
-            System.Windows.MessageBox.Show(
-                $"Echec de la modification du materiau :\n{ex.Message}",
-                "Olympe MaterialManager",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+            Services.DialogService.ShowError(
+                $"Echec de la modification du materiau :\n{ex.Message}");
             FetchMaterialDetails();
             return;
         }

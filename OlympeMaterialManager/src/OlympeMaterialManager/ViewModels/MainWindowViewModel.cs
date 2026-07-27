@@ -124,19 +124,13 @@ public partial class MainWindowViewModel : ObservableObject
             PresetService.MigrateProjectDirectory(newPath!);
             ProjectDirectoryPath = newPath!;
 
-            System.Windows.MessageBox.Show(
-                $"Repertoire de projet migre avec succes vers :\n{newPath}",
-                "Olympe MaterialManager",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Information);
+            DialogService.ShowInfo(
+                $"Repertoire de projet migre avec succes vers :\n{newPath}");
         }
         catch (Exception ex)
         {
-            System.Windows.MessageBox.Show(
-                $"Erreur lors de la migration :\n{ex.Message}",
-                "Olympe MaterialManager",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+            DialogService.ShowError(
+                $"Erreur lors de la migration :\n{ex.Message}");
         }
     }
 
@@ -233,11 +227,8 @@ public partial class MainWindowViewModel : ObservableObject
         {
             // D-18 : erreur avec message francais
             SetMatStatusText = $"Erreur : {ex.Message}";
-            System.Windows.MessageBox.Show(
-                $"Erreur lors de l'application du materiau :\n{ex.Message}",
-                "Olympe MaterialManager",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Error);
+            DialogService.ShowError(
+                $"Erreur lors de l'application du materiau :\n{ex.Message}");
         }
         else
         {

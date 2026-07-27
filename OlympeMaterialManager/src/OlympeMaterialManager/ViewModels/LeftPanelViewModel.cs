@@ -177,13 +177,10 @@ public partial class LeftPanelViewModel : ObservableObject
     {
         if (ActiveScene == null || _presetService == null) return;
 
-        var result = System.Windows.MessageBox.Show(
-            $"Supprimer la scene \"{ActiveScene.Name}\" ?",
-            "Supprimer la scene",
-            System.Windows.MessageBoxButton.YesNo,
-            System.Windows.MessageBoxImage.Question);
-
-        if (result != System.Windows.MessageBoxResult.Yes) return;
+        if (!DialogService.Confirm(
+                $"Supprimer la scene \"{ActiveScene.Name}\" ?",
+                "Supprimer la scene"))
+            return;
 
         var name = ActiveScene.Name;
         Scenes.Remove(ActiveScene);
