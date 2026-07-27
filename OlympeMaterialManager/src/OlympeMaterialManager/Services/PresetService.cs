@@ -299,6 +299,28 @@ public class PresetService
     // ---- Settings ----
 
     /// <summary>
+    /// DON-06 (best-effort) : re-essaie une operation I/O sur IOException transitoire
+    /// (fichier brievement verrouille par une autre instance Revit ou un client de
+    /// synchronisation type OneDrive). 3 tentatives, backoff court 100/200 ms.
+    /// Pas de mutex nomme : juge disproportionne pour un fichier de configuration.
+    /// </summary>
+    private static T RetryOnIOException<T>(Func<T> action)
+    {
+        const int maxAttempts = 3;
+        for (int attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return action();
+            }
+            catch (IOException) when (attempt < maxAttempts)
+            {
+                System.Threading.Thread.Sleep(100 * attempt);
+            }
+        }
+    }
+
+    /// <summary>
     /// Charge les settings depuis settings.json (dans le repertoire de projet).
     /// </summary>
     public AppSettingsDto LoadSettings()
@@ -307,7 +329,8 @@ public class PresetService
         if (!File.Exists(_settingsPath)) return new AppSettingsDto();
         try
         {
-            var json = File.ReadAllText(_settingsPath);
+            // DON-06 : un verrou transitoire ne doit pas envoyer le fichier en quarantaine.
+            var json = RetryOnIOException(() => File.ReadAllText(_settingsPath));
             return JsonSerializer.Deserialize<AppSettingsDto>(json, _options) ?? new AppSettingsDto();
         }
         catch (Exception ex)
@@ -324,7 +347,12 @@ public class PresetService
     /// </summary>
     public void SaveSettings(AppSettingsDto settings)
     {
-        WriteJsonAtomic(_settingsPath, settings);
+        // DON-06 : retry court sur verrou transitoire (multi-instances / sync).
+        RetryOnIOException<object?>(() =>
+        {
+            WriteJsonAtomic(_settingsPath, settings);
+            return null;
+        });
     }
 
     // ---- Multi-Preset System ----
