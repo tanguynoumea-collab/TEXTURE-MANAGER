@@ -199,7 +199,9 @@ public class RevitEventBridge : IExternalEventHandler
         catch (Exception dispEx)
         {
             LogService.Error($"ProcessRequest: Dispatcher.BeginInvoke failed for {type}", dispEx);
-            try { callback(result); } catch { }
+            // FIA-08 : le callback de secours ne doit pas echouer silencieusement.
+            try { callback(result); }
+            catch (Exception cbEx) { LogService.Error($"ProcessRequest: fallback callback failed for {type}", cbEx); }
         }
     }
 
@@ -876,11 +878,13 @@ public class RevitEventBridge : IExternalEventHandler
         td.Show();
 
         var mainWindow = App.MainWindow;
-        System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow?.Hide());
+        // FIA-08 : meme null-check de Application.Current que ProcessSingleRequest
+        System.Windows.Application.Current?.Dispatcher.Invoke(() => mainWindow?.Hide());
 
         var selectedTypes = new Dictionary<long, SceneTypeDto>();
         var markedElementIds = new List<ElementId>();
         var activeView = uiDoc.ActiveView;
+        string? cleanupError = null;
 
         // Override vert pour marquer les elements selectionnes
         var greenOverride = new OverrideGraphicSettings();
@@ -965,7 +969,8 @@ public class RevitEventBridge : IExternalEventHandler
         }
         finally
         {
-            // Nettoyer les overrides verts
+            // Invariant : les overrides verts sont TOUJOURS nettoyes en sortie de pick,
+            // que la boucle se termine par validation ou par exception.
             if (markedElementIds.Count > 0)
             {
                 try
@@ -977,11 +982,24 @@ public class RevitEventBridge : IExternalEventHandler
                         activeView.SetElementOverrides(id, clean);
                     txClean.Commit();
                 }
-                catch { }
+                catch (Exception cleanEx)
+                {
+                    // FIA-07 : echec de nettoyage logge et signale a l'utilisateur
+                    // (la surbrillance verte resterait commitee sans explication).
+                    LogService.Error("HandlePickElementInView: echec du nettoyage des overrides verts", cleanEx);
+                    cleanupError =
+                        "La surbrillance verte n'a pas pu etre retiree de la vue 3D. " +
+                        "Utilisez Annuler (Ctrl+Z) dans Revit pour la retirer.";
+                }
             }
 
-            System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow?.Show());
+            // FIA-08 : meme null-check de Application.Current que ProcessSingleRequest
+            System.Windows.Application.Current?.Dispatcher.Invoke(() => mainWindow?.Show());
         }
+
+        // FIA-07 : remonter l'echec de nettoyage via le callback (ErrorMessage cote VM)
+        if (cleanupError != null)
+            throw new InvalidOperationException(cleanupError);
 
         return selectedTypes.Values.ToList();
     }
