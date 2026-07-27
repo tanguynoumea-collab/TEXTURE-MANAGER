@@ -25,11 +25,28 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Row 0 : Recherche -->
-        <TextBox x:Name="SearchBox"
-                 Grid.Row="0"
-                 Margin="0,0,0,8"
-                 TextChanged="SearchBox_TextChanged" />
+        <!-- Row 0 : Recherche (placeholder overlay, UI-M9) -->
+        <Grid Grid.Row="0" Margin="0,0,0,8">
+            <TextBox x:Name="SearchBox"
+                     AutomationProperties.Name="Rechercher un matériau"
+                     TextChanged="SearchBox_TextChanged" />
+            <TextBlock Text="Rechercher un matériau…"
+                       Margin="8,0,0,0"
+                       VerticalAlignment="Center"
+                       IsHitTestVisible="False">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
 
         <!-- Row 1 : Liste des materiaux -->
         <ListBox x:Name="MaterialList"

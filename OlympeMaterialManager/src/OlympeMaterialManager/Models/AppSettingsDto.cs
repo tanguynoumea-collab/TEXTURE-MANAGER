@@ -27,4 +27,19 @@ public class AppSettingsDto
     /// Nom du preset actuellement actif.
     /// </summary>
     public string? ActivePresetName { get; set; }
+
+    // ---- Persistance de la fenetre principale (UI-M9) ----
+    // Null tant que la fenetre n'a jamais ete fermee : la taille par defaut s'applique.
+
+    /// <summary>Largeur de la fenetre principale a la derniere fermeture.</summary>
+    public double? WindowWidth { get; set; }
+
+    /// <summary>Hauteur de la fenetre principale a la derniere fermeture.</summary>
+    public double? WindowHeight { get; set; }
+
+    /// <summary>Position gauche de la fenetre principale a la derniere fermeture.</summary>
+    public double? WindowLeft { get; set; }
+
+    /// <summary>Position haute de la fenetre principale a la derniere fermeture.</summary>
+    public double? WindowTop { get; set; }
 }

@@ -130,6 +130,41 @@ public class PresetServiceTests : IDisposable
         Assert.Equal("Valide", collection.Scenes[0].Name);
     }
 
+    // ---- Persistance de la fenetre (UI-M9) ----
+
+    [Fact]
+    public void SaveSettings_PlacementFenetre_RoundTrip()
+    {
+        var settings = new AppSettingsDto
+        {
+            WindowWidth = 1280.5,
+            WindowHeight = 720,
+            WindowLeft = -8,
+            WindowTop = 42
+        };
+
+        _service.SaveSettings(settings);
+        var loaded = _service.LoadSettings();
+
+        Assert.Equal(1280.5, loaded.WindowWidth);
+        Assert.Equal(720, loaded.WindowHeight);
+        Assert.Equal(-8, loaded.WindowLeft);
+        Assert.Equal(42, loaded.WindowTop);
+    }
+
+    [Fact]
+    public void LoadSettings_SansPlacementFenetre_RetourneNull()
+    {
+        // Fichier v1 sans les champs fenetre : deserialisation tolerante, valeurs null
+        _service.SaveSettings(new AppSettingsDto { ActivePresetName = "P" });
+        var loaded = _service.LoadSettings();
+
+        Assert.Null(loaded.WindowWidth);
+        Assert.Null(loaded.WindowHeight);
+        Assert.Null(loaded.WindowLeft);
+        Assert.Null(loaded.WindowTop);
+    }
+
     // ---- Ecriture atomique (DON-01) ----
 
     [Fact]

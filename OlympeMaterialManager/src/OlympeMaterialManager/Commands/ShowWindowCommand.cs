@@ -91,6 +91,16 @@ public class ShowWindowCommand : IExternalCommand
             var vm = new MainWindowViewModel(App.EventBridge);
             App.MainWindow = new MainWindow { DataContext = vm };
 
+            // UI-M9 : restaurer taille/position persistees (garde ecran dans WindowService)
+            try
+            {
+                WindowService.RestoreWindowPlacement(App.MainWindow, new PresetService().LoadSettings());
+            }
+            catch (Exception ex)
+            {
+                LogService.Error("Echec de restauration de la position de la fenetre", ex);
+            }
+
             // FIA-03 : dernier filet — toute exception WPF non geree est loggee et
             // neutralisee (e.Handled = true) pour ne jamais faire tomber le process
             // Revit hote. Enregistre une seule fois, a la creation de la fenetre.
@@ -113,6 +123,9 @@ public class ShowWindowCommand : IExternalCommand
             // Intercepter la fermeture pour cacher au lieu de detruire (D-13)
             App.MainWindow.Closing += (sender, e) =>
             {
+                // UI-M9 : persister taille/position a chaque fermeture (croix ou arret Revit)
+                SaveWindowPlacementSafe(App.MainWindow);
+
                 if (!App.AllowClose)
                 {
                     e.Cancel = true;
@@ -124,6 +137,25 @@ public class ShowWindowCommand : IExternalCommand
         App.MainWindow.Show();
         App.MainWindow.Activate();
         return Result.Succeeded;
+    }
+
+    /// <summary>
+    /// Persiste taille/position de la fenetre dans settings.json (UI-M9).
+    /// Jamais d'exception propagee : appele depuis le handler Closing (FIA-03).
+    /// </summary>
+    private static void SaveWindowPlacementSafe(Window window)
+    {
+        try
+        {
+            var service = new PresetService();
+            var settings = service.LoadSettings();
+            WindowService.SaveWindowPlacement(window, settings);
+            service.SaveSettings(settings);
+        }
+        catch (Exception ex)
+        {
+            LogService.Error("Echec de sauvegarde de la position de la fenetre", ex);
+        }
     }
 
     /// <summary>
