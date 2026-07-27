@@ -44,6 +44,24 @@ public class PresetService
     private readonly string _settingsPath;
     private readonly string _projectDir;
 
+    /// <summary>
+    /// Ecrit un objet serialise en JSON de maniere atomique (DON-01) :
+    /// ecriture dans un fichier temporaire puis remplacement via File.Replace
+    /// (conserve un .bak de la version precedente). Si le fichier cible n'existe
+    /// pas encore (premier write), simple File.Move du temporaire.
+    /// </summary>
+    private static void WriteJsonAtomic(string path, object obj)
+    {
+        var json = JsonSerializer.Serialize(obj, obj.GetType(), _options);
+        var tmpPath = path + ".tmp";
+        File.WriteAllText(tmpPath, json);
+
+        if (File.Exists(path))
+            File.Replace(tmpPath, path, path + ".bak");
+        else
+            File.Move(tmpPath, path);
+    }
+
     public PresetService()
     {
         _projectDir = GetProjectDirectory() ?? _appDataDir;
@@ -101,8 +119,7 @@ public class PresetService
         Directory.CreateDirectory(Path.Combine(path, "scenes"));
 
         var config = new ProjectConfigDto { ProjectDirectory = path };
-        var json = JsonSerializer.Serialize(config, _options);
-        File.WriteAllText(_configPath, json);
+        WriteJsonAtomic(_configPath, config);
     }
 
     /// <summary>
@@ -177,8 +194,7 @@ public class PresetService
     /// </summary>
     public void SaveSettings(AppSettingsDto settings)
     {
-        var json = JsonSerializer.Serialize(settings, _options);
-        File.WriteAllText(_settingsPath, json);
+        WriteJsonAtomic(_settingsPath, settings);
     }
 
     /// <summary>
@@ -256,8 +272,7 @@ public class PresetService
     public void SavePreset(string name, PresetCollectionDto collection)
     {
         var path = Path.Combine(GetPresetsDirectory(), name + ".json");
-        var json = JsonSerializer.Serialize(collection, _options);
-        File.WriteAllText(path, json);
+        WriteJsonAtomic(path, collection);
     }
 
     /// <summary>
@@ -307,8 +322,7 @@ public class PresetService
     /// </summary>
     public void Save(PresetCollectionDto collection, string path)
     {
-        var json = JsonSerializer.Serialize(collection, _options);
-        File.WriteAllText(path, json);
+        WriteJsonAtomic(path, collection);
     }
 
     /// <summary>
@@ -380,8 +394,7 @@ public class PresetService
     {
         var path = Path.Combine(GetScenesDirectory(), name + ".json");
         scene.Name = name;
-        var json = JsonSerializer.Serialize(scene, _options);
-        File.WriteAllText(path, json);
+        WriteJsonAtomic(path, scene);
     }
 
     /// <summary>
