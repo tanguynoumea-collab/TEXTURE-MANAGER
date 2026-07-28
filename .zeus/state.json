@@ -18,7 +18,7 @@
     "mode_daedalus": "EVOLUTION"
   },
   "iterations": {
-    "design_review": 0,
+    "design_review": 1,
     "design_review_max": 3,
     "dev_council": 1,
     "dev_council_max": 3
