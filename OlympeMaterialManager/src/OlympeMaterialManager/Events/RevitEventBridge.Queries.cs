@@ -126,19 +126,19 @@ public partial class RevitEventBridge
         string matName = UiLabels.ByCategory;
         long matIdValue = ElementIdHelper.GetValue(matId);
         int? colorArgb = null;
-        string? texturePath = null;
+        int? appearanceColorArgb = null;
 
         if (matId != ElementId.InvalidElementId)
         {
             var mat = doc.GetElement(matId);
             matName = mat?.Name ?? UiLabels.Inconnu;
 
-            // B8/B10-TX : le Material est deja resolu ici — coût nul pour la
-            // couleur, marche d'asset mise en cache pour la texture.
+            // B8/DR2-1 : le Material est deja resolu ici — coût nul pour la
+            // couleur, lecture d'asset mise en cache pour l'apparence.
             if (mat is Material material)
             {
                 colorArgb = ExtractColorArgb(material);
-                texturePath = GetMaterialTexturePath(doc, material);
+                appearanceColorArgb = GetMaterialAppearanceColorArgb(doc, material);
             }
         }
 
@@ -153,7 +153,7 @@ public partial class RevitEventBridge
             MaterialName = matName,
             MaterialElementIdValue = matIdValue,
             ColorArgb = colorArgb,
-            TexturePath = texturePath
+            AppearanceColorArgb = appearanceColorArgb
         };
     }
 
@@ -238,18 +238,18 @@ public partial class RevitEventBridge
             string matName = UiLabels.Aucun;
             long matIdValue = ElementIdHelper.GetValue(matId);
             int? colorArgb = null;
-            string? texturePath = null;
+            int? appearanceColorArgb = null;
 
             if (matId != ElementId.InvalidElementId)
             {
                 var mat = doc.GetElement(matId);
                 matName = mat?.Name ?? UiLabels.Inconnu;
 
-                // B8/B10-TX : memes donnees visuelles que les couches (coherence des cartes)
+                // B8/DR2-1 : memes donnees visuelles que les couches (coherence des cartes)
                 if (mat is Material material)
                 {
                     colorArgb = ExtractColorArgb(material);
-                    texturePath = GetMaterialTexturePath(doc, material);
+                    appearanceColorArgb = GetMaterialAppearanceColorArgb(doc, material);
                 }
             }
 
@@ -260,7 +260,7 @@ public partial class RevitEventBridge
                 CurrentMaterialName = matName,
                 CurrentMaterialIdValue = matIdValue,
                 ColorArgb = colorArgb,
-                TexturePath = texturePath
+                AppearanceColorArgb = appearanceColorArgb
             });
         }
     }
@@ -274,25 +274,24 @@ public partial class RevitEventBridge
         var doc = uiApp.ActiveUIDocument?.Document;
         if (doc == null) return new List<PresetMaterialDto>();
 
-        // B10-TX : TexturePath rempli aussi ici (pastilles). Coût maîtrisé même
-        // sur des centaines de matériaux : le cache par AppearanceAssetId évite
-        // de re-marcher les assets partagés, et TexturePathResolver met en cache
-        // les sondes disque par chemin brut.
-        // DR1-3 : comptage des issues de résolution pour la ligne de synthèse
+        // DR2-1 : AppearanceColorArgb rempli aussi ici (pastilles). Coût maîtrisé
+        // même sur des centaines de matériaux : le cache par AppearanceAssetId
+        // évite de relire les assets partagés — lecture mémoire pure, aucune I/O.
+        // Comptage des issues de résolution pour la ligne de synthèse
         // (diagnostic de terrain, toujours écrite dans olympe.log).
-        int resolved = 0, noBitmap = 0, unresolved = 0;
+        int resolved = 0, noAsset = 0, noColor = 0;
         var result = new List<PresetMaterialDto>();
 
         foreach (var m in new FilteredElementCollector(doc)
                      .OfClass(typeof(Material))
                      .Cast<Material>())
         {
-            var texturePath = GetMaterialTexturePath(doc, m, out var status);
+            var appearanceColorArgb = GetMaterialAppearanceColorArgb(doc, m, out var status);
             switch (status)
             {
-                case TextureResolution.Resolved: resolved++; break;
-                case TextureResolution.NoBitmap: noBitmap++; break;
-                default: unresolved++; break;
+                case AppearanceResolution.Resolved: resolved++; break;
+                case AppearanceResolution.NoAsset: noAsset++; break;
+                default: noColor++; break;
             }
 
             result.Add(new PresetMaterialDto
@@ -300,13 +299,13 @@ public partial class RevitEventBridge
                 MaterialName = m.Name,
                 MaterialElementIdValue = ElementIdHelper.GetValue(m.Id),
                 ColorArgb = ExtractColorArgb(m),
-                TexturePath = texturePath
+                AppearanceColorArgb = appearanceColorArgb
             });
         }
 
         LogService.Info(
-            $"Textures: {resolved} résolues / {noBitmap} sans bitmap / " +
-            $"{unresolved} non résolues sur {result.Count}");
+            $"Apparences: {resolved} avec couleur / {noAsset} sans asset / " +
+            $"{noColor} sans couleur sur {result.Count}");
 
         return result.OrderBy(m => m.MaterialName).ToList();
     }
@@ -332,8 +331,9 @@ public partial class RevitEventBridge
             ColorArgb = ExtractColorArgb(material),
             PatternName = GetPatternName(doc, material),
             HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId,
-            // B10-TX : aperçu du visualisateur en mode Texture (null = fallback couleur)
-            TexturePath = GetMaterialTexturePath(doc, material)
+            // DR2-1 : aperçu du visualisateur en mode Réaliste (null = fallback
+            // couleur graphique)
+            AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, material)
         };
 
         // Description via BuiltInParameter (D-08)

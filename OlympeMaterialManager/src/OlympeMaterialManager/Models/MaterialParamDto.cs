@@ -19,8 +19,9 @@ public class MaterialParamDto
     public int? ColorArgb { get; set; }
 
     /// <summary>
-    /// Chemin resolu de la texture bitmap (B10-TX). Null = pas de texture
-    /// trouvee → fallback couleur cote UI.
+    /// Couleur d'apparence ARGB du materiau (DR2-1) : diffuse/albedo de l'asset
+    /// d'apparence, pour le mode Réaliste. Null = pas d'asset ou asset sans
+    /// couleur → fallback couleur graphique cote UI.
     /// </summary>
-    public string? TexturePath { get; set; }
+    public int? AppearanceColorArgb { get; set; }
 }

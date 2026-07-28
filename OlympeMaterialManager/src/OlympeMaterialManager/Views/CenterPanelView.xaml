@@ -49,7 +49,7 @@
                                             <Binding Path="DataContext.PreviewModeStore.CurrentMode"
                                                      RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                             <Binding Path="ColorArgb" />
-                                            <Binding Path="TexturePath" />
+                                            <Binding Path="AppearanceColorArgb" />
                                         </MultiBinding>
                                     </Border.Background>
                                 </Border>
@@ -65,7 +65,7 @@
                                             <Binding Path="DataContext.PreviewModeStore.CurrentMode"
                                                      RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                             <Binding Path="ColorArgb" />
-                                            <Binding Path="TexturePath" />
+                                            <Binding Path="AppearanceColorArgb" />
                                         </MultiBinding>
                                     </Border.Background>
                                 </Border>

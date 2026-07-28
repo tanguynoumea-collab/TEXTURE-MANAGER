@@ -21,6 +21,10 @@ internal static class RevitAssetProps
     /// <summary>Couleur de teinte RGBA normalisee 0.0-1.0 (AssetPropertyDoubleArray4d).</summary>
     public static readonly string TintColor = Generic.CommonTintColor;
 
+    /// <summary>Couleur diffuse du schema generique, RGBA normalisee 0.0-1.0
+    /// (AssetPropertyDoubleArray4d, DR2-1 : couleur d'apparence du mode Réaliste).</summary>
+    public static readonly string GenericDiffuse = Generic.GenericDiffuse;
+
     /// <summary>Chemin du bitmap d'un asset UnifiedBitmap (AssetPropertyString, B10-TX).</summary>
     public static readonly string UnifiedBitmapPath = UnifiedBitmap.UnifiedbitmapBitmap;
 }

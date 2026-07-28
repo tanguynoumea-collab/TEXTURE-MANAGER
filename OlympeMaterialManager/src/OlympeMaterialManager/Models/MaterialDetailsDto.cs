@@ -16,8 +16,9 @@ public class MaterialDetailsDto
     public int TintColorArgb { get; set; }
 
     /// <summary>
-    /// Chemin resolu de la texture bitmap (B10-TX), pour l'aperçu du
-    /// visualisateur en mode Texture. Null = introuvable → fallback couleur.
+    /// Couleur d'apparence ARGB du materiau (DR2-1), pour l'aperçu du
+    /// visualisateur en mode Réaliste. Null = pas d'asset ou asset sans
+    /// couleur → fallback couleur graphique.
     /// </summary>
-    public string? TexturePath { get; set; }
+    public int? AppearanceColorArgb { get; set; }
 }

@@ -164,8 +164,9 @@ public partial class RevitEventBridge
                 MaterialName = duplicate.Name,
                 MaterialElementIdValue = ElementIdHelper.GetValue(duplicate.Id),
                 ColorArgb = ExtractColorArgb(duplicate),
-                // B10-TX : l'AppearanceAsset est partage par reference -> meme texture
-                TexturePath = GetMaterialTexturePath(doc, duplicate)
+                // DR2-1 : l'AppearanceAsset est partage par reference -> meme
+                // couleur d'apparence
+                AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, duplicate)
             };
         }
         catch

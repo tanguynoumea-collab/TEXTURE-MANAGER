@@ -263,13 +263,13 @@
                                 <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
                                     <Binding Path="MaterialEditorVM.ColorArgb" />
-                                    <Binding Path="MaterialEditorVM.TexturePath" />
+                                    <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
                                 </MultiBinding>
                             </Rectangle.Fill>
                             <Rectangle.ToolTip>
                                 <MultiBinding Converter="{StaticResource TextureFallbackTooltip}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
-                                    <Binding Path="MaterialEditorVM.TexturePath" />
+                                    <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
                                 </MultiBinding>
                             </Rectangle.ToolTip>
                         </Rectangle>
@@ -286,7 +286,7 @@
                             <TextBlock.Text>
                                 <MultiBinding Converter="{StaticResource TextureFallbackTooltip}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
-                                    <Binding Path="MaterialEditorVM.TexturePath" />
+                                    <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
                                 </MultiBinding>
                             </TextBlock.Text>
                             <TextBlock.Style>
@@ -551,7 +551,7 @@
                                                 <Binding Path="DataContext.PreviewModeStore.CurrentMode"
                                                          RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                                 <Binding Path="ColorArgb" />
-                                                <Binding Path="TexturePath" />
+                                                <Binding Path="AppearanceColorArgb" />
                                             </MultiBinding>
                                         </Rectangle.Fill>
                                     </Rectangle>
