@@ -3,8 +3,8 @@
   "projet": "Olympe MaterialManager",
   "version_courante": "1.4.0 (Alpha 1.4)",
   "route": "audit",
-  "phase": "UX-DESIGN",
-  "phase_status": "attente_validation_plan_design",
+  "phase": "DESIGN-REVIEW",
+  "phase_status": "attente_captures_revit_utilisateur",
   "cycle": {
     "numero": 2,
     "demarre_le": "2026-07-28",
@@ -24,7 +24,7 @@
     "dev_council_max": 3
   },
   "checkpoints": {
-    "plan_design_valide": false,
+    "plan_design_valide": true,
     "triage_findings": false,
     "go_publication": false,
     "confirmation_roadmap": false
@@ -70,6 +70,7 @@
     "2026-07-28 — Validation Revit utilisateur OK + idees B8-B10 consignees. GO publication. Build Release re-verifie, CHANGELOG cree, tag v1.4.0, push master+tags, Release GitHub publiee (prerelease) avec MSI. Pas de CI (candidate roadmap D1). -> RETOUR ROADMAP (checkpoint 4 en attente).",
     "2026-07-28 — RETOUR ROADMAP confirme : B8-B10 valides (prochain cycle), B1 redefini (philosophie partage sur maquette commune ; purge des materiaux absents avec confirmation), D1 CI a planifier tot. Roadmap ecrite : 00_ROADMAP/REVMAT ROADMAP__2026-07-28_08-46-24.md. CYCLE 1 CLOS. Prochain cycle propose : B8-B10 (FULL : LLM-COUNCIL leger -> Daedalus EVOLUTION -> GSD).",
     "2026-07-28 — Triage B2-B7 : B2 validee (cumul pipette+liste, rangement groupe actif sinon 'Autre'), B3 validee, B5 validee (integree au prochain cycle), B4 et B7 ecartees. Roadmap mise a jour.",
-    "2026-07-28 — CYCLE 2 lance (B8/B9/B10/B5). LLM-COUNCIL 5 membres + 5 relecteurs aveugles : classement unanime, synthese rendue (Realiste reporte phase 2, lisere ImageBrush tuile, string tolerant settings, FilteredGroups, FindTexturePath restaure de git). Daedalus EVOLUTION : DESIGN_PLAN.md produit (contrat retro-ingenere + delta). -> CHECKPOINT HUMAIN 1 : validation du plan + Q1 (segment Realiste grise ou absent) + Q2 (edition inline vs Visualisateur)."
+    "2026-07-28 — CYCLE 2 lance (B8/B9/B10/B5). LLM-COUNCIL 5 membres + 5 relecteurs aveugles : classement unanime, synthese rendue (Realiste reporte phase 2, lisere ImageBrush tuile, string tolerant settings, FilteredGroups, FindTexturePath restaure de git). Daedalus EVOLUTION : DESIGN_PLAN.md produit (contrat retro-ingenere + delta). -> CHECKPOINT HUMAIN 1 : validation du plan + Q1 (segment Realiste grise ou absent) + Q2 (edition inline vs Visualisateur).",
+    "2026-07-28 — Plan valide (Q1=a grise, Q2=a edition conservee). GSD : Lot A (B5-G/B5-D/B9) 3/3 + Lot B (B10-S/TX/UI, B8) 4/4. GATE 75/75. Re-verification council ciblee (fiabilite + autodesk avec sondes 4 surfaces) : 0 Bloquant/0 Majeur, 5 Mineurs -> micro-passe durcissement 5/5 (UNC, cache/document, profondeur, constantes typees, anti double-clic). Tests 77/77, 0 warning. -> DESIGN-REVIEW : attente captures/validation Revit utilisateur (critere n1 : lisibilite motif tuile 6px, repli = diffuse asset ; + course focus Topmost FIA2-06 a observer)."
   ]
 }
