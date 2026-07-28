@@ -189,4 +189,20 @@ public class TexturePathResolverTests : IDisposable
         Assert.Null(TexturePathResolver.Resolve(null));
         Assert.Null(TexturePathResolver.Resolve("   "));
     }
+
+    [Fact]
+    public void WarmUp_EstIdempotentEtNeLevePas()
+    {
+        // DR6-2 : prechauffage appele depuis App.OnStartup — il doit rendre la
+        // main immediatement (construction en tache de fond, jamais d'attente sur
+        // le thread Revit) et supporter d'etre appele plusieurs fois (la garde
+        // Interlocked n'autorise qu'une seule construction par session).
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        TexturePathResolver.WarmUp();
+        TexturePathResolver.WarmUp();
+        sw.Stop();
+
+        Assert.True(sw.ElapsedMilliseconds < 2000,
+            $"WarmUp a bloqué {sw.ElapsedMilliseconds} ms : l'index doit se construire en tâche de fond.");
+    }
 }

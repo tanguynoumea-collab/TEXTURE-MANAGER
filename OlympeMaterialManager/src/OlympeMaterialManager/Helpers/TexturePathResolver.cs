@@ -358,6 +358,28 @@ public static class TexturePathResolver
     /// n'est pas terminée, la réponse est null — jamais d'attente bloquante
     /// sur le thread Revit (spec DR4-1).
     /// </summary>
+    /// <summary>
+    /// DR6-2 : prechauffage de l'index nom → chemin, a appeler au demarrage de
+    /// Revit (App.OnStartup). Sans lui, l'index ne demarre qu'a la PREMIERE
+    /// resolution — c'est-a-dire a l'ouverture de la fenetre — et les textures
+    /// des premiers materiaux echouent « provisoirement » (ni cache ni trace),
+    /// n'apparaissant qu'au rafraichissement suivant. Lance la construction en
+    /// tache de fond et rend la main immediatement : JAMAIS d'attente sur le
+    /// thread Revit. Idempotent (garde Interlocked) et silencieux.
+    /// </summary>
+    public static void WarmUp()
+    {
+        try
+        {
+            EnsureIndexBuildStarted();
+        }
+        catch
+        {
+            // Best-effort : un prechauffage impossible laisse simplement l'index
+            // se construire paresseusement, comme avant DR6-2.
+        }
+    }
+
     private static string? LookupFileNameIndex(string fileName)
     {
         EnsureIndexBuildStarted();

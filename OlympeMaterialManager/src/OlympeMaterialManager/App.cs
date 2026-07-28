@@ -32,6 +32,13 @@ public class App : IExternalApplication
         RevitEvent = ExternalEvent.Create(EventBridge);
         LogService.Log("OnStartup: ExternalEvent created");
 
+        // DR6-2 : construire l'index des textures des maintenant, en tache de
+        // fond. Il etait bati paresseusement a la premiere resolution — donc a
+        // l'ouverture de la fenetre — et les premieres textures echouaient le
+        // temps de sa construction. Lance ici, il est pret bien avant le premier
+        // clic sur le ruban. Ne bloque pas et ne peut pas faire echouer OnStartup.
+        Helpers.TexturePathResolver.WarmUp();
+
         var assemblyPath = Assembly.GetExecutingAssembly().Location;
         var commandTypeName = typeof(ShowWindowCommand).FullName!;
 
