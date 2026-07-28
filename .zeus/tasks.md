@@ -31,3 +31,17 @@ Décision utilisateur après diagnostic terrain (olympe.log : ZÉRO texture bitm
 - [x] DR2-2 : sélecteur 2 segments Couleur │ Réaliste ; enum PreviewMode sans Texture, parse « Texture » → Realistic ; converter sans ImageBrush (apparence → fallback couleur graphique → transparent) ; indicateur « Pas d'apparence — couleur graphique » ; tests migration — commit e0c81e5
 - [x] DR2-3 : suppression infra texture morte (TexturePathResolver + 12 tests, TextureBrushCache, UnifiedBitmapPath) ; grep avant/après = 0 référence ; total tests 79 → 67 — commit 5727ec4
 - [x] DR2-4 : presse-papiers robuste (CLIPBRD_E_CANT_OPEN : 3 retries 100 ms, SetDataObject en dernier recours, sinon nom affiché en clair) — commit 9db7e2a
+
+# Tâches GSD — Cycle 3 (B2/B3/B1) — 2026-07-28
+
+Plan de design : .zeus/DESIGN_PLAN.md §3bis (delta cycle 3, enchaînement autorisé).
+
+## DoD du cycle
+- Builds séparés `dotnet build -f net48` puis `-f net8.0-windows` : 0 warning / 0 erreur
+- `dotnet test` : tous verts (67 en entrée de cycle)
+- Tokens du thème uniquement ; accents français ; AutomationProperties sur nouveaux contrôles
+
+## Lot C
+- [x] B2 : pipette matériau (PickElementForMaterials mono-pick sans surbrillance, matériaux du type via couches/paramètres, dédoublonnage PresetMaterialMerge testé, groupe sélectionné sinon « Autre », AutoSave + StatusMessage, Échap silencieux, fenêtre ré-affichée dans tous les chemins) — commit 336c9da
+- [x] B3 : drag & drop preset → carte (cartes couches ET paramètres, DataFormat partagé PresetMaterialDto.DragDropFormat, bordure accent au survol via propriété attachée DropTargetIndicator, application mono-cible par le chemin AppliquerMateriau + OnSetMatResult, garde IsSetMatBusy, MoveMaterial du panneau droit intact) — commit df680c2
+- Portes passées : net48 0/0, net8.0-windows 0/0, 74 tests verts (67 + 7 PresetMaterialMergeTests)
