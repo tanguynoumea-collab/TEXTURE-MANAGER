@@ -1,13 +1,24 @@
 <UserControl x:Class="Olympe.MaterialManager.Views.CenterPanelView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:b="http://schemas.microsoft.com/xaml/behaviors">
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:converters="clr-namespace:Olympe.MaterialManager.Converters">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <!-- B8 : brush du liseré matériau (couleur / texture tuilée selon le mode) -->
+        <converters:MaterialPreviewBrushConverter x:Key="MaterialPreviewBrush" />
 
         <!-- UI-M6 : style de carte partage par les deux ListBox (couches et parametres),
-             couleurs via les tokens CardBrush / CardHoverBrush / CardSelectedBrush du theme. -->
+             couleurs via les tokens CardBrush / CardHoverBrush / CardSelectedBrush du theme.
+             B8 : liseré matériau de 6 px sur toute la hauteur du bord gauche, coins
+             arrondis côté gauche épousant la carte, À L'INTÉRIEUR de la bordure de
+             sélection accent (accent = état, liseré = donnée). Le mode d'aperçu se
+             propage par binding sur PreviewModeStore.CurrentMode (INPC, alimenté par
+             PreviewModeChangedMessage côté store) — documenté : choix « propriété
+             exposée par le VM » plutôt qu'un abonnement message dans la vue.
+             ColorArgb null (« Par catégorie ») → liseré transparent ; texture
+             introuvable → couleur (fallback silencieux sur 6 px, spec 2.6). -->
         <Style x:Key="CardItemStyle" TargetType="ListBoxItem">
             <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -19,11 +30,29 @@
                         <Border x:Name="Card"
                                 Background="{StaticResource CardBrush}"
                                 CornerRadius="6"
-                                Padding="12,10"
                                 BorderThickness="2"
                                 BorderBrush="Transparent"
                                 Cursor="Hand">
-                            <ContentPresenter />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="6" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0"
+                                        CornerRadius="4,0,0,4"
+                                        SnapsToDevicePixels="True">
+                                    <Border.Background>
+                                        <MultiBinding Converter="{StaticResource MaterialPreviewBrush}"
+                                                      ConverterParameter="Tile">
+                                            <Binding Path="DataContext.PreviewModeStore.CurrentMode"
+                                                     RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                            <Binding Path="ColorArgb" />
+                                            <Binding Path="TexturePath" />
+                                        </MultiBinding>
+                                    </Border.Background>
+                                </Border>
+                                <ContentPresenter Grid.Column="1" Margin="12,10" />
+                            </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
