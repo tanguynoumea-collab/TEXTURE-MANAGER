@@ -54,6 +54,32 @@ public class TexturePathResolverTests : IDisposable
         Assert.Equal(attendu, TexturePathResolver.IsGenericPlaceholder(path));
     }
 
+    [Theory]
+    [InlineData(@"Mats\Metal\external.dependency\Simple_Metal_Mtl_Break_pattern.jpg", true)]
+    [InlineData(@"Simple_Concrete_Mtl_BroomCurved_pattern.jpg", true)]
+    [InlineData(@"Brick_bump.png", true)]
+    [InlineData(@"Wood_normal.tif", true)]
+    [InlineData(@"Metal_gloss.jpg", true)]
+    [InlineData(@"Fence_cutout.png", true)]
+    [InlineData(@"1\Mats\Brick_Non_Uniform_Running_Burgundy.png", false)]
+    [InlineData(@"cmu_running_200x400_gray.png", false)]
+    [InlineData(null, false)]
+    public void IsNonColorMap_DetecteLesCartesTechniques(string? path, bool attendu)
+    {
+        Assert.Equal(attendu, TexturePathResolver.IsNonColorMap(path));
+    }
+
+    [Fact]
+    public void Resolve_CheminRelatifStyleTextures_ResoutContreRacineTextures()
+    {
+        // Reproduit le cas terrain « 1\mats\brick_non_uniform_running_burgundy.png »
+        // avec une racine simulant Materials\Textures (casse differente sur disque).
+        var expected = CreateFile(@"1\Mats\Brick_Non_Uniform_Running_Burgundy.png");
+        var resolved = TexturePathResolver.Resolve(
+            @"1\mats\brick_non_uniform_running_burgundy.png", Roots);
+        Assert.Equal(expected, resolved, ignoreCase: true);
+    }
+
     [Fact]
     public void Resolve_CheminAbsoluExistant_RetourneTelQuel()
     {

@@ -158,12 +158,46 @@ public partial class RevitEventBridge
     private const int MaxAssetWalkDepth = 8;
 
     /// <summary>
-    /// Cherche recursivement un chemin de texture bitmap dans un Asset Revit
-    /// (restauré de 5727ec4^). Parcourt les proprietes de type Asset (connectes)
-    /// et String pour trouver "unifiedbitmap_Bitmap" ou tout chemin finissant
-    /// par une extension image. Profondeur bornée par MaxAssetWalkDepth (FIA2-03).
+    /// Cherche le chemin de la texture COULEUR d'un asset. Retour terrain DR4-3 :
+    /// deux passes — (1) les canaux diffuse/albedo d'abord (sinon la marche
+    /// générique remonte des cartes de RELIEF grises, ex. *_Break_pattern.jpg,
+    /// avant la vraie texture), (2) marche générique en écartant placeholders
+    /// et cartes techniques non-couleur. Profondeur bornée (FIA2-03).
     /// </summary>
     private static string? FindTexturePath(Asset? asset, int depth = 0)
+    {
+        if (asset == null || depth >= MaxAssetWalkDepth) return null;
+
+        // Passe 1 : canaux couleur explicites (generic_diffuse, opaque_albedo, ...)
+        for (int i = 0; i < asset.Size; i++)
+        {
+            var prop = asset.Get(i);
+            if (prop == null || prop.NumberOfConnectedProperties == 0) continue;
+
+            var name = prop.Name ?? string.Empty;
+            if (name.IndexOf("diffuse", StringComparison.OrdinalIgnoreCase) < 0 &&
+                name.IndexOf("albedo", StringComparison.OrdinalIgnoreCase) < 0)
+                continue;
+
+            for (int c = 0; c < prop.NumberOfConnectedProperties; c++)
+            {
+                if (prop.GetConnectedProperty(c) is Asset connectedAsset)
+                {
+                    var found = FindTexturePathGeneric(connectedAsset, depth + 1);
+                    if (found != null) return found;
+                }
+            }
+        }
+
+        // Passe 2 : marche générique (assets sans canal diffuse identifiable).
+        return FindTexturePathGeneric(asset, depth);
+    }
+
+    /// <summary>
+    /// Marche générique restaurée de 5727ec4^ : proprietes Asset connectees et
+    /// String, en écartant le placeholder Autodesk et les cartes non-couleur.
+    /// </summary>
+    private static string? FindTexturePathGeneric(Asset? asset, int depth)
     {
         if (asset == null || depth >= MaxAssetWalkDepth) return null;
 
@@ -179,7 +213,7 @@ public partial class RevitEventBridge
                 {
                     if (prop.GetConnectedProperty(c) is Asset connectedAsset)
                     {
-                        var found = FindTexturePath(connectedAsset, depth + 1);
+                        var found = FindTexturePathGeneric(connectedAsset, depth + 1);
                         if (found != null) return found;
                     }
                 }
@@ -196,10 +230,11 @@ public partial class RevitEventBridge
                     val.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
                     val.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Retour terrain DR4 : ignorer le placeholder générique et
-                    // CONTINUER la marche — la vraie texture peut vivre dans un
-                    // autre canal du même asset.
-                    if (!TexturePathResolver.IsGenericPlaceholder(val))
+                    // DR4-3 : ignorer le placeholder générique ET les cartes
+                    // techniques grises (relief/bump/...) — CONTINUER la marche,
+                    // la vraie texture couleur peut vivre dans un autre canal.
+                    if (!TexturePathResolver.IsGenericPlaceholder(val) &&
+                        !TexturePathResolver.IsNonColorMap(val))
                         return val;
                 }
             }

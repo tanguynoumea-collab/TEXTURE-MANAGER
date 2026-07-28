@@ -83,6 +83,26 @@ public static class TexturePathResolver
     }
 
     /// <summary>
+    /// Vrai si le nom de fichier trahit une carte technique NON-couleur
+    /// (relief/bump, normale, brillance, découpe, motif de relief) — retour
+    /// terrain DR4-3 : ces images grises (ex. Simple_Metal_Mtl_Break_pattern.jpg)
+    /// polluaient les aperçus quand la marche d'asset les trouvait avant la
+    /// texture diffuse. Heuristique par nom, assumée best-effort.
+    /// </summary>
+    public static bool IsNonColorMap(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var normalized = path!.Replace('/', '\\');
+        var fileName = normalized.Substring(normalized.LastIndexOf('\\') + 1);
+        foreach (var marker in new[] { "_pattern", "bump", "_normal", "_gloss", "cutout", "noise" })
+        {
+            if (fileName.IndexOf(marker, StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Résout une valeur brute d'asset vers un fichier image existant, avec cache.
     /// </summary>
     public static string? Resolve(string? rawValue)
@@ -238,6 +258,12 @@ public static class TexturePathResolver
             var materials = Path.Combine(programFilesDir!,
                 "Common Files", "Autodesk Shared", "Materials");
             if (!Directory.Exists(materials)) return;
+
+            // Retour terrain DR4-3 : les textures DIFFUSE de la bibliothèque
+            // (« 1\Mats\Brick_... ») vivent sous Materials\Textures\<n>\Mats,
+            // un frère des dossiers de version — sondé en premier (les .fbm ne
+            // contiennent surtout que placeholders et cartes de relief).
+            AddIfExists(roots, Path.Combine(materials, "Textures"));
 
             var versionDirs = Directory.GetDirectories(materials)
                 .OrderByDescending(d => Path.GetFileName(d), StringComparer.OrdinalIgnoreCase);
