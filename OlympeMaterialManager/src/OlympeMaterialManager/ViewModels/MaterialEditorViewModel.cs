@@ -70,6 +70,14 @@ public partial class MaterialEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool _isVisible;
 
+    /// <summary>
+    /// ADK2-02 : vraie pendant qu'une requete OpenMaterialsDialog est en vol —
+    /// desactive le bouton « Ouvrir dans Revit » pour eviter le double PostCommand
+    /// (InvalidOperationException) en double-clic. Pattern IsSetMatBusy.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isOpenInRevitBusy;
+
     // ---- Constructeurs ----
 
     /// <summary>
@@ -345,8 +353,13 @@ public partial class MaterialEditorViewModel : ObservableObject
 
         Services.WindowService.SuspendTopmostUntilReactivated();
 
+        // ADK2-02 : verrouiller le bouton tant que la requete est en vol.
+        IsOpenInRevitBusy = true;
+
         _eventBridge.MakeRequest(RevitRequestType.OpenMaterialsDialog, null, result =>
         {
+            IsOpenInRevitBusy = false;
+
             // Callback null = succes : la commande est postee, Revit ouvrira le dialogue.
             if (result is Exception ex)
             {
@@ -358,9 +371,19 @@ public partial class MaterialEditorViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Le bouton « Ouvrir dans Revit » n'est actif que si un materiau est selectionne.
+    /// Le bouton « Ouvrir dans Revit » n'est actif que si un materiau est selectionne
+    /// et qu'aucune requete d'ouverture n'est deja en vol (ADK2-02).
     /// </summary>
-    private bool CanOuvrirDansRevit() => IsVisible && _currentMaterialIdValue >= 0 && _eventBridge != null;
+    private bool CanOuvrirDansRevit()
+        => IsVisible && !IsOpenInRevitBusy && _currentMaterialIdValue >= 0 && _eventBridge != null;
+
+    /// <summary>
+    /// Rafraichit l'etat du bouton « Ouvrir dans Revit » quand la requete part/revient (ADK2-02).
+    /// </summary>
+    partial void OnIsOpenInRevitBusyChanged(bool value)
+    {
+        OuvrirDansRevitCommand.NotifyCanExecuteChanged();
+    }
 
     partial void OnIsVisibleChanged(bool value)
     {
