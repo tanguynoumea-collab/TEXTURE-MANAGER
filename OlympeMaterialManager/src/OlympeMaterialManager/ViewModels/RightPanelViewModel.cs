@@ -883,6 +883,15 @@ public partial class RightPanelViewModel : ObservableObject
 
         if (dto.MissingMaterials.Count == 0) return;
 
+        // FIA3-02 : ne jamais ouvrir le dialogue pendant un pick pipette ou quand
+        // la fenetre principale est cachee (il s'afficherait sans owner visible).
+        // Abandonner ET rendre la cle vierge pour re-valider a la prochaine occasion.
+        if (IsPickingMaterials || App.MainWindow?.IsVisible != true)
+        {
+            _lastValidatedKey = null;
+            return;
+        }
+
         // Retrouver les instances preset des introuvables pour la pastille de
         // couleur du dialogue.
         var display = new List<PresetMaterialDto>();
