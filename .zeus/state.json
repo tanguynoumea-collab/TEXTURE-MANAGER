@@ -3,16 +3,19 @@
   "projet": "Olympe MaterialManager",
   "version_courante": "1.4.0 (Alpha 1.4)",
   "route": "audit",
-  "phase": "IDLE",
-  "phase_status": "cycle_1_clos",
+  "phase": "UX-DESIGN",
+  "phase_status": "attente_validation_plan_design",
   "cycle": {
-    "numero": 1,
-    "demarre_le": "2026-07-27",
+    "numero": 2,
+    "demarre_le": "2026-07-28",
     "idees": [
-      "Audit complet : revue UI (Daedalus), audit code (dev-council), exploration ameliorations"
+      "B8 lisere couleur materiau sur cartes de couches (dynamique selon mode)",
+      "B9 Visualisateur de materiau + bouton ouverture menu Materiaux natif Revit",
+      "B10 trois modes d'apercu Couleur/Texture/Realiste persistes en settings",
+      "B5 recherche/filtre panneaux types et presets + etat aucun resultat"
     ],
     "impact_ui": true,
-    "mode_daedalus": "REFONTE-AUDIT"
+    "mode_daedalus": "EVOLUTION"
   },
   "iterations": {
     "design_review": 0,
@@ -22,9 +25,9 @@
   },
   "checkpoints": {
     "plan_design_valide": false,
-    "triage_findings": true,
-    "go_publication": true,
-    "confirmation_roadmap": true
+    "triage_findings": false,
+    "go_publication": false,
+    "confirmation_roadmap": false
   },
   "pending": {
     "findings_critiques": [],
@@ -45,7 +48,7 @@
     ]
   },
   "artefacts": {
-    "design_plan": null,
+    "design_plan": ".zeus/DESIGN_PLAN.md",
     "rapports": [
       ".zeus/reports/design-review-1.md",
       ".zeus/reports/dev-council-1.md",
@@ -66,6 +69,7 @@
     "2026-07-27 — Triage humain : TOUS les findings en correction. dev-council-fix en 5 lots : LOT1 7/7, LOT2 5/5, LOT3a 15/15, LOT3b 15/17 (2 reportes), LOT UI 12/14 (2 reportes). 0 annule. 59 commits. Tests 0->37/37. 0 warning avec analyseurs actifs. GATE final passe. Version unifiee 1.4.0. Restent : validation Revit reelle + install MSI vierge.",
     "2026-07-28 — Validation Revit utilisateur OK + idees B8-B10 consignees. GO publication. Build Release re-verifie, CHANGELOG cree, tag v1.4.0, push master+tags, Release GitHub publiee (prerelease) avec MSI. Pas de CI (candidate roadmap D1). -> RETOUR ROADMAP (checkpoint 4 en attente).",
     "2026-07-28 — RETOUR ROADMAP confirme : B8-B10 valides (prochain cycle), B1 redefini (philosophie partage sur maquette commune ; purge des materiaux absents avec confirmation), D1 CI a planifier tot. Roadmap ecrite : 00_ROADMAP/REVMAT ROADMAP__2026-07-28_08-46-24.md. CYCLE 1 CLOS. Prochain cycle propose : B8-B10 (FULL : LLM-COUNCIL leger -> Daedalus EVOLUTION -> GSD).",
-    "2026-07-28 — Triage B2-B7 : B2 validee (cumul pipette+liste, rangement groupe actif sinon 'Autre'), B3 validee, B5 validee (integree au prochain cycle), B4 et B7 ecartees. Roadmap mise a jour."
+    "2026-07-28 — Triage B2-B7 : B2 validee (cumul pipette+liste, rangement groupe actif sinon 'Autre'), B3 validee, B5 validee (integree au prochain cycle), B4 et B7 ecartees. Roadmap mise a jour.",
+    "2026-07-28 — CYCLE 2 lance (B8/B9/B10/B5). LLM-COUNCIL 5 membres + 5 relecteurs aveugles : classement unanime, synthese rendue (Realiste reporte phase 2, lisere ImageBrush tuile, string tolerant settings, FilteredGroups, FindTexturePath restaure de git). Daedalus EVOLUTION : DESIGN_PLAN.md produit (contrat retro-ingenere + delta). -> CHECKPOINT HUMAIN 1 : validation du plan + Q1 (segment Realiste grise ou absent) + Q2 (edition inline vs Visualisateur)."
   ]
 }
