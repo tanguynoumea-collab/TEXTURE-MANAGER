@@ -33,10 +33,11 @@ public partial class RightPanelViewModel : ObservableObject
     private bool _presetLoadFailed;
 
     /// <summary>
-    /// Cle « document + preset » de la derniere validation B1 effectuee. Garde-fou
-    /// anti-boucle : le dialogue « Matériaux introuvables » n'est re-declenche
-    /// qu'au changement de preset ou de document (l'import externe reinitialise
-    /// la cle pour forcer une re-validation du contenu importe).
+    /// Cle « document + preset » de la derniere validation B1 effectuee.
+    /// FIA3-01 : reinitialisee a null a chaque changement effectif de preset
+    /// (OnActivePresetNameChanged) — elle ne sert qu'a dedupliquer les callbacks
+    /// d'un meme couple document/preset, jamais a bloquer une re-validation
+    /// legitime (A → B vide → A).
     /// </summary>
     private string? _lastValidatedKey;
 
@@ -249,10 +250,9 @@ public partial class RightPanelViewModel : ObservableObject
             if (!PresetNames.Contains(presetName))
                 PresetNames.Add(presetName);
 
-            // B1 : le contenu importe peut differer du fichier precedent —
-            // reinitialiser la cle pour forcer la re-validation des materiaux.
-            _lastValidatedKey = null;
-
+            // B1/FIA3-01 : la re-validation du contenu importe est garantie par
+            // OnActivePresetNameChanged (appele dans les deux branches ci-dessous),
+            // qui reinitialise la cle anti-boucle.
             if (ActivePresetName == presetName)
             {
                 // Preset deja actif : le setter ne notifie pas a valeur egale —
@@ -784,6 +784,11 @@ public partial class RightPanelViewModel : ObservableObject
     partial void OnActivePresetNameChanged(string? value)
     {
         if (string.IsNullOrEmpty(value)) return;
+
+        // FIA3-01 : chaque changement effectif de preset repart d'une cle vierge —
+        // la cle ne deduplique que les callbacks d'un meme couple document/preset,
+        // elle ne doit jamais bloquer une re-validation legitime (A → B vide → A).
+        _lastValidatedKey = null;
 
         var loaded = _presetService.LoadPreset(value!);
         if (loaded == null)
