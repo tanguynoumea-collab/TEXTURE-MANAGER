@@ -36,6 +36,11 @@ public class App : IExternalApplication
 
         // Placer dans l'onglet "Complement" (Add-Ins) — pas d'onglet custom
         var panel = application.CreateRibbonPanel("Olympe MaterialManager");
+
+        // Cycle 4 : le logo existe en deux versions. Le ruban sombre de Revit
+        // avale un logo a corps fonce, le ruban clair avale un logo a corps clair.
+        var suffix = IsRevitThemeDark() ? "-dark" : string.Empty;
+
         var buttonData = new PushButtonData(
             "ShowMaterialManager",
             "Matériaux",
@@ -43,12 +48,34 @@ public class App : IExternalApplication
             commandTypeName)
         {
             ToolTip = "Ouvrir l'éditeur de matériaux Olympe",
-            LargeImage = LoadIcon("olympe-icon-32.png"),
-            Image = LoadIcon("olympe-icon-16.png")
+            // 64 px en grande icone : Revit met a l'echelle vers le bas et sert
+            // le rendu net des ecrans haute densite.
+            LargeImage = LoadIcon($"olympe-icon-64{suffix}.png"),
+            Image = LoadIcon($"olympe-icon-16{suffix}.png")
         };
         panel.AddItem(buttonData);
 
         return Result.Succeeded;
+    }
+
+    /// <summary>
+    /// Thème du ruban Revit. <c>UIThemeManager</c> est present dans les assemblies
+    /// referencees pour les deux cibles, mais l'appel reste protege : sur un hote
+    /// plus ancien que prevu, l'absence du type ou de la propriete leverait au
+    /// chargement de l'add-in. Tout echec retombe silencieusement sur le jeu
+    /// clair — l'icone reste visible, seul son contraste est sous-optimal.
+    /// </summary>
+    private static bool IsRevitThemeDark()
+    {
+        try
+        {
+            return UIThemeManager.CurrentTheme == UITheme.Dark;
+        }
+        catch (Exception ex)
+        {
+            LogService.Error("Theme Revit indetermine, repli sur le jeu d'icones clair", ex);
+            return false;
+        }
     }
 
     public Result OnShutdown(UIControlledApplication application)
@@ -63,9 +90,21 @@ public class App : IExternalApplication
         return Result.Succeeded;
     }
 
-    private static BitmapImage LoadIcon(string fileName)
+    /// <summary>
+    /// Charge une icone embarquee. Renvoie null plutot que de lever : une icone
+    /// manquante donne un bouton sans image, jamais un add-in qui ne charge pas.
+    /// </summary>
+    private static BitmapImage? LoadIcon(string fileName)
     {
-        var uri = new Uri($"pack://application:,,,/OlympeMaterialManager;component/Resources/{fileName}");
-        return new BitmapImage(uri);
+        try
+        {
+            var uri = new Uri($"pack://application:,,,/OlympeMaterialManager;component/Resources/{fileName}");
+            return new BitmapImage(uri);
+        }
+        catch (Exception ex)
+        {
+            LogService.Error($"Echec de chargement de l'icone {fileName}", ex);
+            return null;
+        }
     }
 }

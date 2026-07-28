@@ -23,10 +23,21 @@
     <DefineConstants>$(DefineConstants);REVIT2025_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
-  <!-- Embedded icon resources -->
+  <!-- Identite visuelle embarquee (cycle 4).
+       Deux jeux d'icones de ruban : sans suffixe = corps fonce (ruban Revit
+       clair), suffixe -dark = corps clair (ruban Revit sombre). App.cs choisit
+       le jeu selon UIThemeManager.CurrentTheme. Les logos 256 px et le SVG
+       source sont embarques pour les usages hors ruban (a-propos, installeur). -->
   <ItemGroup>
     <Resource Include="Resources\olympe-icon-16.png" />
     <Resource Include="Resources\olympe-icon-32.png" />
+    <Resource Include="Resources\olympe-icon-64.png" />
+    <Resource Include="Resources\olympe-icon-16-dark.png" />
+    <Resource Include="Resources\olympe-icon-32-dark.png" />
+    <Resource Include="Resources\olympe-icon-64-dark.png" />
+    <Resource Include="Resources\olympe-logo-256.png" />
+    <Resource Include="Resources\olympe-logo-256-dark.png" />
+    <Resource Include="Resources\olympe-logo.svg" />
   </ItemGroup>
 
   <!-- Shared packages (all TFMs) -->
