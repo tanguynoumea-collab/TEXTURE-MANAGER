@@ -15,7 +15,7 @@ Plan de design validé (checkpoint 1) : .zeus/DESIGN_PLAN.md — Q1 = (a) segmen
 - [x] B9 : renommage « Visualisateur de matériau » + bouton « Ouvrir dans Revit » (PostCommand via bridge, presse-papiers, Topmost, tooltip) — commit 1ac3af0
 
 ## Lot B (séquentiel 2)
-- [ ] B10-S : socle mode (enum PreviewMode, AppSettingsDto.MaterialPreviewMode string tolérant, PreviewModeChangedMessage, tests)
-- [ ] B10-UI : sélecteur segmenté 3 positions dans l'en-tête du visualisateur (Réaliste désactivé « Disponible en phase 2 »), persistance immédiate
-- [ ] B10-TX : infra texture (FindTexturePath restauré de f337be7^, chemins « | », racines Autodesk + Revit.ini, cache session ; TexturePath dans MaterialDetailsDto/LayerDto/MaterialParamDto ; ColorArgb int? nullable)
-- [ ] B8 : liseré 6 px bord gauche (CardItemStyle, couches + paramètres), SolidColorBrush/ImageBrush tuilé selon mode, null → transparent, fallback couleur ; pastilles preset suivent le mode ; aperçu visualisateur avec tooltip d'échec
+- [x] B10-S : socle mode (enum PreviewMode, AppSettingsDto.MaterialPreviewMode string tolérant, PreviewModeChangedMessage, PreviewModeStore + tests) — commit 27e6e2b
+- [x] B10-TX : infra texture (FindTexturePath restauré de f337be7^, chemins « | », racines Autodesk + Revit.ini, cache session ; TexturePath dans MaterialDetailsDto/LayerDto/MaterialParamDto/PresetMaterialDto ; ColorArgb int? nullable ; TexturePathResolver testé) — commit 71ee19b
+- [x] B10-UI : sélecteur segmenté 3 positions dans l'en-tête du visualisateur (Réaliste désactivé « Disponible en phase 2 »), persistance immédiate, aperçu 60 px suivant le mode + tooltip d'échec — commit efd13ec
+- [x] B8 : liseré 6 px bord gauche (CardItemStyle, couches + paramètres), SolidColorBrush/ImageBrush tuilé selon mode, null → transparent, fallback couleur ; pastilles preset suivent le mode — commit 47af7ed
