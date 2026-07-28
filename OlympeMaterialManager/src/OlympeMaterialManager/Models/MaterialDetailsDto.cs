@@ -14,4 +14,10 @@ public class MaterialDetailsDto
     public bool HasAppearanceAsset { get; set; }
     public bool TintEnabled { get; set; }
     public int TintColorArgb { get; set; }
+
+    /// <summary>
+    /// Chemin resolu de la texture bitmap (B10-TX), pour l'aperçu du
+    /// visualisateur en mode Texture. Null = introuvable → fallback couleur.
+    /// </summary>
+    public string? TexturePath { get; set; }
 }

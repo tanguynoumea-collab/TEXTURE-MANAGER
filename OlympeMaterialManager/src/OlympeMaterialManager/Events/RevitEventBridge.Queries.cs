@@ -125,11 +125,21 @@ public partial class RevitEventBridge
         var matId = layer.MaterialId;
         string matName = UiLabels.ByCategory;
         long matIdValue = ElementIdHelper.GetValue(matId);
+        int? colorArgb = null;
+        string? texturePath = null;
 
         if (matId != ElementId.InvalidElementId)
         {
             var mat = doc.GetElement(matId);
             matName = mat?.Name ?? UiLabels.Inconnu;
+
+            // B8/B10-TX : le Material est deja resolu ici — coût nul pour la
+            // couleur, marche d'asset mise en cache pour la texture.
+            if (mat is Material material)
+            {
+                colorArgb = ExtractColorArgb(material);
+                texturePath = GetMaterialTexturePath(doc, material);
+            }
         }
 
         double widthMm = UnitUtils.ConvertFromInternalUnits(
@@ -141,7 +151,9 @@ public partial class RevitEventBridge
             Function = functionPrefix + LayerFunctionMapper.ToFrench(layer.Function),
             Width = Math.Round(widthMm, 1),
             MaterialName = matName,
-            MaterialElementIdValue = matIdValue
+            MaterialElementIdValue = matIdValue,
+            ColorArgb = colorArgb,
+            TexturePath = texturePath
         };
     }
 
@@ -225,11 +237,20 @@ public partial class RevitEventBridge
             var matId = param.AsElementId();
             string matName = UiLabels.Aucun;
             long matIdValue = ElementIdHelper.GetValue(matId);
+            int? colorArgb = null;
+            string? texturePath = null;
 
             if (matId != ElementId.InvalidElementId)
             {
                 var mat = doc.GetElement(matId);
                 matName = mat?.Name ?? UiLabels.Inconnu;
+
+                // B8/B10-TX : memes donnees visuelles que les couches (coherence des cartes)
+                if (mat is Material material)
+                {
+                    colorArgb = ExtractColorArgb(material);
+                    texturePath = GetMaterialTexturePath(doc, material);
+                }
             }
 
             result.Add(new MaterialParamDto
@@ -237,7 +258,9 @@ public partial class RevitEventBridge
                 ParameterName = param.Definition.Name,
                 ParameterDefinitionName = param.Definition.Name,
                 CurrentMaterialName = matName,
-                CurrentMaterialIdValue = matIdValue
+                CurrentMaterialIdValue = matIdValue,
+                ColorArgb = colorArgb,
+                TexturePath = texturePath
             });
         }
     }
@@ -251,6 +274,10 @@ public partial class RevitEventBridge
         var doc = uiApp.ActiveUIDocument?.Document;
         if (doc == null) return new List<PresetMaterialDto>();
 
+        // B10-TX : TexturePath rempli aussi ici (pastilles). Coût maîtrisé même
+        // sur des centaines de matériaux : le cache par AppearanceAssetId évite
+        // de re-marcher les assets partagés, et TexturePathResolver met en cache
+        // les sondes disque par chemin brut.
         return new FilteredElementCollector(doc)
             .OfClass(typeof(Material))
             .Cast<Material>()
@@ -258,7 +285,8 @@ public partial class RevitEventBridge
             {
                 MaterialName = m.Name,
                 MaterialElementIdValue = ElementIdHelper.GetValue(m.Id),
-                ColorArgb = ExtractColorArgb(m)
+                ColorArgb = ExtractColorArgb(m),
+                TexturePath = GetMaterialTexturePath(doc, m)
             })
             .OrderBy(m => m.MaterialName)
             .ToList();
@@ -284,7 +312,9 @@ public partial class RevitEventBridge
             Name = material.Name,
             ColorArgb = ExtractColorArgb(material),
             PatternName = GetPatternName(doc, material),
-            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId
+            HasAppearanceAsset = material.AppearanceAssetId != ElementId.InvalidElementId,
+            // B10-TX : aperçu du visualisateur en mode Texture (null = fallback couleur)
+            TexturePath = GetMaterialTexturePath(doc, material)
         };
 
         // Description via BuiltInParameter (D-08)

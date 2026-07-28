@@ -12,4 +12,7 @@ internal static class RevitAssetProps
 
     /// <summary>Couleur de teinte RGBA normalisee 0.0-1.0 (AssetPropertyDoubleArray4d).</summary>
     public const string TintColor = "common_Tint_color";
+
+    /// <summary>Chemin du bitmap d'un asset UnifiedBitmap (AssetPropertyString, B10-TX).</summary>
+    public const string UnifiedBitmapPath = "unifiedbitmap_Bitmap";
 }

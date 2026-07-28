@@ -13,6 +13,7 @@ public class PresetMaterialDto : INotifyPropertyChanged
     private string _materialName = string.Empty;
     private long _materialElementIdValue = -1;
     private int _colorArgb;
+    private string? _texturePath;
 
     public string MaterialName
     {
@@ -30,6 +31,17 @@ public class PresetMaterialDto : INotifyPropertyChanged
     {
         get => _colorArgb;
         set { _colorArgb = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>
+    /// Chemin resolu de la texture bitmap (B10-TX), pour la pastille en mode
+    /// Texture. Null = introuvable → fallback couleur. Champ additif dans les
+    /// fichiers preset : les fichiers existants sans ce champ restent lisibles.
+    /// </summary>
+    public string? TexturePath
+    {
+        get => _texturePath;
+        set { _texturePath = value; OnPropertyChanged(); }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
