@@ -18,6 +18,7 @@ public partial class MaterialEditorViewModel : ObservableObject
     private readonly RevitEventBridge? _eventBridge;
     private long _currentMaterialIdValue = -1;
     private bool _isFetching;
+    private System.Windows.Threading.DispatcherTimer? _clipboardFeedbackTimer;
 
     // ---- Proprietes observables ----
 
@@ -77,6 +78,16 @@ public partial class MaterialEditorViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private bool _isOpenInRevitBusy;
+
+    /// <summary>
+    /// DR1-2 : message affiché près du bouton « Ouvrir dans Revit » après le clic —
+    /// l'API Revit ne permet pas de présélectionner le matériau dans son
+    /// gestionnaire, le nom est donc copié au presse-papiers, et ce texte rend
+    /// l'affordance visible à l'écran (le tooltip seul ne suffit pas). Effacé
+    /// après ~6 s (pattern du feedback timer de MainWindowViewModel).
+    /// </summary>
+    [ObservableProperty]
+    private string _clipboardFeedback = string.Empty;
 
     // ---- Constructeurs ----
 
@@ -343,12 +354,18 @@ public partial class MaterialEditorViewModel : ObservableObject
         try
         {
             System.Windows.Clipboard.SetText(MaterialName);
+            // DR1-2 : rendre la copie visible a l'ecran (le tooltip seul ne dit
+            // rien apres le clic).
+            ShowClipboardFeedback(
+                "Nom copié — collez-le (Ctrl+V) dans la recherche du gestionnaire de matériaux");
         }
         catch (Exception ex)
         {
             // Presse-papiers verrouille par une autre application : non bloquant,
             // l'ouverture du dialogue reste utile sans la copie du nom.
             Services.LogService.Error("Copie du nom de matériau au presse-papiers impossible", ex);
+            ShowClipboardFeedback(
+                "Copie du nom impossible (presse-papiers occupé) — retapez le nom dans la recherche");
         }
 
         Services.WindowService.SuspendTopmostUntilReactivated();
@@ -368,6 +385,26 @@ public partial class MaterialEditorViewModel : ObservableObject
                     $"Échec de l'ouverture du gestionnaire de matériaux Revit :\n{ex.Message}");
             }
         });
+    }
+
+    /// <summary>
+    /// DR1-2 : affiche le feedback presse-papiers pres du bouton et programme son
+    /// effacement apres 6 s (pattern StartFeedbackTimer de MainWindowViewModel).
+    /// </summary>
+    private void ShowClipboardFeedback(string message)
+    {
+        ClipboardFeedback = message;
+        _clipboardFeedbackTimer?.Stop();
+        _clipboardFeedbackTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(6)
+        };
+        _clipboardFeedbackTimer.Tick += (_, _) =>
+        {
+            ClipboardFeedback = string.Empty;
+            _clipboardFeedbackTimer.Stop();
+        };
+        _clipboardFeedbackTimer.Start();
     }
 
     /// <summary>

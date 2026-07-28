@@ -167,12 +167,12 @@
                         <!-- Titre de la section + bouton Ouvrir dans Revit (B9).
                              L'edition inline est conservee (decision Q2=a) : le
                              renommage traduit l'usage dominant, pas un retrait. -->
-                        <DockPanel Margin="0,0,0,8">
+                        <DockPanel Margin="0,0,0,4">
                             <Button DockPanel.Dock="Right"
                                     Content="Ouvrir dans Revit"
                                     Command="{Binding MaterialEditorVM.OuvrirDansRevitCommand}"
                                     AutomationProperties.Name="Ouvrir dans le gestionnaire de matériaux Revit"
-                                    ToolTip="Ouvre le gestionnaire de matériaux Revit (le nom du matériau est copié — collez-le dans la recherche). S'ouvre lorsque Revit reprend le focus."
+                                    ToolTip="Ouvre le gestionnaire de matériaux Revit — l'API ne permet pas d'y présélectionner le matériau, son nom est donc copié au presse-papiers : collez-le (Ctrl+V) dans la recherche. S'ouvre lorsque Revit reprend le focus."
                                     Padding="8,4"
                                     Margin="8,0,0,0" />
                             <TextBlock Text="Visualisateur de matériau"
@@ -180,6 +180,26 @@
                                        VerticalAlignment="Center"
                                        Foreground="{StaticResource TextPrimaryBrush}" />
                         </DockPanel>
+
+                        <!-- DR1-2 : affordance presse-papiers apres le clic sur
+                             « Ouvrir dans Revit » — l'API ne permet pas de
+                             preselectionner le materiau, le nom est copie et ce
+                             texte le dit a l'ecran (efface apres ~6 s par le VM). -->
+                        <TextBlock Text="{Binding MaterialEditorVM.ClipboardFeedback}"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding MaterialEditorVM.ClipboardFeedback}" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
                         <!-- B10-UI : sélecteur segmenté du mode d'aperçu, sous le titre.
                              Persistance immédiate + diffusion via PreviewModeStore (B10-S).
