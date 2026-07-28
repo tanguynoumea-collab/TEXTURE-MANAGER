@@ -75,6 +75,65 @@
                         Margin="4,0,0,0" />
             </StackPanel>
 
+            <!-- B5-G : recherche de types, visible seulement si une scene est active
+                 (meme visibilite que la rangee « Ajouter par clic »).
+                 Watermark : pattern overlay de AddMaterialDialog (UI-M9). -->
+            <Grid DockPanel.Dock="Top" Margin="0,4,0,0">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Visible" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActiveScene}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+                <TextBox x:Name="TypeSearchBox"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         AutomationProperties.Name="Rechercher un type"
+                         MinHeight="32"
+                         Padding="6,4,32,4" />
+                <TextBlock Text="Rechercher un type…"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center"
+                           IsHitTestVisible="False">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TypeSearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <!-- Bouton d'effacement, visible quand la recherche n'est pas vide -->
+                <Button Content="✕"
+                        Command="{Binding EffacerRechercheCommand}"
+                        AutomationProperties.Name="Effacer la recherche"
+                        ToolTip="Effacer la recherche"
+                        HorizontalAlignment="Right"
+                        Width="28" Height="28"
+                        Padding="0"
+                        Margin="0,2,2,2">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TypeSearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
             <!-- Boutons Ajouter par clic + Retirer selection -->
             <StackPanel DockPanel.Dock="Top"
                         Orientation="Horizontal"
@@ -119,7 +178,9 @@
                         Margin="4,0,0,0" />
             </StackPanel>
 
-            <!-- Section 5: TreeView avec groupement par categorie (D-04, D-05, D-06, SCENE-06, SCENE-07) -->
+            <!-- Section 5: TreeView avec groupement par categorie (D-04, D-05, D-06, SCENE-06, SCENE-07)
+                 + etat « aucun resultat » de la recherche en overlay (B5-G, pattern UI-m14) -->
+            <Grid>
             <TreeView ItemsSource="{Binding ActiveSceneTypes}"
                       Tag="{Binding DataContext, ElementName=LeftPanelRoot}">
 
@@ -206,6 +267,23 @@
                 </TreeView.ItemContainerStyle>
 
             </TreeView>
+
+            <!-- B5-G : aucun type ne matche la recherche (UI-m14) -->
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsSearchNoResult, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="Aucun type ne correspond à la recherche"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,8" />
+                <Button Content="Effacer la recherche"
+                        Command="{Binding EffacerRechercheCommand}"
+                        AutomationProperties.Name="Effacer la recherche"
+                        HorizontalAlignment="Center"
+                        Padding="8,4" />
+            </StackPanel>
+            </Grid>
 
         </DockPanel>
     </Border>

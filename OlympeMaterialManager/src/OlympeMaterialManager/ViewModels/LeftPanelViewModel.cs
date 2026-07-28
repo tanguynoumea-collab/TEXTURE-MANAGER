@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Windows.Data;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -61,6 +62,24 @@ public partial class LeftPanelViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string _pickButtonTooltip = "Ajouter un type par clic dans la vue 3D";
+
+    /// <summary>
+    /// Texte de recherche du panneau (B5-G). Applique avec un debounce de ~200 ms
+    /// via _searchDebounceTimer pour ne pas re-filtrer a chaque frappe.
+    /// </summary>
+    [ObservableProperty]
+    private string _searchText = string.Empty;
+
+    /// <summary>
+    /// True quand la recherche est active et qu'aucun type ne matche (pattern UI-m14).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSearchNoResult;
+
+    /// <summary>
+    /// Timer de debounce de la recherche (B5-G). Cree paresseusement sur le thread UI.
+    /// </summary>
+    private DispatcherTimer? _searchDebounceTimer;
 
     // Note UI-M7 : les identifiants de code restent sans accents ; seules les chaines
     // visibles par l'utilisateur sont accentuees.
@@ -252,6 +271,8 @@ public partial class LeftPanelViewModel : ObservableObject
 
         ActiveScene.Types.Remove(SelectedType);
         SelectedType = null;
+        // B5-G : l'etat « aucun resultat » peut changer apres un retrait
+        ApplySearchFilter();
         AutoSaveScenes();
     }
 
@@ -311,6 +332,8 @@ public partial class LeftPanelViewModel : ObservableObject
                 if (added > 0)
                 {
                     SetupCustomSort();
+                    // B5-G : les nouveaux types passent par le filtre courant
+                    ApplySearchFilter();
                     AutoSaveScenes();
                 }
             }
@@ -371,7 +394,101 @@ public partial class LeftPanelViewModel : ObservableObject
         }
     }
 
+    // --- Recherche (B5-G) ---
+
+    /// <summary>
+    /// Efface la recherche (bouton ✕ et lien de l'etat « aucun resultat », UI-m14).
+    /// </summary>
+    [RelayCommand]
+    private void EffacerRecherche()
+    {
+        SearchText = string.Empty;
+    }
+
+    /// <summary>
+    /// Applique (ou retire) le predicat de recherche sur la CollectionView des types.
+    /// Le Filter coexiste avec le tri et le groupement poses par SetupCustomSort.
+    /// Appele apres le debounce, au changement de scene et apres ajout/retrait de types.
+    /// </summary>
+    private void ApplySearchFilter()
+    {
+        if (ActiveScene?.Types == null)
+        {
+            IsSearchNoResult = false;
+            return;
+        }
+
+        var view = CollectionViewSource.GetDefaultView(ActiveScene.Types);
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            if (view.Filter != null)
+                view.Filter = null;
+            IsSearchNoResult = false;
+            return;
+        }
+
+        view.Filter = MatchesSearch;
+        view.Refresh();
+        IsSearchNoResult = view.IsEmpty;
+    }
+
+    /// <summary>
+    /// Predicat de la CollectionView : un type reste visible si FamilyName ou TypeName
+    /// matche la recherche, ou si l'un de ses sous-types composites matche.
+    /// </summary>
+    private bool MatchesSearch(object item)
+    {
+        if (item is not SceneTypeDto type) return false;
+
+        if (SearchMatcher.Matches(type.FamilyName, SearchText) ||
+            SearchMatcher.Matches(type.TypeName, SearchText))
+        {
+            return true;
+        }
+
+        // Sous-types d'un composite : le parent reste visible si un sous-type matche
+        if (type.SubTypes != null)
+        {
+            foreach (var sub in type.SubTypes)
+            {
+                if (SearchMatcher.Matches(sub.FamilyName, SearchText) ||
+                    SearchMatcher.Matches(sub.TypeName, SearchText))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     // --- Partial methods for property change hooks ---
+
+    /// <summary>
+    /// Debounce ~200 ms de la recherche (B5-G). L'effacement est applique
+    /// immediatement pour que le bouton ✕ reagisse sans latence.
+    /// </summary>
+    partial void OnSearchTextChanged(string value)
+    {
+        if (_searchDebounceTimer == null)
+        {
+            _searchDebounceTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(200)
+            };
+            _searchDebounceTimer.Tick += (_, _) =>
+            {
+                _searchDebounceTimer!.Stop();
+                ApplySearchFilter();
+            };
+        }
+
+        _searchDebounceTimer.Stop();
+        if (string.IsNullOrWhiteSpace(value))
+            ApplySearchFilter();
+        else
+            _searchDebounceTimer.Start();
+    }
 
     partial void OnActiveSceneChanged(SceneDto? value)
     {
@@ -386,6 +503,9 @@ public partial class LeftPanelViewModel : ObservableObject
         if (value != null)
         {
             SetupCustomSort();
+
+            // B5-G : re-appliquer la recherche courante sur la view de la nouvelle scene
+            ApplySearchFilter();
 
             // Recharger les sous-types pour les types composites deja dans la scene
             foreach (var type in value.Types)
