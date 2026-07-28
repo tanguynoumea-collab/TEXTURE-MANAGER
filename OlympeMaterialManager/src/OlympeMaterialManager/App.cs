@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows.Media.Imaging;
 using Autodesk.Revit.UI;
 using Olympe.MaterialManager.Commands;
@@ -61,15 +62,15 @@ public class App : IExternalApplication
     /// <summary>
     /// Thème du ruban Revit. <c>UIThemeManager</c> est present dans les assemblies
     /// referencees pour les deux cibles, mais l'appel reste protege : sur un hote
-    /// plus ancien que prevu, l'absence du type ou de la propriete leverait au
-    /// chargement de l'add-in. Tout echec retombe silencieusement sur le jeu
-    /// clair — l'icone reste visible, seul son contraste est sous-optimal.
+    /// plus ancien que prevu, l'absence du type ferait echouer le chargement de
+    /// l'add-in. Tout echec retombe silencieusement sur le jeu clair — l'icone
+    /// reste visible, seul son contraste est sous-optimal.
     /// </summary>
     private static bool IsRevitThemeDark()
     {
         try
         {
-            return UIThemeManager.CurrentTheme == UITheme.Dark;
+            return ReadRevitTheme();
         }
         catch (Exception ex)
         {
@@ -77,6 +78,16 @@ public class App : IExternalApplication
             return false;
         }
     }
+
+    /// <summary>
+    /// Lecture isolee du theme de l'hote. Le type absent ferait echouer la
+    /// compilation JIT de CETTE methode : un try/catch place autour de l'appel
+    /// dans le meme corps ne rattraperait rien, l'echec survenant a l'entree de
+    /// la methode. Isolee et non inlinee, l'exception est levee au point d'appel
+    /// et devient rattrapable par <see cref="IsRevitThemeDark"/>.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static bool ReadRevitTheme() => UIThemeManager.CurrentTheme == UITheme.Dark;
 
     public Result OnShutdown(UIControlledApplication application)
     {
