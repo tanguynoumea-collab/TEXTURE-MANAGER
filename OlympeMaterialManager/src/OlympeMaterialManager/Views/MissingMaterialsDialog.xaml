@@ -1,0 +1,91 @@
+<Window x:Class="Olympe.MaterialManager.Views.MissingMaterialsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:Olympe.MaterialManager.Converters"
+        Title="Matériaux introuvables"
+        Width="460" Height="380"
+        WindowStyle="ToolWindow"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Style="{DynamicResource OlympeWindowStyle}">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/OlympeMaterialManager;component/Themes/OlympeTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <converters:ArgbToColorConverter x:Key="ArgbToColorConverter" />
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Message d'explication (B1) -->
+        <TextBlock x:Name="MessageText"
+                   Grid.Row="0"
+                   TextWrapping="Wrap"
+                   Foreground="{StaticResource TextSecondaryBrush}"
+                   Margin="0,0,0,12" />
+
+        <!-- Liste scrollable des materiaux introuvables (pastille + nom) -->
+        <Border Grid.Row="1"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                CornerRadius="4">
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="MaterialsList"
+                              Margin="8"
+                              AutomationProperties.Name="Liste des matériaux introuvables"
+                              Focusable="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <!-- Pastille de couleur graphique du materiau preset -->
+                                <Rectangle Width="12" Height="12"
+                                           RadiusX="2" RadiusY="2"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0">
+                                    <Rectangle.Fill>
+                                        <SolidColorBrush Color="{Binding ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                                <TextBlock Text="{Binding MaterialName}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Boutons : Supprimer du preset (destructif, style discret — PAS accent,
+             le preset est un fichier partagé d'équipe) / Conserver (défaut, Échap) -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    Margin="0,12,0,0">
+            <Button Content="Supprimer du preset"
+                    Click="Supprimer_Click"
+                    MinWidth="70"
+                    Margin="0,0,8,0"
+                    AutomationProperties.Name="Supprimer du preset les matériaux introuvables"
+                    ToolTip="Retire définitivement ces matériaux du preset (fichier partagé d'équipe)" />
+            <Button Content="Conserver"
+                    Click="Conserver_Click"
+                    IsDefault="True"
+                    IsCancel="True"
+                    MinWidth="70"
+                    AutomationProperties.Name="Conserver les matériaux dans le preset" />
+        </StackPanel>
+    </Grid>
+
+</Window>

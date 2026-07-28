@@ -47,6 +47,51 @@ public partial class RevitEventBridge
     }
 
     /// <summary>
+    /// Validation B1 (lecture seule, aucune transaction) : verifie que chaque
+    /// materiau (id, nom) du preset actif existe dans le document actif, avec la
+    /// MEME logique que ResolveMaterial — l'id resout un Material dont le nom
+    /// correspond, sinon re-resolution par nom exact. Retourne la liste des
+    /// INTROUVABLES. Performance : un seul FilteredElementCollector de materiaux
+    /// par requete, dictionnaires par id et par nom.
+    /// Aucun document actif : HasActiveDocument = false (validation differee
+    /// silencieusement cote ViewModel, pas d'exception).
+    /// </summary>
+    private static ValidatePresetMaterialsResultDto HandleValidatePresetMaterials(
+        UIApplication uiApp, ValidatePresetMaterialsRequestDto request)
+    {
+        var doc = uiApp.ActiveUIDocument?.Document;
+        if (doc == null)
+            return new ValidatePresetMaterialsResultDto { HasActiveDocument = false };
+
+        var nameById = new Dictionary<long, string>();
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var m in new FilteredElementCollector(doc)
+                     .OfClass(typeof(Material))
+                     .Cast<Material>())
+        {
+            nameById[ElementIdHelper.GetValue(m.Id)] = m.Name;
+            names.Add(m.Name);
+        }
+
+        var missing = new List<MaterialRefDto>();
+        foreach (var mat in request.Materials)
+        {
+            bool foundById = nameById.TryGetValue(mat.ElementIdValue, out var actualName) &&
+                             (string.IsNullOrEmpty(mat.MaterialName) || actualName == mat.MaterialName);
+            bool foundByName = !string.IsNullOrEmpty(mat.MaterialName) && names.Contains(mat.MaterialName);
+            if (!foundById && !foundByName)
+                missing.Add(mat);
+        }
+
+        return new ValidatePresetMaterialsResultDto
+        {
+            HasActiveDocument = true,
+            DocumentKey = string.IsNullOrEmpty(doc.PathName) ? doc.Title : doc.PathName,
+            MissingMaterials = missing
+        };
+    }
+
+    /// <summary>
     /// Applique un materiau aux couches CompoundStructure selectionnees (D-16, D-22).
     /// Pattern Get-Modify-Set : GetCompoundStructure retourne une COPIE.
     /// </summary>

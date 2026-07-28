@@ -32,6 +32,14 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     private bool _presetLoadFailed;
 
+    /// <summary>
+    /// Cle « document + preset » de la derniere validation B1 effectuee. Garde-fou
+    /// anti-boucle : le dialogue « Matériaux introuvables » n'est re-declenche
+    /// qu'au changement de preset ou de document (l'import externe reinitialise
+    /// la cle pour forcer une re-validation du contenu importe).
+    /// </summary>
+    private string? _lastValidatedKey;
+
     [ObservableProperty]
     private string _panelTitle = "Matériaux Preset";
 
@@ -241,7 +249,20 @@ public partial class RightPanelViewModel : ObservableObject
             if (!PresetNames.Contains(presetName))
                 PresetNames.Add(presetName);
 
-            ActivePresetName = presetName;
+            // B1 : le contenu importe peut differer du fichier precedent —
+            // reinitialiser la cle pour forcer la re-validation des materiaux.
+            _lastValidatedKey = null;
+
+            if (ActivePresetName == presetName)
+            {
+                // Preset deja actif : le setter ne notifie pas a valeur egale —
+                // recharger et re-valider explicitement le fichier ecrase.
+                OnActivePresetNameChanged(presetName);
+            }
+            else
+            {
+                ActivePresetName = presetName;
+            }
             StatusMessage = $"Preset \"{presetName}\" chargé depuis fichier externe.";
         }
         catch (Exception ex)
@@ -795,6 +816,96 @@ public partial class RightPanelViewModel : ObservableObject
 
         // Mettre a jour le titre
         PanelTitle = $"Matériaux Preset - {value}";
+
+        // B1 : valider l'existence des materiaux du preset dans le document actif
+        // (couvre le changement de ComboBox, le chargement initial et l'import
+        // externe — qui passe aussi par ici).
+        ValiderMateriauxPreset();
+    }
+
+    /// <summary>
+    /// Validation B1 : verifie aupres de Revit que tous les materiaux du preset
+    /// actif existent dans le document (meme logique id+nom que ResolveMaterial,
+    /// lecture seule cote bridge). Des absents : dialogue « Matériaux
+    /// introuvables » (Conserver / Supprimer du preset). Silencieux si : pas de
+    /// bridge, chargement du preset en echec (_presetLoadFailed), preset sans
+    /// materiau, aucun document actif (validation differee), erreur bridge (log).
+    /// </summary>
+    private void ValiderMateriauxPreset()
+    {
+        if (_eventBridge == null || _presetLoadFailed) return;
+
+        var presetName = ActivePresetName;
+        if (string.IsNullOrEmpty(presetName)) return;
+
+        var refs = PresetMaterialValidation.BuildMaterialRefs(PresetGroups);
+        if (refs.Count == 0) return;
+
+        var request = new ValidatePresetMaterialsRequestDto { Materials = refs };
+        _eventBridge.MakeRequest(RevitRequestType.ValidatePresetMaterials, request,
+            result => OnMateriauxValides(presetName!, result));
+    }
+
+    /// <summary>
+    /// Callback de la validation B1 (thread UI). Applique les garde-fous puis,
+    /// s'il y a des introuvables, affiche le dialogue et purge sur demande —
+    /// toujours sur les groupes SOURCES (PresetGroups EST _collection.Groups),
+    /// jamais sur les clones de la projection de recherche.
+    /// </summary>
+    private void OnMateriauxValides(string presetName, object? result)
+    {
+        if (result is Exception ex)
+        {
+            // Requete bridge en echec : silencieux pour l'utilisateur (log seul)
+            LogService.Error("Validation des matériaux du preset échouée", ex);
+            return;
+        }
+
+        if (result is not ValidatePresetMaterialsResultDto dto) return;
+
+        // Aucun document actif : differer silencieusement (la cle n'est pas
+        // memorisee, la validation reviendra a la prochaine activation).
+        if (!dto.HasActiveDocument) return;
+
+        // Reponse obsolete : le preset actif a change pendant l'aller-retour.
+        if (presetName != ActivePresetName) return;
+
+        // Garde anti-boucle : ne re-valider qu'au changement de preset ou de
+        // document ("\n" est impossible dans un nom de fichier preset).
+        var key = $"{dto.DocumentKey}\n{presetName}";
+        if (key == _lastValidatedKey) return;
+        _lastValidatedKey = key;
+
+        if (dto.MissingMaterials.Count == 0) return;
+
+        // Retrouver les instances preset des introuvables pour la pastille de
+        // couleur du dialogue.
+        var display = new List<PresetMaterialDto>();
+        foreach (var miss in dto.MissingMaterials)
+        {
+            var mat = PresetGroups
+                .SelectMany(g => g.Materials)
+                .FirstOrDefault(m => m.MaterialElementIdValue == miss.ElementIdValue &&
+                                     m.MaterialName == miss.MaterialName);
+            if (mat != null) display.Add(mat);
+        }
+        if (display.Count == 0) return;
+
+        var dialog = new MissingMaterialsDialog();
+        dialog.Owner = App.MainWindow;
+        dialog.SetContent(presetName, display);
+
+        if (dialog.ShowDialog() != true)
+            return; // « Conserver » : aucun changement (echec propre a l'application)
+
+        int removed = PresetMaterialValidation.RemoveMaterials(PresetGroups, dto.MissingMaterials);
+        if (removed == 0) return;
+
+        if (SelectedPresetMaterial != null && FindGroupContaining(SelectedPresetMaterial) == null)
+            SelectedPresetMaterial = null;
+
+        StatusMessage = $"{removed} matériau(x) supprimé(s) du preset.";
+        AutoSave();
     }
 
     /// <summary>

@@ -31,4 +31,7 @@ public enum RevitRequestType
 
     // Cycle 3 : pipette materiau (B2)
     PickElementForMaterials,       // data=null, returns List<PresetMaterialDto> (un seul pick ; null = pick annule)
+
+    // Cycle 3 : materiaux absents a l'activation d'un preset (B1)
+    ValidatePresetMaterials,       // data=ValidatePresetMaterialsRequestDto, returns ValidatePresetMaterialsResultDto (lecture seule)
 }

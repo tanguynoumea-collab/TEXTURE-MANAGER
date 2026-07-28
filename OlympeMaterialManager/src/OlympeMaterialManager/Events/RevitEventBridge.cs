@@ -171,6 +171,11 @@ public partial class RevitEventBridge : IExternalEventHandler
                 case RevitRequestType.PickElementForMaterials:
                     result = HandlePickElementForMaterials(uiApp);
                     break;
+
+                // Cycle 3 : materiaux absents a l'activation d'un preset (B1)
+                case RevitRequestType.ValidatePresetMaterials:
+                    result = HandleValidatePresetMaterials(uiApp, (ValidatePresetMaterialsRequestDto)data!);
+                    break;
             }
         }
         catch (Exception ex)
