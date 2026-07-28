@@ -412,7 +412,7 @@ public partial class RightPanelViewModel : ObservableObject
     /// <summary>
     /// Ajoute au groupe cible les materiaux recuperes par la pipette (B2).
     /// Groupe cible : groupe selectionne dans l'arbre (ou groupe du materiau
-    /// selectionne), sinon groupe « Autre » (cree au besoin, uniquement s'il y a
+    /// selectionne), sinon groupe « Autres » (cree au besoin, uniquement s'il y a
     /// des materiaux a ajouter). B5-D : toute mutation vise les groupes SOURCES,
     /// jamais les clones de la projection de recherche.
     /// </summary>
@@ -425,7 +425,7 @@ public partial class RightPanelViewModel : ObservableObject
         if (target != null && !PresetGroups.Contains(target))
             target = null;
 
-        target ??= PresetGroups.FirstOrDefault(g => g.GroupName == "Autre");
+        target ??= PresetGroups.FirstOrDefault(g => g.GroupName == "Autres");
 
         var existing = target?.Materials ?? Enumerable.Empty<PresetMaterialDto>();
         var newMaterials = PresetMaterialMerge.SelectNewMaterials(picked, existing);
@@ -441,7 +441,7 @@ public partial class RightPanelViewModel : ObservableObject
         {
             // PresetGroups EST _collection.Groups : un seul Add suffit,
             // la collection est persistee par l'AutoSave.
-            target = new PresetGroupDto { GroupName = "Autre" };
+            target = new PresetGroupDto { GroupName = "Autres" };
             PresetGroups.Add(target);
         }
 
