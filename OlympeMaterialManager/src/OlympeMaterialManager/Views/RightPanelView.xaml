@@ -250,25 +250,29 @@
                             </TextBlock.Style>
                         </TextBlock>
 
-                        <!-- Aperçu du matériau : suit le mode (B10-UI/DR2-2) — couleur
-                             de surface, ou couleur d'apparence en mode Réaliste ;
-                             absente → couleur graphique + tooltip explicatif ET texte
-                             visible sous le carré (DR1-3 : le fallback ne doit pas
-                             exiger un hover pour être compris). -->
+                        <!-- Aperçu du matériau : suit le mode (B10-UI/DR2-2/DR4-2) —
+                             couleur de surface, ou en mode Réaliste : texture
+                             résolue (ImageBrush, ConverterParameter="Image") →
+                             couleur d'apparence → couleur graphique + tooltip
+                             explicatif ET texte visible sous le carré (DR1-3 : le
+                             fallback ne doit pas exiger un hover pour être compris). -->
                         <Rectangle Width="60" Height="60"
                                    RadiusX="4" RadiusY="4"
                                    Margin="0,0,0,4">
                             <Rectangle.Fill>
-                                <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
+                                <MultiBinding Converter="{StaticResource MaterialPreviewBrush}"
+                                              ConverterParameter="Image">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
                                     <Binding Path="MaterialEditorVM.ColorArgb" />
                                     <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
+                                    <Binding Path="MaterialEditorVM.TexturePath" />
                                 </MultiBinding>
                             </Rectangle.Fill>
                             <Rectangle.ToolTip>
                                 <MultiBinding Converter="{StaticResource AppearanceFallbackIndicator}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
                                     <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
+                                    <Binding Path="MaterialEditorVM.TexturePath" />
                                 </MultiBinding>
                             </Rectangle.ToolTip>
                         </Rectangle>
@@ -286,6 +290,7 @@
                                 <MultiBinding Converter="{StaticResource AppearanceFallbackIndicator}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
                                     <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
+                                    <Binding Path="MaterialEditorVM.TexturePath" />
                                 </MultiBinding>
                             </TextBlock.Text>
                             <TextBlock.Style>
@@ -539,9 +544,10 @@
                                         </ContextMenu>
                                     </StackPanel.ContextMenu>
 
-                                    <!-- Pastille matériau : suit le mode d'aperçu (B8/DR2-2) —
-                                         couleur graphique, ou couleur d'apparence en mode
-                                         Réaliste (fallback couleur graphique si absente). -->
+                                    <!-- Pastille matériau : suit le mode d'aperçu (B8/DR2-2/DR4-2) —
+                                         couleur graphique, ou en mode Réaliste : moyenne de la
+                                         texture (décision utilisateur) → couleur d'apparence →
+                                         couleur graphique. -->
                                     <Rectangle Width="12" Height="12"
                                                RadiusX="2" RadiusY="2"
                                                Margin="0,0,6,0">
@@ -551,6 +557,7 @@
                                                          RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                                 <Binding Path="ColorArgb" />
                                                 <Binding Path="AppearanceColorArgb" />
+                                                <Binding Path="TexturePath" />
                                             </MultiBinding>
                                         </Rectangle.Fill>
                                     </Rectangle>

@@ -54,6 +54,14 @@ public partial class MaterialEditorViewModel : ObservableObject
     [ObservableProperty]
     private int? _appearanceColorArgb;
 
+    /// <summary>
+    /// Chemin resolu de la texture bitmap du materiau affiche (DR4-2) :
+    /// aperçu ImageBrush en mode Réaliste. Null = pas de bitmap ou introuvable
+    /// → fallback couleur d'apparence puis couleur graphique.
+    /// </summary>
+    [ObservableProperty]
+    private string? _texturePath;
+
     [ObservableProperty]
     private bool _tintEnabled;
 
@@ -177,6 +185,7 @@ public partial class MaterialEditorViewModel : ObservableObject
         PatternName = dto.PatternName;
         HasAppearanceAsset = dto.HasAppearanceAsset;
         AppearanceColorArgb = dto.AppearanceColorArgb;
+        TexturePath = dto.TexturePath;
 
         // Extraire les composantes RGB de la couleur de surface
         (_, ColorR, ColorG, ColorB) = ArgbUtils.UnpackArgb(dto.ColorArgb);

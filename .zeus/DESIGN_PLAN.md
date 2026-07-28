@@ -68,8 +68,10 @@ Barre segmentée **2 positions** dans l'en-tête du visualisateur, sous le titre
 
 - Style ToggleButton segmenté aux tokens existants : segment actif = fond Surface + bordure accent (pattern « sélection », PAS fond ambre plein) ; inactifs discrets. Cibles ≥ 32 px de haut.
 - Le mode s'applique : au carré d'aperçu du visualisateur, aux pastilles des matériaux preset, au liseré B8. Persisté immédiatement (valeur historique « Texture » mappée vers Réaliste à la lecture, sans quarantaine).
-- Mode Réaliste (DR2) : **couleur d'apparence** du matériau — la diffuse/albedo de l'asset d'apparence, celle que la vue 3D Réaliste de Revit affiche pour un matériau sans texture. Absente → fallback couleur graphique + indicateur « Pas d'apparence — couleur graphique » (échec expliqué, jamais muet dans le visualisateur).
-- Historique Q1 : le segment « Réaliste » avait été livré désactivé (« Disponible en phase 2 ») aux côtés d'un mode « Texture » par bitmap. Après diagnostic terrain (itération 2 de la design-review), le mode Texture est supprimé et Réaliste devient actif — voir §4.
+- Mode Réaliste (DR2, enrichi DR4) : chaîne **opportuniste** (décision utilisateur, design-review cycle 3) — **texture bitmap résolue** quand elle existe, sinon **couleur d'apparence** (diffuse/albedo de l'asset), sinon couleur graphique + indicateur « Pas d'apparence — couleur graphique » (échec expliqué, jamais muet dans le visualisateur — l'indicateur ne s'affiche que si NI texture NI apparence).
+- Carré d'aperçu du visualisateur (DR4-2) : texture résolue → `ImageBrush` (miniature TextureBrushCache, DecodePixelWidth 64, Freeze, échec mémorisé) ; sinon la chaîne couleur ci-dessus.
+- **Nouvelle donnée disque (DR4, vérifiée sur machine)** : les bibliothèques Autodesk existent — `Common Files\Autodesk Shared\Materials\<version>\assetlibrary_*.fbm` (x86 : 11 950 images ; 64 bits : 7 585 images). Le diagnostic « 0 texture résolvable » du DR2 venait de MAUVAISES RACINES (l'ancien résolveur sondait `...\Materials\Textures\...`). Le résolveur corrigé strippe aussi le préfixe `lib:?` et retombe sur un index nom de fichier (construit en tâche de fond, jamais bloquant sur le thread Revit).
+- Historique Q1 : le segment « Réaliste » avait été livré désactivé (« Disponible en phase 2 ») aux côtés d'un mode « Texture » par bitmap. Après diagnostic terrain (itération 2 de la design-review), le mode Texture avait été supprimé et Réaliste activé en couleur d'apparence seule ; la nouvelle donnée disque de DR4 restaure la texture en tête de chaîne — voir §4.
 
 ### 2.4 B8 — Liseré matériau sur les cartes (l'élément signature)
 
@@ -81,10 +83,10 @@ Barre segmentée **2 positions** dans l'en-tête du visualisateur, sous le titre
 ```
 
 - Bande verticale de **6 px** sur toute la hauteur du bord gauche de chaque carte (couches ET paramètres matériaux), intégrée au `CardItemStyle` (DR1-1 : bande miroir aussi sur le bord droit).
-- Mode Couleur → `SolidColorBrush` de la couleur graphique du matériau. Mode Réaliste (DR2) → `SolidColorBrush` de la **couleur d'apparence** ; absente → couleur graphique. Matériau « Par catégorie » sans apparence → liseré transparent (aucune matière = aucune bande, pas de gris menteur).
+- Mode Couleur → `SolidColorBrush` de la couleur graphique du matériau (inchangé). Mode Réaliste (DR2, enrichi DR4) → `SolidColorBrush` de la **couleur MOYENNE de l'image de texture** quand elle se résout (**décision utilisateur explicite** — l'objection « brun indiscriminant » du council est outrepassée par ce choix, consignée avec la nouvelle donnée disque de §2.3) ; moyenne calculée en tâche de fond (mesure : 15 ms en moyenne, 128 ms au pire par image à froid — pas « quelques ms », donc pas de calcul synchrone sur le thread UI ; tant qu'elle n'est pas prête → couleur d'apparence, mise à jour au prochain rafraîchissement) ; pas de texture → **couleur d'apparence** ; absente → couleur graphique. Matériau « Par catégorie » sans apparence → liseré transparent (aucune matière = aucune bande, pas de gris menteur).
 - La sélection de carte reste la bordure accent périphérique existante — le liseré vit À L'INTÉRIEUR de cette bordure, les deux ne se confondent pas (accent = état, liseré = donnée).
 - Après « Appliquer », le rafraîchissement existant met à jour le liseré — le changement de matériau devient visible instantanément : c'est le cœur de la demande.
-- Les pastilles 12 px du panneau droit suivent le même mode (couleur graphique/couleur d'apparence) pour la cohérence.
+- Les pastilles 12 px du panneau droit suivent le même mode et la même chaîne (moyenne texture → couleur d'apparence → couleur graphique en Réaliste, DR4-2) pour la cohérence.
 
 ### 2.5 Mapping fonctionnalités → emplacements (iso-fonctionnalité)
 
@@ -131,8 +133,8 @@ Barre segmentée **2 positions** dans l'en-tête du visualisateur, sous le titre
 
 ## 4. Journal des choix rejetés
 
-- Couleur moyenne de texture pour le liseré — rejetée (brun indiscriminant, council unanime après arbitrage).
-- **Mode Texture par bitmap — supprimé après diagnostic terrain (DR2, itération 2 de la design-review)** : olympe.log sur les données réelles de l'utilisateur a montré ZÉRO texture bitmap résolvable (placeholders UnifiedBitmap.png par défaut, chemins d'une autre machine, bibliothèques absentes). Le mode entier (FindTexturePath, TexturePathResolver, TextureBrushCache, branche ImageBrush) est retiré ; remplacé par « Réaliste » = couleur d'apparence (diffuse/albedo de l'asset), lecture mémoire pure sans I/O disque.
+- Couleur moyenne de texture pour le liseré — rejetée (brun indiscriminant, council unanime après arbitrage). **REVERSÉE en DR4 (cycle 3) par décision utilisateur explicite** : la moyenne est retenue pour le liseré et les pastilles, l'objection du council est outrepassée (voir §2.4).
+- **Mode Texture par bitmap — supprimé après diagnostic terrain (DR2, itération 2 de la design-review)** : olympe.log sur les données réelles de l'utilisateur a montré ZÉRO texture bitmap résolvable (placeholders UnifiedBitmap.png par défaut, chemins d'une autre machine, bibliothèques absentes). Le mode entier (FindTexturePath, TexturePathResolver, TextureBrushCache, branche ImageBrush) est retiré ; remplacé par « Réaliste » = couleur d'apparence (diffuse/albedo de l'asset), lecture mémoire pure sans I/O disque. **Diagnostic INVALIDÉ en DR4 (cycle 3)** : vérification disque — les bibliothèques existent sous `assetlibrary_*.fbm`, l'ancien résolveur sondait les mauvaises racines (`...\Materials\Textures\...`). L'infra texture est restaurée et corrigée (DR4-1), le mode Réaliste devient opportuniste : image quand elle existe, sinon comportement couleur d'apparence (DR4-2).
 - Restauration immédiate du pipeline de rendu pour « Réaliste » — rejetée (mutation du document, gel, findings ré-ouverts) → phase 2 sur cache disque à la demande.
 - Liseré en contour complet de carte — rejeté (entrerait en collision avec la bordure accent de sélection ; bord gauche = lecture verticale rapide en colonne).
 - Champ de recherche dans la barre d'en-tête globale — rejeté (la recherche est par panneau, pas globale).

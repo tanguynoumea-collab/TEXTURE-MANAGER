@@ -47,11 +47,15 @@
                                         CornerRadius="4,0,0,4"
                                         SnapsToDevicePixels="True">
                                     <Border.Background>
+                                        <!-- DR4-2 : mode Réaliste = moyenne de la
+                                             texture (décision utilisateur) →
+                                             couleur d'apparence → couleur graphique. -->
                                         <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
                                             <Binding Path="DataContext.PreviewModeStore.CurrentMode"
                                                      RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                             <Binding Path="ColorArgb" />
                                             <Binding Path="AppearanceColorArgb" />
+                                            <Binding Path="TexturePath" />
                                         </MultiBinding>
                                     </Border.Background>
                                 </Border>
@@ -67,6 +71,7 @@
                                                      RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                             <Binding Path="ColorArgb" />
                                             <Binding Path="AppearanceColorArgb" />
+                                            <Binding Path="TexturePath" />
                                         </MultiBinding>
                                     </Border.Background>
                                 </Border>
