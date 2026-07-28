@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Olympe.MaterialManager.Events;
 using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
+using Olympe.MaterialManager.Services;
 
 namespace Olympe.MaterialManager.ViewModels;
 
@@ -63,12 +64,20 @@ public partial class CenterPanelViewModel : ObservableObject
     private long _currentTypeIdValue;
 
     /// <summary>
+    /// Point unique de vérité du mode d'aperçu (B10-S), exposé pour les
+    /// MultiBinding du liseré des cartes (B8) : les bindings réagissent au
+    /// changement de mode via INPC sur CurrentMode.
+    /// </summary>
+    public PreviewModeStore PreviewModeStore { get; }
+
+    /// <summary>
     /// Constructeur principal avec injection du bridge ExternalEvent.
     /// Enregistre la reception de TypeSelectedMessage (D-19, D-20) et RefreshLayersMessage (D-25).
     /// </summary>
-    public CenterPanelViewModel(RevitEventBridge eventBridge)
+    public CenterPanelViewModel(RevitEventBridge eventBridge, PreviewModeStore? previewModeStore = null)
     {
         _eventBridge = eventBridge;
+        PreviewModeStore = previewModeStore ?? new PreviewModeStore(new PresetService());
 
         WeakReferenceMessenger.Default.Register<TypeSelectedMessage>(this, (r, m) =>
         {

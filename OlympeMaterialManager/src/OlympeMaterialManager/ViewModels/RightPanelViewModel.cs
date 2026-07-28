@@ -98,12 +98,20 @@ public partial class RightPanelViewModel : ObservableObject
     public MaterialEditorViewModel MaterialEditorVM { get; }
 
     /// <summary>
+    /// Point unique de vérité du mode d'aperçu (B10-S), exposé pour le
+    /// sélecteur segmenté du visualisateur (B10-UI) et les pastilles (B8).
+    /// </summary>
+    public PreviewModeStore PreviewModeStore { get; }
+
+    /// <summary>
     /// Constructeur principal avec injection du bridge et du service de presets.
     /// </summary>
-    public RightPanelViewModel(RevitEventBridge eventBridge, PresetService presetService)
+    public RightPanelViewModel(RevitEventBridge eventBridge, PresetService presetService,
+        PreviewModeStore? previewModeStore = null)
     {
         _eventBridge = eventBridge;
         _presetService = presetService;
+        PreviewModeStore = previewModeStore ?? new PreviewModeStore(presetService);
         MaterialEditorVM = new MaterialEditorViewModel(eventBridge);
         LoadPresets();
 

@@ -53,9 +53,11 @@ public partial class MainWindowViewModel : ObservableObject
     {
         _eventBridge = eventBridge;
         var presetService = new PresetService();
+        // B10-S : point unique de vérité du mode d'aperçu, partagé par les panneaux.
+        var previewModeStore = new PreviewModeStore(presetService);
         LeftPanelVM = new LeftPanelViewModel(eventBridge, presetService);
-        CenterPanelVM = new CenterPanelViewModel(eventBridge);
-        RightPanelVM = new RightPanelViewModel(eventBridge, presetService);
+        CenterPanelVM = new CenterPanelViewModel(eventBridge, previewModeStore);
+        RightPanelVM = new RightPanelViewModel(eventBridge, presetService, previewModeStore);
 
         // Initialiser le chemin du repertoire de projet
         ProjectDirectoryPath = PresetService.GetProjectDirectory() ?? string.Empty;

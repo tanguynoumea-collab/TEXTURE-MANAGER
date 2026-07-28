@@ -42,4 +42,13 @@ public class AppSettingsDto
 
     /// <summary>Position haute de la fenetre principale a la derniere fermeture.</summary>
     public double? WindowTop { get; set; }
+
+    /// <summary>
+    /// Mode d'apercu des materiaux (B10) : "UniformColor" / "Texture" / "Realistic".
+    /// STRING volontairement (jamais l'enum serialise) : une valeur inconnue est
+    /// toleree par Enum.TryParse cote lecture au lieu de provoquer une JsonException
+    /// qui enverrait settings.json en quarantaine (DON-02). Ajout additif :
+    /// pas de bump de SchemaVersion.
+    /// </summary>
+    public string MaterialPreviewMode { get; set; } = "UniformColor";
 }
