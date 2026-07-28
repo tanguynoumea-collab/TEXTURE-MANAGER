@@ -11,13 +11,14 @@
 
         <!-- UI-M6 : style de carte partage par les deux ListBox (couches et parametres),
              couleurs via les tokens CardBrush / CardHoverBrush / CardSelectedBrush du theme.
-             B8 : liseré matériau de 6 px sur toute la hauteur du bord gauche, coins
-             arrondis côté gauche épousant la carte, À L'INTÉRIEUR de la bordure de
-             sélection accent (accent = état, liseré = donnée). Le mode d'aperçu se
-             propage par binding sur PreviewModeStore.CurrentMode (INPC, alimenté par
-             PreviewModeChangedMessage côté store) — documenté : choix « propriété
-             exposée par le VM » plutôt qu'un abonnement message dans la vue.
-             ColorArgb null (« Par catégorie ») → liseré transparent ; texture
+             B8 (DR1-1) : liseré matériau de 6 px sur toute la hauteur, DES DEUX CÔTÉS
+             de la carte (bande identique à gauche et à droite : même brush, coins
+             arrondis épousant chaque côté), À L'INTÉRIEUR de la bordure de
+             sélection accent (accent = état périphérique, liseré = donnée). Le mode
+             d'aperçu se propage par binding sur PreviewModeStore.CurrentMode (INPC,
+             alimenté par PreviewModeChangedMessage côté store) — documenté : choix
+             « propriété exposée par le VM » plutôt qu'un abonnement message dans la
+             vue. ColorArgb null (« Par catégorie ») → liseré transparent ; texture
              introuvable → couleur (fallback silencieux sur 6 px, spec 2.6). -->
         <Style x:Key="CardItemStyle" TargetType="ListBoxItem">
             <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
@@ -37,6 +38,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="6" />
                                     <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="6" />
                                 </Grid.ColumnDefinitions>
                                 <Border Grid.Column="0"
                                         CornerRadius="4,0,0,4"
@@ -52,6 +54,21 @@
                                     </Border.Background>
                                 </Border>
                                 <ContentPresenter Grid.Column="1" Margin="12,10" />
+                                <!-- DR1-1 : bande droite, miroir exact de la gauche
+                                     (même brush couleur/texture, mêmes fallbacks). -->
+                                <Border Grid.Column="2"
+                                        CornerRadius="0,4,4,0"
+                                        SnapsToDevicePixels="True">
+                                    <Border.Background>
+                                        <MultiBinding Converter="{StaticResource MaterialPreviewBrush}"
+                                                      ConverterParameter="Tile">
+                                            <Binding Path="DataContext.PreviewModeStore.CurrentMode"
+                                                     RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                            <Binding Path="ColorArgb" />
+                                            <Binding Path="TexturePath" />
+                                        </MultiBinding>
+                                    </Border.Background>
+                                </Border>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
