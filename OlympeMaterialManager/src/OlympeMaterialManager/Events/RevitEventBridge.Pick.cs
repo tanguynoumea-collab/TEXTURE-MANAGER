@@ -258,8 +258,11 @@ public partial class RevitEventBridge
     /// </summary>
     private static List<PresetMaterialDto>? HandlePickElementForMaterials(UIApplication uiApp)
     {
-        var uiDoc = uiApp.ActiveUIDocument;
-        if (uiDoc == null) return null;
+        // FIA3-03 : pas de document actif = erreur explicite (pattern GetActiveDocument),
+        // pas une pseudo-annulation silencieuse — le chemin exception re-affiche la
+        // fenetre et pose le message cote ViewModel.
+        var uiDoc = uiApp.ActiveUIDocument
+            ?? throw new InvalidOperationException("Aucun document actif.");
 
         if (uiDoc.ActiveView is not View3D)
             throw new InvalidOperationException("Vue 3D requise pour la sélection par clic.");
