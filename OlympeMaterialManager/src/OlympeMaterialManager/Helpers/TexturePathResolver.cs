@@ -64,13 +64,20 @@ public static class TexturePathResolver
     /// Résout un chemin unique : tel quel s'il est absolu et existe, sinon sondé
     /// contre les racines connues (chemin relatif complet, puis nom de fichier seul
     /// en dernier recours pour les chemins absolus d'une autre machine).
+    /// FIA2-01 : les chemins UNC (\\serveur\...) ne sont JAMAIS sondés tels quels —
+    /// un File.Exists sur un partage injoignable peut bloquer 1 à 30 s (timeout SMB)
+    /// sur le thread Revit. Pour eux, seul le nom de fichier est sondé contre les
+    /// racines locales.
     /// </summary>
     private static string? ResolveSingle(string path, IReadOnlyList<string> searchRoots)
     {
         try
         {
             bool rooted = Path.IsPathRooted(path);
-            if (rooted && File.Exists(path)) return path;
+            bool isUnc = path.Length >= 2 &&
+                         (path[0] == '\\' || path[0] == '/') &&
+                         (path[1] == '\\' || path[1] == '/');
+            if (rooted && !isUnc && File.Exists(path)) return path;
 
             // Chemin relatif : sonder chaque racine dans l'ordre.
             if (!rooted)

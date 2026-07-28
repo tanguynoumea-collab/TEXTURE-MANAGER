@@ -66,6 +66,32 @@ public class TexturePathResolverTests : IDisposable
             TexturePathResolver.Resolve(@"D:\MachineOrigine\Textures\granit.tif", Roots));
     }
 
+    [Fact]
+    public void Resolve_CheminUnc_RetombeSurLeNomDeFichierContreLesRacinesLocales()
+    {
+        // FIA2-01 : le chemin UNC complet n'est pas sondé (risque de timeout SMB
+        // sur le thread Revit) — seule la retombée « nom de fichier contre les
+        // racines locales » s'applique.
+        var expected = CreateFile("tex.png");
+        Assert.Equal(expected,
+            TexturePathResolver.Resolve(@"\\serveur\share\tex.png", Roots));
+    }
+
+    [Fact]
+    public void Resolve_CheminUnc_Introuvable_RetourneNullRapidementSansException()
+    {
+        // FIA2-01 : sans sonde réseau, la résolution d'un UNC inconnu est
+        // quasi instantanée (aucun File.Exists sur \\serveur...).
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var result = TexturePathResolver.Resolve(
+            @"\\serveur-inexistant-olympe\share\fantome.png", Roots);
+        sw.Stop();
+
+        Assert.Null(result);
+        Assert.True(sw.ElapsedMilliseconds < 1000,
+            $"Résolution UNC trop lente ({sw.ElapsedMilliseconds} ms) : une sonde réseau a probablement eu lieu.");
+    }
+
     [Theory]
     [InlineData("introuvable.png")]
     [InlineData(@"C:\Nulle\Part\rien.jpg")]
