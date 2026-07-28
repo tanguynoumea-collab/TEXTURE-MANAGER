@@ -226,7 +226,14 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     public void AppliquerMateriauSurCouche(PresetMaterialDto presetMat, LayerDto layer)
     {
-        if (IsSetMatBusy || _eventBridge == null) return;
+        if (_eventBridge == null) return;
+        if (IsSetMatBusy)
+        {
+            // FIA3-06 : drop ignore pendant une application en cours — feedback
+            // au lieu d'un silence (OnSetMatResult/le timer effacera le texte).
+            SetMatStatusText = "Application en cours…";
+            return;
+        }
 
         IsSetMatBusy = true;
 
@@ -250,8 +257,15 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     public void AppliquerMateriauSurParametre(PresetMaterialDto presetMat, MaterialParamDto param)
     {
-        if (IsSetMatBusy || _eventBridge == null) return;
+        if (_eventBridge == null) return;
         if (string.IsNullOrEmpty(param.ParameterDefinitionName)) return;
+        if (IsSetMatBusy)
+        {
+            // FIA3-06 : drop ignore pendant une application en cours — feedback
+            // au lieu d'un silence (OnSetMatResult/le timer effacera le texte).
+            SetMatStatusText = "Application en cours…";
+            return;
+        }
 
         IsSetMatBusy = true;
 
