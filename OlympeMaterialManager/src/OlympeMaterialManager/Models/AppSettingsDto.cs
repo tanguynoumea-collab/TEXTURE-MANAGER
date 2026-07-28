@@ -44,11 +44,12 @@ public class AppSettingsDto
     public double? WindowTop { get; set; }
 
     /// <summary>
-    /// Mode d'apercu des materiaux (B10) : "UniformColor" / "Texture" / "Realistic".
-    /// STRING volontairement (jamais l'enum serialise) : une valeur inconnue est
-    /// toleree par Enum.TryParse cote lecture au lieu de provoquer une JsonException
-    /// qui enverrait settings.json en quarantaine (DON-02). Ajout additif :
-    /// pas de bump de SchemaVersion.
+    /// Mode d'apercu des materiaux (B10) : "UniformColor" / "Realistic"
+    /// ("Texture", persiste par les versions anterieures a DR2-2, est mappe
+    /// vers Realistic a la lecture). STRING volontairement (jamais l'enum
+    /// serialise) : une valeur inconnue est toleree par le parse cote lecture
+    /// au lieu de provoquer une JsonException qui enverrait settings.json en
+    /// quarantaine (DON-02). Ajout additif : pas de bump de SchemaVersion.
     /// </summary>
     public string MaterialPreviewMode { get; set; } = "UniformColor";
 }

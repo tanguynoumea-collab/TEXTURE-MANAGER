@@ -35,14 +35,19 @@ public partial class PreviewModeStore : ObservableObject
     /// <summary>
     /// Parse tolérant du mode persisté : valeur inconnue, numérique hors plage
     /// ou null → défaut UniformColor. Jamais d'exception.
+    /// DR2-2 : « Texture » (persisté par les versions antérieures, mode
+    /// supprimé) est mappé vers Realistic — son remplaçant fonctionnel.
     /// </summary>
     public static PreviewMode Parse(string? value)
     {
+        if (string.Equals(value, "Texture", StringComparison.OrdinalIgnoreCase))
+            return PreviewMode.Realistic;
+
         // Pattern match explicite plutôt que Enum.IsDefined : rejette les
         // numériques hors plage ("999" passe TryParse) et compile sans warning
         // sur les deux cibles (la surcharge générique d'IsDefined n'existe pas en net48).
         if (Enum.TryParse<PreviewMode>(value, ignoreCase: true, out var mode)
-            && mode is PreviewMode.UniformColor or PreviewMode.Texture or PreviewMode.Realistic)
+            && mode is PreviewMode.UniformColor or PreviewMode.Realistic)
         {
             return mode;
         }

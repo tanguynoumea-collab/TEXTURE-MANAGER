@@ -8,10 +8,10 @@
     <UserControl.Resources>
         <converters:ArgbToColorConverter x:Key="ArgbToColorConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <!-- B10-UI : mode d'aperçu (sélecteur segmenté + aperçu/pastilles) -->
+        <!-- B10-UI/DR2-2 : mode d'aperçu (sélecteur segmenté + aperçu/pastilles) -->
         <converters:PreviewModeToBoolConverter x:Key="PreviewModeToBool" />
         <converters:MaterialPreviewBrushConverter x:Key="MaterialPreviewBrush" />
-        <converters:TextureFallbackTooltipConverter x:Key="TextureFallbackTooltip" />
+        <converters:AppearanceFallbackIndicatorConverter x:Key="AppearanceFallbackIndicator" />
     </UserControl.Resources>
 
     <Border Background="{StaticResource BackgroundBrush}" Padding="8">
@@ -222,27 +222,12 @@
                                     <CornerRadius>4,0,0,4</CornerRadius>
                                 </RadioButton.Tag>
                             </RadioButton>
-                            <RadioButton Content="Texture"
-                                         GroupName="PreviewModeSegments"
-                                         Style="{StaticResource SegmentButtonStyle}"
-                                         Margin="-1,0,0,0"
-                                         AutomationProperties.Name="Aperçu par la texture"
-                                         ToolTip="Aperçu par la texture de l'asset d'apparence (couleur si introuvable)"
-                                         IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
-                                                     Converter={StaticResource PreviewModeToBool},
-                                                     ConverterParameter=Texture}">
-                                <RadioButton.Tag>
-                                    <CornerRadius>0</CornerRadius>
-                                </RadioButton.Tag>
-                            </RadioButton>
                             <RadioButton Content="Réaliste"
                                          GroupName="PreviewModeSegments"
                                          Style="{StaticResource SegmentButtonStyle}"
                                          Margin="-1,0,0,0"
-                                         IsEnabled="False"
-                                         AutomationProperties.Name="Aperçu réaliste — disponible en phase 2"
-                                         ToolTip="Disponible en phase 2"
-                                         ToolTipService.ShowOnDisabled="True"
+                                         AutomationProperties.Name="Aperçu réaliste par la couleur d'apparence"
+                                         ToolTip="Aperçu par la couleur d'apparence du matériau (couleur graphique si absente)"
                                          IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
                                                      Converter={StaticResource PreviewModeToBool},
                                                      ConverterParameter=Realistic}">
@@ -252,10 +237,11 @@
                             </RadioButton>
                         </StackPanel>
 
-                        <!-- Aperçu du matériau : suit le mode (B10-UI) — couleur de
-                             surface, ou texture si résolue ; introuvable → couleur +
-                             tooltip explicatif ET texte visible sous le carré (DR1-3 :
-                             le fallback ne doit pas exiger un hover pour être compris). -->
+                        <!-- Aperçu du matériau : suit le mode (B10-UI/DR2-2) — couleur
+                             de surface, ou couleur d'apparence en mode Réaliste ;
+                             absente → couleur graphique + tooltip explicatif ET texte
+                             visible sous le carré (DR1-3 : le fallback ne doit pas
+                             exiger un hover pour être compris). -->
                         <Rectangle Width="60" Height="60"
                                    RadiusX="4" RadiusY="4"
                                    Margin="0,0,0,4">
@@ -267,24 +253,24 @@
                                 </MultiBinding>
                             </Rectangle.Fill>
                             <Rectangle.ToolTip>
-                                <MultiBinding Converter="{StaticResource TextureFallbackTooltip}">
+                                <MultiBinding Converter="{StaticResource AppearanceFallbackIndicator}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
                                     <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
                                 </MultiBinding>
                             </Rectangle.ToolTip>
                         </Rectangle>
 
-                        <!-- DR1-3 : fallback rendu visible sans hover — en mode Texture,
-                             quand la texture est introuvable ou illisible, le même
-                             converter que le tooltip alimente ce texte secondaire ;
-                             null (pas de fallback) → masqué. -->
+                        <!-- DR1-3/DR2-2 : fallback rendu visible sans hover — en mode
+                             Réaliste, quand le matériau n'a pas de couleur d'apparence,
+                             le même converter que le tooltip alimente ce texte
+                             secondaire ; null (pas de fallback) → masqué. -->
                         <TextBlock FontSize="11"
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    FontStyle="Italic"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,8">
                             <TextBlock.Text>
-                                <MultiBinding Converter="{StaticResource TextureFallbackTooltip}">
+                                <MultiBinding Converter="{StaticResource AppearanceFallbackIndicator}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
                                     <Binding Path="MaterialEditorVM.AppearanceColorArgb" />
                                 </MultiBinding>
@@ -540,9 +526,9 @@
                                         </ContextMenu>
                                     </StackPanel.ContextMenu>
 
-                                    <!-- Pastille matériau : suit le mode d'aperçu (B8) —
-                                         couleur ou texture via le même cache que le liseré,
-                                         fallback couleur si introuvable. -->
+                                    <!-- Pastille matériau : suit le mode d'aperçu (B8/DR2-2) —
+                                         couleur graphique, ou couleur d'apparence en mode
+                                         Réaliste (fallback couleur graphique si absente). -->
                                     <Rectangle Width="12" Height="12"
                                                RadiusX="2" RadiusY="2"
                                                Margin="0,0,6,0">

@@ -7,7 +7,7 @@ namespace Olympe.MaterialManager.Converters;
 
 /// <summary>
 /// Convertisseur PreviewMode ↔ bool pour le sélecteur segmenté (B10-UI).
-/// ConverterParameter = nom du mode du segment ("UniformColor", "Texture",
+/// ConverterParameter = nom du mode du segment ("UniformColor" ou
 /// "Realistic"). ConvertBack : true → le mode du segment ; false → DoNothing
 /// (un RadioButton ne se décoche pas par clic, aucun état intermédiaire).
 /// </summary>

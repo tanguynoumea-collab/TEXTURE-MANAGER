@@ -6,7 +6,8 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <!-- B8 : brush du liseré matériau (couleur / texture tuilée selon le mode) -->
+        <!-- B8/DR2-2 : brush du liseré matériau (couleur graphique / couleur
+             d'apparence selon le mode) -->
         <converters:MaterialPreviewBrushConverter x:Key="MaterialPreviewBrush" />
 
         <!-- UI-M6 : style de carte partage par les deux ListBox (couches et parametres),
@@ -18,8 +19,9 @@
              d'aperçu se propage par binding sur PreviewModeStore.CurrentMode (INPC,
              alimenté par PreviewModeChangedMessage côté store) — documenté : choix
              « propriété exposée par le VM » plutôt qu'un abonnement message dans la
-             vue. ColorArgb null (« Par catégorie ») → liseré transparent ; texture
-             introuvable → couleur (fallback silencieux sur 6 px, spec 2.6). -->
+             vue. Couleur effective null (« Par catégorie » sans apparence) → liseré
+             transparent ; mode Réaliste sans couleur d'apparence → couleur graphique
+             (fallback silencieux sur 6 px, spec 2.6, DR2-2). -->
         <Style x:Key="CardItemStyle" TargetType="ListBoxItem">
             <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -44,8 +46,7 @@
                                         CornerRadius="4,0,0,4"
                                         SnapsToDevicePixels="True">
                                     <Border.Background>
-                                        <MultiBinding Converter="{StaticResource MaterialPreviewBrush}"
-                                                      ConverterParameter="Tile">
+                                        <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
                                             <Binding Path="DataContext.PreviewModeStore.CurrentMode"
                                                      RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                             <Binding Path="ColorArgb" />
@@ -55,13 +56,12 @@
                                 </Border>
                                 <ContentPresenter Grid.Column="1" Margin="12,10" />
                                 <!-- DR1-1 : bande droite, miroir exact de la gauche
-                                     (même brush couleur/texture, mêmes fallbacks). -->
+                                     (même brush, mêmes fallbacks). -->
                                 <Border Grid.Column="2"
                                         CornerRadius="0,4,4,0"
                                         SnapsToDevicePixels="True">
                                     <Border.Background>
-                                        <MultiBinding Converter="{StaticResource MaterialPreviewBrush}"
-                                                      ConverterParameter="Tile">
+                                        <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
                                             <Binding Path="DataContext.PreviewModeStore.CurrentMode"
                                                      RelativeSource="{RelativeSource AncestorType=UserControl}" />
                                             <Binding Path="ColorArgb" />

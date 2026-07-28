@@ -39,15 +39,15 @@ public class PreviewModeSettingsTests : IDisposable
         var store = new PreviewModeStore(_service);
         Assert.Equal(PreviewMode.UniformColor, store.CurrentMode);
 
-        store.CurrentMode = PreviewMode.Texture;
+        store.CurrentMode = PreviewMode.Realistic;
 
         // Persistance immédiate : le fichier contient la valeur STRING
         var raw = File.ReadAllText(SettingsPath);
-        Assert.Contains("\"materialPreviewMode\": \"Texture\"", raw);
+        Assert.Contains("\"materialPreviewMode\": \"Realistic\"", raw);
 
         // Un nouveau store (nouvelle session) recharge le même mode
         var reloaded = new PreviewModeStore(new PresetService(_dir));
-        Assert.Equal(PreviewMode.Texture, reloaded.CurrentMode);
+        Assert.Equal(PreviewMode.Realistic, reloaded.CurrentMode);
     }
 
     [Fact]
@@ -87,12 +87,35 @@ public class PreviewModeSettingsTests : IDisposable
 
     [Theory]
     [InlineData("UniformColor", PreviewMode.UniformColor)]
-    [InlineData("Texture", PreviewMode.Texture)]
-    [InlineData("texture", PreviewMode.Texture)] // tolérance de casse
     [InlineData("Realistic", PreviewMode.Realistic)]
+    [InlineData("realistic", PreviewMode.Realistic)] // tolérance de casse
     public void Parse_ValeurValide_RetourneLeMode(string value, PreviewMode expected)
     {
         Assert.Equal(expected, PreviewModeStore.Parse(value));
+    }
+
+    // ---- Migration DR2-2 : « Texture » (mode supprimé) → Realistic ----
+
+    [Theory]
+    [InlineData("Texture")]
+    [InlineData("texture")] // tolérance de casse
+    public void Parse_AncienneValeurTexture_MappeVersRealistic(string value)
+    {
+        Assert.Equal(PreviewMode.Realistic, PreviewModeStore.Parse(value));
+    }
+
+    [Fact]
+    public void Store_FichierAvecAncienModeTexture_ChargeRealistic_SansQuarantaine()
+    {
+        // settings.json écrit par une version antérieure à DR2-2
+        File.WriteAllText(SettingsPath,
+            "{ \"schemaVersion\": 1, \"presetFiles\": [], \"materialPreviewMode\": \"Texture\" }");
+
+        var store = new PreviewModeStore(_service);
+
+        Assert.Equal(PreviewMode.Realistic, store.CurrentMode);
+        Assert.True(File.Exists(SettingsPath));
+        Assert.Empty(Directory.GetFiles(_dir, "settings.json.corrupt-*"));
     }
 
     // ---- Champ absent (fichier v1 existant) → défaut ----
