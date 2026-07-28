@@ -85,6 +85,54 @@
                         Margin="4,0,0,0" />
             </StackPanel>
 
+            <!-- B5-D : recherche de materiaux, sous la rangee « Creer un groupe / + / − ».
+                 Watermark : pattern overlay de AddMaterialDialog (UI-M9). -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                <TextBox x:Name="MaterialSearchBox"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         AutomationProperties.Name="Rechercher un matériau"
+                         MinHeight="32"
+                         Padding="6,4,32,4" />
+                <TextBlock Text="Rechercher un matériau…"
+                           Margin="8,0,0,0"
+                           VerticalAlignment="Center"
+                           IsHitTestVisible="False">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=MaterialSearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <!-- Bouton d'effacement, visible quand la recherche n'est pas vide -->
+                <Button Content="✕"
+                        Command="{Binding EffacerRechercheCommand}"
+                        AutomationProperties.Name="Effacer la recherche"
+                        ToolTip="Effacer la recherche"
+                        HorizontalAlignment="Right"
+                        Width="28" Height="28"
+                        Padding="0"
+                        Margin="0,2,2,2">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=MaterialSearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
             <!-- Section 4 : Message de statut -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding StatusMessage}"
@@ -307,9 +355,13 @@
                 </ScrollViewer>
             </Border>
 
-            <!-- Section 5 : TreeView des presets (D-08, D-09) -->
+            <!-- Section 5 : TreeView des presets (D-08, D-09)
+                 B5-D : bindé sur DisplayedGroups (= PresetGroups hors recherche,
+                 projection de clones legers pendant une recherche active)
+                 + etat « aucun resultat » en overlay (UI-m14) -->
+            <Grid>
             <TreeView x:Name="PresetTreeView"
-                      ItemsSource="{Binding PresetGroups}"
+                      ItemsSource="{Binding DisplayedGroups}"
                       VirtualizingStackPanel.IsVirtualizing="True"
                       VirtualizingStackPanel.VirtualizationMode="Recycling"
                       BorderThickness="0"
@@ -383,6 +435,23 @@
                 </TreeView.ItemContainerStyle>
 
             </TreeView>
+
+            <!-- B5-D : aucun materiau ne matche la recherche (UI-m14) -->
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsSearchNoResult, Converter={StaticResource BoolToVis}}">
+                <TextBlock Text="Aucun matériau ne correspond à la recherche"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           FontStyle="Italic"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,8" />
+                <Button Content="Effacer la recherche"
+                        Command="{Binding EffacerRechercheCommand}"
+                        AutomationProperties.Name="Effacer la recherche"
+                        HorizontalAlignment="Center"
+                        Padding="8,4" />
+            </StackPanel>
+            </Grid>
 
         </DockPanel>
     </Border>

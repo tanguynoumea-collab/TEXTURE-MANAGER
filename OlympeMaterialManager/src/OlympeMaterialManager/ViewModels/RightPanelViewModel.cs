@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Olympe.MaterialManager.Events;
+using Olympe.MaterialManager.Helpers;
 using Olympe.MaterialManager.Messages;
 using Olympe.MaterialManager.Models;
 using Olympe.MaterialManager.Services;
@@ -60,6 +61,36 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string? _activePresetName;
+
+    /// <summary>
+    /// Texte de recherche du panneau (B5-D). Filtre les groupes/materiaux affiches
+    /// via une projection — jamais la collection persistee elle-meme.
+    /// </summary>
+    [ObservableProperty]
+    private string _searchText = string.Empty;
+
+    /// <summary>
+    /// Collection bindee par le TreeView (B5-D).
+    /// Recherche vide : reference directe a PresetGroups (binding vivant sur la source).
+    /// Recherche active : projection de clones legers de PresetGroupDto dont Materials
+    /// referencent les MEMES instances de PresetMaterialDto — PresetGroups EST
+    /// _collection.Groups, la collection persistee par l'AutoSave : il est INTERDIT
+    /// de la filtrer en place ou d'y poser des flags UI.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<PresetGroupDto> _displayedGroups = new();
+
+    /// <summary>
+    /// True quand la recherche est active et qu'aucun groupe/materiau ne matche (UI-m14).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSearchNoResult;
+
+    /// <summary>
+    /// Mapping clone de projection -> groupe source (B5-D), pour que la selection et
+    /// le drag-and-drop pendant une recherche active operent sur les groupes sources.
+    /// </summary>
+    private readonly Dictionary<PresetGroupDto, PresetGroupDto> _projectedGroupSources = new();
 
     /// <summary>
     /// Sub-ViewModel pour la section editeur de materiau (MATEDIT-01 a MATEDIT-08).
@@ -285,9 +316,14 @@ public partial class RightPanelViewModel : ObservableObject
 
     /// <summary>
     /// Deplace un materiau d'un groupe source vers un groupe cible (drag and drop).
+    /// B5-D : pendant une recherche active, le TreeView affiche des clones de
+    /// projection — resoudre systematiquement vers les groupes sources avant
+    /// toute mutation (sinon le materiau serait ajoute a un clone jetable).
     /// </summary>
     public void MoveMaterial(PresetMaterialDto material, PresetGroupDto sourceGroup, PresetGroupDto targetGroup)
     {
+        sourceGroup = ResolveSourceGroup(sourceGroup);
+        targetGroup = ResolveSourceGroup(targetGroup);
         if (sourceGroup == targetGroup) return;
 
         sourceGroup.Materials.Remove(material);
@@ -464,14 +500,91 @@ public partial class RightPanelViewModel : ObservableObject
         SelectedPresetMaterial = param as PresetMaterialDto;
 
         // Tracker aussi le groupe selectionne
+        // B5-D : pendant une recherche, le TreeView fournit un clone de projection —
+        // resoudre vers le groupe source pour que suppression/ajout operent sur la
+        // collection persistee.
         if (param is PresetGroupDto group)
         {
-            SelectedGroup = group;
+            SelectedGroup = ResolveSourceGroup(group);
         }
         else if (param is PresetMaterialDto mat)
         {
             SelectedGroup = FindGroupContaining(mat);
         }
+    }
+
+    // --- Recherche (B5-D) ---
+
+    /// <summary>
+    /// Efface la recherche (bouton ✕ et lien de l'etat « aucun resultat », UI-m14).
+    /// </summary>
+    [RelayCommand]
+    private void EffacerRecherche()
+    {
+        SearchText = string.Empty;
+    }
+
+    /// <summary>
+    /// Reconstruit la collection affichee par le TreeView (B5-D).
+    /// Recherche vide : re-binde la collection source telle quelle.
+    /// Recherche active : projection de clones legers (GroupName copie) dont Materials
+    /// referencent les memes instances filtrees. Un groupe reste visible si son nom
+    /// matche (tous ses materiaux sont alors montres) OU si un de ses materiaux matche.
+    /// </summary>
+    private void UpdateDisplayedGroups()
+    {
+        _projectedGroupSources.Clear();
+
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            DisplayedGroups = PresetGroups;
+            IsSearchNoResult = false;
+            return;
+        }
+
+        var projection = new ObservableCollection<PresetGroupDto>();
+        foreach (var group in PresetGroups)
+        {
+            bool groupNameMatches = SearchMatcher.Matches(group.GroupName, SearchText);
+            var materials = groupNameMatches
+                ? group.Materials.ToList()
+                : group.Materials.Where(m => SearchMatcher.Matches(m.MaterialName, SearchText)).ToList();
+
+            if (!groupNameMatches && materials.Count == 0)
+                continue;
+
+            var clone = new PresetGroupDto
+            {
+                GroupName = group.GroupName,
+                Materials = new ObservableCollection<PresetMaterialDto>(materials)
+            };
+            _projectedGroupSources[clone] = group;
+            projection.Add(clone);
+        }
+
+        DisplayedGroups = projection;
+        IsSearchNoResult = projection.Count == 0;
+    }
+
+    /// <summary>
+    /// Resout un groupe potentiellement issu de la projection de recherche vers son
+    /// groupe source persiste (B5-D). Hors recherche, retourne le groupe tel quel.
+    /// Internal : reutilise par le code-behind drag-and-drop de RightPanelView.
+    /// </summary>
+    internal PresetGroupDto ResolveSourceGroup(PresetGroupDto group)
+    {
+        return _projectedGroupSources.TryGetValue(group, out var source) ? source : group;
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        UpdateDisplayedGroups();
+    }
+
+    partial void OnPresetGroupsChanged(ObservableCollection<PresetGroupDto> value)
+    {
+        // Changement de preset actif : la projection (ou le binding direct) suit
+        UpdateDisplayedGroups();
     }
 
     /// <summary>
@@ -582,6 +695,12 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     private void AutoSave()
     {
+        // B5-D : toute modification pendant une recherche active rafraichit la
+        // projection affichee (AutoSave est appele apres chaque mutation, meme
+        // quand la sauvegarde elle-meme est bloquee par DON-02).
+        if (!string.IsNullOrWhiteSpace(SearchText))
+            UpdateDisplayedGroups();
+
         // Chargement en echec : ne surtout pas ecraser le fichier (DON-02)
         if (_presetLoadFailed) return;
         if (_collection == null || string.IsNullOrEmpty(ActivePresetName)) return;
