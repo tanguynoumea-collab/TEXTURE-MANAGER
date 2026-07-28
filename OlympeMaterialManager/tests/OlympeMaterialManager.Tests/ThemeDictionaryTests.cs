@@ -20,14 +20,7 @@ public class ThemeDictionaryTests
     private const string LightUri =
         "pack://application:,,,/OlympeMaterialManager;component/Themes/ThemeLight.xaml";
 
-    static ThemeDictionaryTests()
-    {
-        // Hors process WPF hôte, le schéma « pack:// » n'est pas enregistré tant
-        // que rien n'a touché System.IO.Packaging : sans cela, ResourceDictionary
-        // .Source lève « The URI prefix is not recognized ».
-        _ = System.IO.Packaging.PackUriHelper.UriSchemePack;
-        System.Windows.Application.ResourceAssembly ??= typeof(Services.PresetService).Assembly;
-    }
+    static ThemeDictionaryTests() => WpfResourceHost.EnsurePackSchemeRegistered();
 
     private static ResourceDictionary Load(string uri) =>
         new() { Source = new Uri(uri) };

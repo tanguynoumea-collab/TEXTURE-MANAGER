@@ -47,6 +47,12 @@ public partial class MainWindowViewModel : ObservableObject
     public RightPanelViewModel RightPanelVM { get; }
 
     /// <summary>
+    /// Point unique de verite du jeu de couleurs (cycle 4). Expose au XAML pour
+    /// le glyphe et le libelle du bouton de bascule (icone de DESTINATION).
+    /// </summary>
+    public ThemeStore ThemeStore { get; }
+
+    /// <summary>
     /// Constructeur principal avec injection du bridge ExternalEvent.
     /// </summary>
     public MainWindowViewModel(RevitEventBridge eventBridge)
@@ -55,6 +61,9 @@ public partial class MainWindowViewModel : ObservableObject
         var presetService = new PresetService();
         // B10-S : point unique de vérité du mode d'aperçu, partagé par les panneaux.
         var previewModeStore = new PreviewModeStore(presetService);
+        // Cycle 4 : le theme est charge et APPLIQUE ici, avant la construction de
+        // la fenetre — elle s'ouvre donc directement au jeu de couleurs persiste.
+        ThemeStore = new ThemeStore(presetService);
         LeftPanelVM = new LeftPanelViewModel(eventBridge, presetService);
         CenterPanelVM = new CenterPanelViewModel(eventBridge, previewModeStore);
         RightPanelVM = new RightPanelViewModel(eventBridge, presetService, previewModeStore);
@@ -134,6 +143,21 @@ public partial class MainWindowViewModel : ObservableObject
             DialogService.ShowError(
                 $"Erreur lors de la migration :\n{ex.Message}");
         }
+    }
+
+    // ------------------------------------------------------------------
+    //  Bascule du jeu de couleurs (cycle 4)
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Bascule entre le jeu sombre et le jeu clair. Le store applique la palette
+    /// a toutes les fenetres ouvertes, persiste le choix et diffuse le message.
+    /// </summary>
+    [RelayCommand]
+    private void BasculerTheme()
+    {
+        ThemeStore.CurrentTheme =
+            ThemeStore.CurrentTheme == AppTheme.Dark ? AppTheme.Light : AppTheme.Dark;
     }
 
     // ------------------------------------------------------------------

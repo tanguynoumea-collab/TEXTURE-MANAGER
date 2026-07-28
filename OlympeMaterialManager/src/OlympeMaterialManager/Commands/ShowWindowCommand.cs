@@ -32,6 +32,11 @@ public class ShowWindowCommand : IExternalCommand
                 Source = new Uri("pack://application:,,,/OlympeMaterialManager;component/Themes/OlympeTheme.xaml")
             };
             Application.Current.Resources.MergedDictionaries.Add(theme);
+            // Cycle 4 : la palette suit le meme chemin que la structure. Les
+            // fenetres Olympe s'enregistrent aussi de leur cote (leurs propres
+            // Resources l'emportent) : cette inscription n'est qu'un filet pour
+            // le cas ou une ressource serait resolue au-dessus des fenetres.
+            ThemeStore.RegisterHost(Application.Current.Resources);
             _themeLoaded = true;
         }
 

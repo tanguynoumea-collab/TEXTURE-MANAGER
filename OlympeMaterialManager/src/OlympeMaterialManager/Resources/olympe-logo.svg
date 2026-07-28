@@ -1,0 +1,13 @@
+<!-- Logo Olympe MaterialManager — concept J2 « palette » (validé 2026-07-28).
+     Source vectorielle de référence : les PNG du ruban Revit (olympe-icon-16/32/64[-dark].png)
+     sont rendus depuis cette géométrie via WPF (voir .zeus/palettes-candidates.md).
+     Couleurs : corps #3E4A42 + pastille #5F8168 sur fond clair ;
+                corps #DCE3DD + pastille #8FAE94 sur fond sombre.
+     Le trou du pouce est un vrai évidement (fill-rule evenodd) : il prend la couleur du fond. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Olympe MaterialManager">
+  <title>Olympe MaterialManager</title>
+  <path fill="#3E4A42" fill-rule="evenodd"
+        d="M32 5C48.5 5 61 16.5 61 30.5C61 42 52.5 47.5 45 49.5C40 51 38 53.5 39 57C40 61 35.5 62 30 60.5C14.5 57 3 45 3 30.5C3 16.5 15.5 5 32 5Z
+           M20 37.5a7.8 7.8 0 1 0 0 15.6 7.8 7.8 0 1 0 0-15.6Z"/>
+  <circle cx="34" cy="23" r="10.5" fill="#5F8168"/>
+</svg>

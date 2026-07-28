@@ -38,6 +38,38 @@
         </Setter>
     </Style>
 
+    <!-- ================================================================
+         Glyphes monochromes (cycle 4, regle 1 du lot de decision)
+         Aucun emoji couleur dans l'interface : un emoji est rendu par une
+         police couleur, il ne suit donc ni le Foreground du bouton ni le
+         theme (retour utilisateur : logos invisibles en theme clair).
+         Les glyphes sont des Path dont le Fill est lie au Foreground du
+         bouton hote : ils suivent le theme sans logique supplementaire.
+         Geometries dessinees dans une boite 16x16.
+         ================================================================ -->
+
+    <Style x:Key="GlyphPathStyle" TargetType="Path">
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Stretch" Value="Uniform" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Fill"
+                Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+    </Style>
+
+    <!-- Soleil : disque + huit rayons (thème clair = destination). -->
+    <Geometry x:Key="SunGeometry">M8,5A3,3 0 1 1 8,11A3,3 0 1 1 8,5Z M7.25,0.5H8.75V2.75H7.25Z M7.25,13.25H8.75V15.5H7.25Z M0.5,7.25H2.75V8.75H0.5Z M13.25,7.25H15.5V8.75H13.25Z M2.17,3.23L3.23,2.17L4.83,3.77L3.77,4.83Z M13.83,3.23L12.77,2.17L11.17,3.77L12.23,4.83Z M2.17,12.77L3.23,13.83L4.83,12.23L3.77,11.17Z M13.83,12.77L12.77,13.83L11.17,12.23L12.23,11.17Z</Geometry>
+
+    <!-- Croissant de lune (thème sombre = destination). -->
+    <Geometry x:Key="MoonGeometry">M14,8.53A6,6 0 1 1 7.47,2A4.67,4.67 0 0 0 14,8.53Z</Geometry>
+
+    <!-- Pipette : recuperer les materiaux d'un element de la vue 3D (B2). -->
+    <Geometry x:Key="EyedropperGeometry">M10.6,3.4A2.4,2.4 0 1 1 15.4,3.4A2.4,2.4 0 1 1 10.6,3.4Z M9.8,3.6L12.4,6.2L5.2,13.4L1.6,14.4L2.6,10.8Z</Geometry>
+
+    <!-- Croix d'effacement (champs de recherche). -->
+    <Geometry x:Key="CloseGeometry">M4.4,3.3L8,6.9L11.6,3.3L12.7,4.4L9.1,8L12.7,11.6L11.6,12.7L8,9.1L4.4,12.7L3.3,11.6L6.9,8L3.3,4.4Z</Geometry>
+
     <!-- === Style Window (keyed - OlympeWindowStyle) === -->
     <Style x:Key="OlympeWindowStyle" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />

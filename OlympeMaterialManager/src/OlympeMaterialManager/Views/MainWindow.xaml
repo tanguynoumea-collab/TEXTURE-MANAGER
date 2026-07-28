@@ -35,6 +35,54 @@
                            VerticalAlignment="Center"
                            Foreground="{DynamicResource TextSecondaryBrush}"
                            Margin="0,0,8,0" />
+                <!-- Cycle 4 : bascule du jeu de couleurs. Le glyphe montre la
+                     DESTINATION (soleil quand on est en sombre, lune en clair) —
+                     c'est l'affordance d'un interrupteur, pas d'un indicateur
+                     d'etat. Path monochrome lie au Foreground : aucun emoji. -->
+                <Button DockPanel.Dock="Right"
+                        Command="{Binding BasculerThemeCommand}"
+                        Width="32" Height="32"
+                        Padding="0"
+                        Margin="4,0,0,0">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Setter Property="ToolTip" Value="Basculer en thème clair" />
+                            <Setter Property="AutomationProperties.Name" Value="Basculer en thème clair" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ThemeStore.CurrentTheme}" Value="Light">
+                                    <Setter Property="ToolTip" Value="Basculer en thème sombre" />
+                                    <Setter Property="AutomationProperties.Name" Value="Basculer en thème sombre" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                    <Grid>
+                        <Path Data="{StaticResource SunGeometry}">
+                            <Path.Style>
+                                <Style TargetType="Path" BasedOn="{StaticResource GlyphPathStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ThemeStore.CurrentTheme}" Value="Dark">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                        <Path Data="{StaticResource MoonGeometry}">
+                            <Path.Style>
+                                <Style TargetType="Path" BasedOn="{StaticResource GlyphPathStyle}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ThemeStore.CurrentTheme}" Value="Light">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Path.Style>
+                        </Path>
+                    </Grid>
+                </Button>
                 <Button DockPanel.Dock="Right"
                         Content="Migrer"
                         Command="{Binding MigrerRepertoireCommand}"

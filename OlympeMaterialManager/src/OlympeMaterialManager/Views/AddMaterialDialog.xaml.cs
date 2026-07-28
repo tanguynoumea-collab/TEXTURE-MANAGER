@@ -42,6 +42,11 @@ public partial class AddMaterialDialog : Window
     public AddMaterialDialog()
     {
         InitializeComponent();
+        // Cycle 4 : la palette courante est superposee aux ressources de CETTE
+        // fenetre (un add-in Revit n'a pas d'Application WPF a lui) et retiree
+        // a la fermeture.
+        Services.ThemeStore.RegisterHost(Resources);
+        Closed += (_, _) => Services.ThemeStore.UnregisterHost(Resources);
     }
 
     /// <summary>

@@ -52,4 +52,13 @@ public class AppSettingsDto
     /// quarantaine (DON-02). Ajout additif : pas de bump de SchemaVersion.
     /// </summary>
     public string MaterialPreviewMode { get; set; } = "UniformColor";
+
+    /// <summary>
+    /// Jeu de couleurs de l'interface (cycle 4) : "Dark" / "Light".
+    /// Meme contrat que MaterialPreviewMode : STRING volontairement (jamais
+    /// l'enum serialise), parse tolerant cote lecture (valeur inconnue ou champ
+    /// absent -> Dark) plutot qu'une JsonException qui enverrait settings.json
+    /// en quarantaine (DON-02). Ajout additif : pas de bump de SchemaVersion.
+    /// </summary>
+    public string Theme { get; set; } = "Dark";
 }
