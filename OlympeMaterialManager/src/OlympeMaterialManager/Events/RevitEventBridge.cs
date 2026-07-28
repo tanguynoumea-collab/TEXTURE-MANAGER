@@ -166,6 +166,11 @@ public partial class RevitEventBridge : IExternalEventHandler
                 case RevitRequestType.OpenMaterialsDialog:
                     HandleOpenMaterialsDialog(uiApp);
                     break;
+
+                // Cycle 3 : pipette materiau (B2)
+                case RevitRequestType.PickElementForMaterials:
+                    result = HandlePickElementForMaterials(uiApp);
+                    break;
             }
         }
         catch (Exception ex)

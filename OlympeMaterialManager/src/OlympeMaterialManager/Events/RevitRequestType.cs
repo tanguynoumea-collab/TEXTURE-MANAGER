@@ -28,4 +28,7 @@ public enum RevitRequestType
 
     // Cycle 2 : visualisateur de materiau (B9)
     OpenMaterialsDialog,           // data=null, returns null (success) or Exception — PostCommand du gestionnaire de materiaux Revit
+
+    // Cycle 3 : pipette materiau (B2)
+    PickElementForMaterials,       // data=null, returns List<PresetMaterialDto> (un seul pick ; null = pick annule)
 }

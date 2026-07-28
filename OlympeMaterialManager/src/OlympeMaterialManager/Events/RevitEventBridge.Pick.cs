@@ -245,6 +245,84 @@ public partial class RevitEventBridge
     }
 
     /// <summary>
+    /// Pipette materiau (B2) : pick d'UN SEUL element dans la vue 3D, sans
+    /// surbrillance verte ni boucle — retour immediat apres le clic.
+    /// Lit le type de l'element clique et retourne ses materiaux :
+    /// couches CompoundStructure (via HandleGetLayersForType, murs empiles inclus)
+    /// ou parametres materiaux (via HandleGetMaterialParametersForType).
+    /// Les entrees sans materiau resolu (« Par catégorie », « Aucun ») sont ignorees
+    /// (id invalide) ; le dedoublonnage contre le groupe cible est fait cote ViewModel.
+    /// Retourne null si le pick est annule (ECHAP) — annulation silencieuse.
+    /// ARC-05 : le hide/show de la fenetre WPF est gere par le ViewModel appelant.
+    /// CRITIQUE : catch Autodesk.Revit.Exceptions.OperationCanceledException (pas System).
+    /// </summary>
+    private static List<PresetMaterialDto>? HandlePickElementForMaterials(UIApplication uiApp)
+    {
+        var uiDoc = uiApp.ActiveUIDocument;
+        if (uiDoc == null) return null;
+
+        if (uiDoc.ActiveView is not View3D)
+            throw new InvalidOperationException("Vue 3D requise pour la sélection par clic.");
+
+        Reference reference;
+        try
+        {
+            reference = uiDoc.Selection.PickObject(
+                ObjectType.Element,
+                "Cliquez un element pour recuperer ses materiaux (ECHAP = annuler)");
+        }
+        catch (Autodesk.Revit.Exceptions.OperationCanceledException)
+        {
+            // ECHAP = annulation silencieuse (pattern AjouterParClic)
+            return null;
+        }
+
+        var doc = uiDoc.Document;
+        var element = doc.GetElement(reference);
+        var typeId = element?.GetTypeId() ?? ElementId.InvalidElementId;
+        if (element == null || typeId == ElementId.InvalidElementId)
+        {
+            LogService.Log("HandlePickElementForMaterials: element sans type, aucun materiau");
+            return new List<PresetMaterialDto>();
+        }
+
+        long typeIdValue = ElementIdHelper.GetValue(typeId);
+
+        // Couches CompoundStructure d'abord (meme dispatch que le panneau central) ;
+        // sinon parametres materiaux de la famille chargee.
+        var layers = HandleGetLayersForType(uiApp, typeIdValue);
+        if (layers.Count > 0)
+        {
+            var fromLayers = layers
+                .Where(l => l.MaterialElementIdValue >= 0)
+                .Select(l => new PresetMaterialDto
+                {
+                    MaterialName = l.MaterialName,
+                    MaterialElementIdValue = l.MaterialElementIdValue,
+                    ColorArgb = l.ColorArgb ?? System.Drawing.Color.Gray.ToArgb(),
+                    AppearanceColorArgb = l.AppearanceColorArgb
+                })
+                .ToList();
+            LogService.Log($"HandlePickElementForMaterials: {fromLayers.Count} materiaux depuis {layers.Count} couches");
+            return fromLayers;
+        }
+
+        var matParams = HandleGetMaterialParametersForType(uiApp, typeIdValue);
+        var fromParams = matParams
+            .Where(p => p.CurrentMaterialIdValue >= 0)
+            .Select(p => new PresetMaterialDto
+            {
+                MaterialName = p.CurrentMaterialName,
+                MaterialElementIdValue = p.CurrentMaterialIdValue,
+                ColorArgb = p.ColorArgb ?? System.Drawing.Color.Gray.ToArgb(),
+                AppearanceColorArgb = p.AppearanceColorArgb
+            })
+            .ToList();
+        LogService.Log($"HandlePickElementForMaterials: {fromParams.Count} materiaux depuis {matParams.Count} parametres");
+        return fromParams;
+    }
+
+    /// <summary>
     /// Selectionne dans la vue Revit tous les elements instances d'un type donne.
     /// Utilise Selection.SetElementIds pour mettre en surbrillance les elements.
     /// </summary>

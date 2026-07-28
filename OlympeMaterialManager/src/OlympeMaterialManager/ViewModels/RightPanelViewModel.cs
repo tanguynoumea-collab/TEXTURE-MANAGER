@@ -87,6 +87,13 @@ public partial class RightPanelViewModel : ObservableObject
     private bool _isSearchNoResult;
 
     /// <summary>
+    /// True pendant un pick pipette (B2) : bloque la re-entrance de la commande
+    /// tant que le callback n'a pas re-affiche la fenetre.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isPickingMaterials;
+
+    /// <summary>
     /// Mapping clone de projection -> groupe source (B5-D), pour que la selection et
     /// le drag-and-drop pendant une recherche active operent sur les groupes sources.
     /// </summary>
@@ -320,6 +327,99 @@ public partial class RightPanelViewModel : ObservableObject
                 StatusMessage = $"Erreur : {ex.Message}";
             }
         });
+    }
+
+    /// <summary>
+    /// Pipette materiau (B2) : pick d'UN element dans la vue 3D, puis ajout
+    /// automatique (sans dialogue) de ses materiaux dedoublonnes au groupe cible.
+    /// ARC-05 : le hide/show de la fenetre est gere ici, autour de la requete —
+    /// le bridge ne touche jamais a la fenetre WPF. Annulation du pick (ECHAP) =
+    /// silencieuse, fenetre re-affichee dans tous les chemins.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanRecupererMateriaux))]
+    private void RecupererMateriaux()
+    {
+        if (_eventBridge == null)
+        {
+            StatusMessage = "Bridge Revit non disponible.";
+            return;
+        }
+
+        if (_collection == null)
+        {
+            StatusMessage = "Créez d'abord un preset.";
+            return;
+        }
+
+        IsPickingMaterials = true;
+        WindowService.HideMainWindow();
+
+        _eventBridge.MakeRequest(RevitRequestType.PickElementForMaterials, null, result =>
+        {
+            // Re-afficher la fenetre dans TOUS les chemins (succes, echec, annulation)
+            WindowService.ShowMainWindow();
+            IsPickingMaterials = false;
+
+            if (result is List<PresetMaterialDto> picked)
+            {
+                AjouterMateriauxRecuperes(picked);
+            }
+            else if (result is Exception ex)
+            {
+                StatusMessage = $"Erreur : {ex.Message}";
+            }
+            // result == null : pick annule (ECHAP) — silencieux
+        });
+    }
+
+    private bool CanRecupererMateriaux() => !IsPickingMaterials;
+
+    partial void OnIsPickingMaterialsChanged(bool value)
+    {
+        RecupererMateriauxCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    /// Ajoute au groupe cible les materiaux recuperes par la pipette (B2).
+    /// Groupe cible : groupe selectionne dans l'arbre (ou groupe du materiau
+    /// selectionne), sinon groupe « Autre » (cree au besoin, uniquement s'il y a
+    /// des materiaux a ajouter). B5-D : toute mutation vise les groupes SOURCES,
+    /// jamais les clones de la projection de recherche.
+    /// </summary>
+    private void AjouterMateriauxRecuperes(List<PresetMaterialDto> picked)
+    {
+        // Groupe selectionne : deja resolu vers le groupe source par
+        // TreeViewSelectionChanged ; garde supplementaire — il doit appartenir
+        // au preset actif (la selection peut etre obsolete apres un changement).
+        var target = SelectedGroup != null ? ResolveSourceGroup(SelectedGroup) : null;
+        if (target != null && !PresetGroups.Contains(target))
+            target = null;
+
+        target ??= PresetGroups.FirstOrDefault(g => g.GroupName == "Autre");
+
+        var existing = target?.Materials ?? Enumerable.Empty<PresetMaterialDto>();
+        var newMaterials = PresetMaterialMerge.SelectNewMaterials(picked, existing);
+
+        if (newMaterials.Count == 0)
+        {
+            // Tout etait en doublon ou « Par catégorie » (id invalide)
+            StatusMessage = "Aucun nouveau matériau.";
+            return;
+        }
+
+        if (target == null)
+        {
+            // PresetGroups EST _collection.Groups : un seul Add suffit,
+            // la collection est persistee par l'AutoSave.
+            target = new PresetGroupDto { GroupName = "Autre" };
+            PresetGroups.Add(target);
+        }
+
+        foreach (var mat in newMaterials)
+            target.Materials.Add(mat);
+
+        StatusMessage = $"{newMaterials.Count} matériau(x) ajouté(s) au groupe \"{target.GroupName}\".";
+        AutoSave();
     }
 
     /// <summary>

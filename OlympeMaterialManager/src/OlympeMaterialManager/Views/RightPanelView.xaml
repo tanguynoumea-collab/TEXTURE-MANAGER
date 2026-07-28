@@ -87,6 +87,16 @@
                         FontSize="16"
                         FontWeight="Bold"
                         Margin="4,0,0,0" />
+                <!-- B2 : pipette materiau — glyphe texte (langage existant, pas
+                     d'icone bitmap), style discret implicite du theme. -->
+                <Button Content="💧"
+                        Command="{Binding RecupererMateriauxCommand}"
+                        AutomationProperties.Name="Récupérer les matériaux d'un élément"
+                        ToolTip="Cliquez un élément dans la vue 3D pour récupérer ses matériaux dans le preset"
+                        Width="32" Height="32"
+                        Padding="0"
+                        FontSize="14"
+                        Margin="4,0,0,0" />
             </StackPanel>
 
             <!-- B5-D : recherche de materiaux, sous la rangee « Creer un groupe / + / − ».
