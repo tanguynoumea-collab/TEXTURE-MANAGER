@@ -28,6 +28,14 @@ public partial class RevitEventBridge
     private static readonly Dictionary<long, string?> _texturePathByAssetId = new();
 
     /// <summary>
+    /// FIA2-02 : clé (PathName, ou titre si non enregistré) du document ayant
+    /// rempli le cache. Un changement de document actif vide le cache — sans
+    /// cette dimension, une valeur d'ElementId identique dans un autre document
+    /// servirait le chemin de texture de l'ancien document.
+    /// </summary>
+    private static string? _texturePathCacheDocKey;
+
+    /// <summary>
     /// Retourne le chemin de la texture bitmap d'un matériau, résolu vers un
     /// fichier existant, ou null (pas d'asset, pas de bitmap, introuvable).
     /// </summary>
@@ -35,6 +43,14 @@ public partial class RevitEventBridge
     {
         try
         {
+            // FIA2-02 : invalider le cache si le document a changé.
+            var docKey = string.IsNullOrEmpty(doc.PathName) ? doc.Title : doc.PathName;
+            if (!string.Equals(_texturePathCacheDocKey, docKey, StringComparison.Ordinal))
+            {
+                _texturePathByAssetId.Clear();
+                _texturePathCacheDocKey = docKey;
+            }
+
             var assetId = material.AppearanceAssetId;
             if (assetId == ElementId.InvalidElementId) return null;
 
