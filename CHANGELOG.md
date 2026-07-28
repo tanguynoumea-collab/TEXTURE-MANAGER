@@ -2,6 +2,32 @@
 
 Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Versions en cycle alpha.
 
+## [1.6.0] — 2026-07-28 — « Alpha 1.6 : gestes rapides et nouvelle identité »
+
+Deux cycles réunis : les gestes qui font gagner du temps au quotidien, et une refonte complète de l'apparence de l'add-in.
+
+### Ajouté
+
+- **Pipette** : un bouton dans le panneau des presets, un clic sur un élément de la vue 3D, et tous ses matériaux rejoignent votre preset — rangés dans le groupe sélectionné, ou dans un groupe « Autres » créé au besoin. Les doublons sont ignorés automatiquement. L'ajout par la liste reste disponible.
+- **Glisser-déposer un matériau sur une couche** : attrapez un matériau dans le panneau de droite et lâchez-le sur une carte du panneau central pour l'appliquer directement. Si plusieurs couches sont sélectionnées et que vous déposez sur l'une d'elles, **toutes** reçoivent le matériau — en une seule opération annulable d'un seul Ctrl+Z.
+- **Alerte des matériaux introuvables** : à l'ouverture d'un preset sur une maquette qui ne contient pas ses matériaux, la liste complète des manquants s'affiche, avec le choix de les conserver ou de les retirer du preset (confirmation explicite, le preset étant un fichier partagé).
+- **Deux thèmes, clair et sombre**, commutables par un bouton dans la barre d'en-tête ; le choix est mémorisé entre les sessions.
+- **Nouveau logo** : une palette de peintre, déclinée en versions claire et sombre — l'add-in choisit la bonne selon le thème de votre Revit.
+- **Intégration continue** : chaque version est désormais reconstruite et testée automatiquement sur une machine neuve, avec l'installeur produit en artefact.
+
+### Modifié
+
+- **Nouvelle palette « Graphite & Sauge »** : un fond neutre sans dominante et un accent vert sourd, choisis pour que les couleurs de vos matériaux soient les éléments les plus visibles de l'écran — l'ambre précédent entrait en concurrence avec les bois et les terres cuites.
+- Les icônes de l'interface sont désormais des tracés qui suivent la couleur du texte : elles restent lisibles dans les deux thèmes.
+- Le sélecteur d'aperçu Couleur / Réaliste est remonté en haut à droite du panneau des presets, visible en permanence.
+- Les pastilles des matériaux preset suivent le mode d'aperçu, comme les liserés : leurs couleurs sont rafraîchies depuis la maquette à chaque ouverture de preset.
+
+### Corrigé
+
+- **Les couleurs et textures s'affichent dès l'ouverture** de la fenêtre en mode Réaliste — il fallait auparavant basculer de mode pour les faire apparaître. La bibliothèque de textures est également préparée dès le démarrage de Revit.
+- L'icône du ruban était affichée trop grande et rognée.
+- Robustesse : le presse-papiers réessaie en cas d'échec, l'absence de document actif est signalée clairement, et l'alerte des matériaux introuvables ne peut plus s'afficher au mauvais moment.
+
 ## [1.5.0] — 2026-07-28 — « Alpha 1.5 : visualisation des matériaux »
 
 Cycle de fonctionnalités validé par le pipeline complet (council technique, plan de design, design-review en 2 itérations sur données réelles).
