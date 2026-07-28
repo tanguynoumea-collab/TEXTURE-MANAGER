@@ -51,8 +51,11 @@ public partial class RevitEventBridge
     /// materiau (id, nom) du preset actif existe dans le document actif, avec la
     /// MEME logique que ResolveMaterial — l'id resout un Material dont le nom
     /// correspond, sinon re-resolution par nom exact. Retourne la liste des
-    /// INTROUVABLES. Performance : un seul FilteredElementCollector de materiaux
-    /// par requete, dictionnaires par id et par nom.
+    /// INTROUVABLES et, pour chaque materiau TROUVE, ses couleurs actuelles
+    /// (DR3-1 : couleur graphique + couleur d'apparence) afin que le ViewModel
+    /// rafraichisse en place les couleurs persistees du preset. Performance :
+    /// un seul FilteredElementCollector de materiaux par requete, dictionnaires
+    /// par id et par nom ; la couleur d'apparence passe par le cache par asset.
     /// Aucun document actif : HasActiveDocument = false (validation differee
     /// silencieusement cote ViewModel, pas d'exception).
     /// </summary>
@@ -63,31 +66,57 @@ public partial class RevitEventBridge
         if (doc == null)
             return new ValidatePresetMaterialsResultDto { HasActiveDocument = false };
 
-        var nameById = new Dictionary<long, string>();
-        var names = new HashSet<string>(StringComparer.Ordinal);
+        var byId = new Dictionary<long, Material>();
+        var byName = new Dictionary<string, Material>(StringComparer.Ordinal);
         foreach (var m in new FilteredElementCollector(doc)
                      .OfClass(typeof(Material))
                      .Cast<Material>())
         {
-            nameById[ElementIdHelper.GetValue(m.Id)] = m.Name;
-            names.Add(m.Name);
+            byId[ElementIdHelper.GetValue(m.Id)] = m;
+            // Premier materiau du nom : meme semantique FirstOrDefault que ResolveMaterial
+            if (!byName.ContainsKey(m.Name))
+                byName[m.Name] = m;
         }
 
         var missing = new List<MaterialRefDto>();
+        var found = new List<RefreshedMaterialColorsDto>();
         foreach (var mat in request.Materials)
         {
-            bool foundById = nameById.TryGetValue(mat.ElementIdValue, out var actualName) &&
-                             (string.IsNullOrEmpty(mat.MaterialName) || actualName == mat.MaterialName);
-            bool foundByName = !string.IsNullOrEmpty(mat.MaterialName) && names.Contains(mat.MaterialName);
-            if (!foundById && !foundByName)
+            Material? resolved = null;
+            if (byId.TryGetValue(mat.ElementIdValue, out var candidate) &&
+                (string.IsNullOrEmpty(mat.MaterialName) || candidate.Name == mat.MaterialName))
+            {
+                resolved = candidate;
+            }
+            else if (!string.IsNullOrEmpty(mat.MaterialName) &&
+                     byName.TryGetValue(mat.MaterialName, out var named))
+            {
+                resolved = named;
+            }
+
+            if (resolved == null)
+            {
                 missing.Add(mat);
+                continue;
+            }
+
+            // DR3-1 : la paire (id, nom) retournee est celle DU PRESET — c'est la
+            // cle de mise a jour en place cote ViewModel, pas l'id resolu.
+            found.Add(new RefreshedMaterialColorsDto
+            {
+                ElementIdValue = mat.ElementIdValue,
+                MaterialName = mat.MaterialName,
+                ColorArgb = ExtractColorArgb(resolved),
+                AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, resolved)
+            });
         }
 
         return new ValidatePresetMaterialsResultDto
         {
             HasActiveDocument = true,
             DocumentKey = string.IsNullOrEmpty(doc.PathName) ? doc.Title : doc.PathName,
-            MissingMaterials = missing
+            MissingMaterials = missing,
+            FoundMaterials = found
         };
     }
 

@@ -142,4 +142,115 @@ public class PresetMaterialValidationTests
         Assert.Single(favoris.Materials);
         Assert.Equal("Acier", favoris.Materials[0].MaterialName);
     }
+
+    // --- ApplyRefreshedColors (DR3-1) ---
+
+    private static PresetMaterialDto MatColors(long id, string name, int colorArgb, int? appearanceArgb)
+    {
+        var mat = Mat(id, name);
+        mat.ColorArgb = colorArgb;
+        mat.AppearanceColorArgb = appearanceArgb;
+        return mat;
+    }
+
+    private static RefreshedMaterialColorsDto Fresh(long id, string name, int colorArgb, int? appearanceArgb) => new()
+    {
+        ElementIdValue = id,
+        MaterialName = name,
+        ColorArgb = colorArgb,
+        AppearanceColorArgb = appearanceArgb
+    };
+
+    [Fact]
+    public void ApplyRefreshedColors_MetAJourEnPlace_EtRetourneLeCompte()
+    {
+        // Preset d'avant DR2 : AppearanceColorArgb absent du JSON (null)
+        var beton = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: null);
+        var acier = MatColors(20, "Acier", colorArgb: 200, appearanceArgb: 250);
+        var groups = new[] { Group("Bétons", beton), Group("Métaux", acier) };
+
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(groups, new[]
+        {
+            Fresh(10, "Béton", colorArgb: 100, appearanceArgb: 300), // apparence enrichie
+            Fresh(20, "Acier", colorArgb: 999, appearanceArgb: 250)  // couleur graphique changee
+        });
+
+        Assert.Equal(2, changed);
+        Assert.Equal(100, beton.ColorArgb);
+        Assert.Equal(300, beton.AppearanceColorArgb);
+        Assert.Equal(999, acier.ColorArgb);
+        Assert.Equal(250, acier.AppearanceColorArgb);
+    }
+
+    [Fact]
+    public void ApplyRefreshedColors_RetourneZero_QuandRienNeChange()
+    {
+        // Idempotence : re-validation sans changement -> pas d'AutoSave cote VM
+        var beton = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: 300);
+        var groups = new[] { Group("Bétons", beton) };
+
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(
+            groups, new[] { Fresh(10, "Béton", colorArgb: 100, appearanceArgb: 300) });
+
+        Assert.Equal(0, changed);
+    }
+
+    [Fact]
+    public void ApplyRefreshedColors_IgnoreLesPairesNonCorrespondantes()
+    {
+        // Meme id mais nom different : la paire (id, nom) ne matche pas -> intact
+        var beton = MatColors(10, "Béton renommé", colorArgb: 100, appearanceArgb: null);
+        var groups = new[] { Group("Bétons", beton) };
+
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(
+            groups, new[] { Fresh(10, "Béton", colorArgb: 999, appearanceArgb: 300) });
+
+        Assert.Equal(0, changed);
+        Assert.Equal(100, beton.ColorArgb);
+        Assert.Null(beton.AppearanceColorArgb);
+    }
+
+    [Fact]
+    public void ApplyRefreshedColors_MetAJourLaPaireDansTousLesGroupes()
+    {
+        // Le meme materiau present dans deux groupes : rafraichi partout
+        var beton1 = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: null);
+        var beton2 = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: null);
+        var groups = new[] { Group("Bétons", beton1), Group("Favoris", beton2) };
+
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(
+            groups, new[] { Fresh(10, "Béton", colorArgb: 100, appearanceArgb: 300) });
+
+        Assert.Equal(2, changed);
+        Assert.Equal(300, beton1.AppearanceColorArgb);
+        Assert.Equal(300, beton2.AppearanceColorArgb);
+    }
+
+    [Fact]
+    public void ApplyRefreshedColors_ApparenceDevenueNull_EstAppliquee()
+    {
+        // L'asset d'apparence a ete retire dans le document : null est la verite
+        // fraiche, le fallback couleur graphique redevient le chemin nominal
+        var beton = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: 300);
+        var groups = new[] { Group("Bétons", beton) };
+
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(
+            groups, new[] { Fresh(10, "Béton", colorArgb: 100, appearanceArgb: null) });
+
+        Assert.Equal(1, changed);
+        Assert.Null(beton.AppearanceColorArgb);
+    }
+
+    [Fact]
+    public void ApplyRefreshedColors_ListeVide_CollectionIntacte()
+    {
+        var beton = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: null);
+        var groups = new[] { Group("Bétons", beton) };
+
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(groups, []);
+
+        Assert.Equal(0, changed);
+        Assert.Equal(100, beton.ColorArgb);
+        Assert.Null(beton.AppearanceColorArgb);
+    }
 }

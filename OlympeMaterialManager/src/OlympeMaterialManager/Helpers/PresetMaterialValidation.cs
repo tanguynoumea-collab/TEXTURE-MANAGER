@@ -72,4 +72,54 @@ public static class PresetMaterialValidation
 
         return removed;
     }
+
+    /// <summary>
+    /// Met a jour EN PLACE les couleurs des materiaux de preset trouves dans le
+    /// document (DR3-1) : pour chaque materiau dont la paire (id, nom) figure
+    /// dans les couleurs rafraichies, ColorArgb et AppearanceColorArgb sont
+    /// alignes sur les valeurs actuelles du document (y compris apparence → null,
+    /// verite fraiche). PresetMaterialDto notifie (INPC) : les pastilles suivent
+    /// sans re-binding. A appeler UNIQUEMENT sur les groupes SOURCES — les clones
+    /// de la projection de recherche B5-D referencent les memes instances.
+    /// Retourne le nombre de materiaux effectivement modifies (0 = rien a
+    /// persister, l'appelant ne declenche pas d'AutoSave).
+    /// </summary>
+    public static int ApplyRefreshedColors(
+        IEnumerable<PresetGroupDto> groups,
+        IEnumerable<RefreshedMaterialColorsDto> refreshed)
+    {
+        var byKey = new Dictionary<(long, string), RefreshedMaterialColorsDto>();
+        foreach (var r in refreshed)
+            byKey[(r.ElementIdValue, r.MaterialName)] = r;
+
+        if (byKey.Count == 0)
+            return 0;
+
+        int changed = 0;
+        foreach (var group in groups)
+        {
+            foreach (var mat in group.Materials)
+            {
+                if (!byKey.TryGetValue((mat.MaterialElementIdValue, mat.MaterialName), out var fresh))
+                    continue;
+
+                bool materialChanged = false;
+                if (mat.ColorArgb != fresh.ColorArgb)
+                {
+                    mat.ColorArgb = fresh.ColorArgb;
+                    materialChanged = true;
+                }
+                if (mat.AppearanceColorArgb != fresh.AppearanceColorArgb)
+                {
+                    mat.AppearanceColorArgb = fresh.AppearanceColorArgb;
+                    materialChanged = true;
+                }
+
+                if (materialChanged)
+                    changed++;
+            }
+        }
+
+        return changed;
+    }
 }

@@ -897,6 +897,17 @@ public partial class RightPanelViewModel : ObservableObject
         if (key == _lastValidatedKey) return;
         _lastValidatedKey = key;
 
+        // DR3-1 : rafraichir EN PLACE les couleurs persistees des materiaux
+        // TROUVES (groupes SOURCES — les clones de la projection de recherche
+        // referencent les memes instances, INPC propage aux pastilles). Au moins
+        // un changement → AutoSave (persiste les couleurs fraiches et rafraichit
+        // la projection si une recherche est active). Idempotent : une
+        // re-validation sans changement ne re-sauvegarde pas.
+        int refreshed = PresetMaterialValidation.ApplyRefreshedColors(
+            PresetGroups, dto.FoundMaterials);
+        if (refreshed > 0)
+            AutoSave();
+
         if (dto.MissingMaterials.Count == 0) return;
 
         // FIA3-02 : ne jamais ouvrir le dialogue pendant un pick pipette ou quand
