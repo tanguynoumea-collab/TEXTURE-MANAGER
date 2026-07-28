@@ -354,7 +354,9 @@ public partial class MaterialEditorViewModel : ObservableObject
 
         try
         {
-            System.Windows.Clipboard.SetText(MaterialName);
+            // DR2-4 : copie robuste (retry + dernier recours) — l'erreur
+            // CLIPBRD_E_CANT_OPEN a ete observee en session reelle.
+            CopyToClipboardWithRetry(MaterialName);
             // DR1-2 : rendre la copie visible a l'ecran (le tooltip seul ne dit
             // rien apres le clic).
             ShowClipboardFeedback(
@@ -362,11 +364,12 @@ public partial class MaterialEditorViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            // Presse-papiers verrouille par une autre application : non bloquant,
-            // l'ouverture du dialogue reste utile sans la copie du nom.
+            // Presse-papiers verrouille malgre les tentatives : non bloquant,
+            // l'ouverture du dialogue reste utile sans la copie. DR2-4 : le nom
+            // est affiche en clair pour que l'utilisateur puisse le retaper.
             Services.LogService.Error("Copie du nom de matériau au presse-papiers impossible", ex);
             ShowClipboardFeedback(
-                "Copie du nom impossible (presse-papiers occupé) — retapez le nom dans la recherche");
+                $"Impossible de copier — recherchez : {MaterialName}");
         }
 
         Services.WindowService.SuspendTopmostUntilReactivated();
@@ -386,6 +389,38 @@ public partial class MaterialEditorViewModel : ObservableObject
                     $"Échec de l'ouverture du gestionnaire de matériaux Revit :\n{ex.Message}");
             }
         });
+    }
+
+    /// <summary>
+    /// DR2-4 : copie robuste au presse-papiers. CLIPBRD_E_CANT_OPEN survient
+    /// quand une autre application (gestionnaire de presse-papiers, RDP,
+    /// Revit lui-même) le verrouille quelques millisecondes : 3 tentatives de
+    /// SetText espacées de 100 ms, puis Clipboard.SetDataObject(copy: false)
+    /// en dernier recours (pas de flush : tolère des verrouillages que SetText
+    /// ne tolère pas). Échec final → l'exception remonte au caller, qui affiche
+    /// le nom en clair. Attente courte assumée sur le thread UI (200 ms max).
+    /// </summary>
+    private static void CopyToClipboardWithRetry(string text)
+    {
+        const int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            try
+            {
+                System.Windows.Clipboard.SetText(text);
+                return;
+            }
+            catch (Exception) when (attempt < maxAttempts)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
+            catch (Exception)
+            {
+                // Dernier recours : sans copie persistante a la fermeture.
+                System.Windows.Clipboard.SetDataObject(text, false);
+                return;
+            }
+        }
     }
 
     /// <summary>
