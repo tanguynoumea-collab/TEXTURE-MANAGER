@@ -121,6 +121,25 @@ public class ShowWindowCommand : IExternalCommand
                 args.Handled = true;
             };
 
+            // DR6-1 : le RightPanelViewModel lance sa validation B1 des sa
+            // construction — donc AVANT que cette fenetre existe et soit visible.
+            // Rejouer la validation a chaque passage a l'etat visible garantit que
+            // les couleurs d'apparence et les textures sont chargees avec la
+            // fenetre reellement prete (et l'index de textures chaud), sans
+            // attendre un changement de preset ou de mode d'apercu.
+            App.MainWindow.IsVisibleChanged += (_, args) =>
+            {
+                if (args.NewValue is not true) return;
+                try
+                {
+                    vm.RightPanelVM.RevaliderPresetActif();
+                }
+                catch (Exception ex)
+                {
+                    LogService.Error("Echec de revalidation du preset a l'affichage", ex);
+                }
+            };
+
             // Definir Revit comme fenetre proprietaire pour le Z-order
             var helper = new WindowInteropHelper(App.MainWindow);
             helper.Owner = commandData.Application.MainWindowHandle;

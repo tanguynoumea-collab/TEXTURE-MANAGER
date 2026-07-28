@@ -38,6 +38,21 @@ public static class PresetMaterialValidation
     }
 
     /// <summary>
+    /// DR6-1 : le dialogue « Matériaux introuvables » ne peut s'ouvrir que s'il y a
+    /// des introuvables, qu'aucun pick pipette n'est en cours et que la fenetre
+    /// principale est visible (FIA3-02 : sans owner visible, le dialogue se perd
+    /// derriere Revit). Decision PURE, volontairement separee du rafraichissement
+    /// des couleurs/textures — lequel s'applique TOUJOURS, dialogue affiche ou non :
+    /// il ne montre aucune UI et ne peut donc jamais deranger l'utilisateur.
+    /// Quand elle repond false, l'appelant NE memorise PAS la cle de validation :
+    /// l'affichage est replanifie a la prochaine occasion (fenetre re-affichee),
+    /// jamais abandonne.
+    /// </summary>
+    public static bool CanPromptMissingMaterials(
+        int missingCount, bool isPicking, bool isMainWindowVisible)
+        => missingCount > 0 && !isPicking && isMainWindowVisible;
+
+    /// <summary>
     /// Retire des groupes tous les materiaux dont la paire (id, nom) figure dans
     /// la liste des introuvables (comparaison exacte, coherente avec
     /// ResolveMaterial). Les groupes devenus vides sont CONSERVES — la structure

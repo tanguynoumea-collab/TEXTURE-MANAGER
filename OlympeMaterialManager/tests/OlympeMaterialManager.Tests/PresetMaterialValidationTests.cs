@@ -253,4 +253,50 @@ public class PresetMaterialValidationTests
         Assert.Equal(100, beton.ColorArgb);
         Assert.Null(beton.AppearanceColorArgb);
     }
+
+    // --- CanPromptMissingMaterials (DR6-1) ---
+
+    [Fact]
+    public void CanPromptMissingMaterials_VraiQuandFenetreVisibleEtPasDePick()
+    {
+        Assert.True(PresetMaterialValidation.CanPromptMissingMaterials(
+            missingCount: 2, isPicking: false, isMainWindowVisible: true));
+    }
+
+    [Theory]
+    [InlineData(true, true)]    // pick pipette en cours
+    [InlineData(false, false)]  // fenetre cachee (pas d'owner visible)
+    [InlineData(true, false)]   // les deux
+    public void CanPromptMissingMaterials_FauxQuandLeContexteInterditLeDialogue(
+        bool isPicking, bool isVisible)
+    {
+        Assert.False(PresetMaterialValidation.CanPromptMissingMaterials(
+            missingCount: 2, isPicking, isVisible));
+    }
+
+    [Fact]
+    public void CanPromptMissingMaterials_FauxSansIntrouvable()
+    {
+        Assert.False(PresetMaterialValidation.CanPromptMissingMaterials(
+            missingCount: 0, isPicking: false, isMainWindowVisible: true));
+    }
+
+    [Fact]
+    public void CanPromptMissingMaterials_NeGouvernePasLeRafraichissement()
+    {
+        // DR6-1 : le rafraichissement des couleurs/textures s'applique meme quand
+        // le dialogue est supprime (fenetre cachee au tout premier chargement) —
+        // les deux effets du callback de validation sont independants.
+        var beton = MatColors(10, "Béton", colorArgb: 100, appearanceArgb: null);
+        var groups = new[] { Group("Bétons", beton) };
+
+        bool prompt = PresetMaterialValidation.CanPromptMissingMaterials(
+            missingCount: 1, isPicking: false, isMainWindowVisible: false);
+        int changed = PresetMaterialValidation.ApplyRefreshedColors(
+            groups, new[] { Fresh(10, "Béton", colorArgb: 100, appearanceArgb: 0x505050) });
+
+        Assert.False(prompt);
+        Assert.Equal(1, changed);
+        Assert.Equal(0x505050, beton.AppearanceColorArgb);
+    }
 }

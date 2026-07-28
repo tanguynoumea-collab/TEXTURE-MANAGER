@@ -33,11 +33,13 @@ public partial class RightPanelViewModel : ObservableObject
     private bool _presetLoadFailed;
 
     /// <summary>
-    /// Cle « document + preset » de la derniere validation B1 effectuee.
-    /// FIA3-01 : reinitialisee a null a chaque changement effectif de preset
-    /// (OnActivePresetNameChanged) — elle ne sert qu'a dedupliquer les callbacks
-    /// d'un meme couple document/preset, jamais a bloquer une re-validation
-    /// legitime (A → B vide → A).
+    /// Cle « document + preset » du dernier dialogue « Matériaux introuvables »
+    /// PROPOSE. FIA3-01 : reinitialisee a null a chaque changement effectif de
+    /// preset (OnActivePresetNameChanged) et par RevaliderPresetActif — elle ne
+    /// sert qu'a ne pas re-proposer la meme purge en boucle pour un meme couple
+    /// document/preset, jamais a bloquer une re-validation legitime
+    /// (A → B vide → A). DR6-1 : elle ne gouverne PLUS le rafraichissement des
+    /// couleurs/textures, qui s'applique a chaque callback.
     /// </summary>
     private string? _lastValidatedKey;
 
@@ -838,6 +840,23 @@ public partial class RightPanelViewModel : ObservableObject
     }
 
     /// <summary>
+    /// DR6-1 : relance une validation B1 complete du preset actif, cle de
+    /// dialogue remise a zero. Appelee quand la fenetre principale devient
+    /// visible : au tout premier chargement, le VM est construit AVANT que la
+    /// fenetre existe, et l'index de textures peut n'etre pas encore pret — cette
+    /// seconde passe rafraichit couleurs d'apparence et textures avec la fenetre
+    /// reellement prete, et re-propose le dialogue s'il avait ete supprime.
+    /// Idempotente et sans boucle : le rafraichissement ne re-sauvegarde que s'il
+    /// change quelque chose, et le jeton de generation invalide les callbacks
+    /// concurrents.
+    /// </summary>
+    public void RevaliderPresetActif()
+    {
+        _lastValidatedKey = null;
+        ValiderMateriauxPreset();
+    }
+
+    /// <summary>
     /// Validation B1 : verifie aupres de Revit que tous les materiaux du preset
     /// actif existent dans le document (meme logique id+nom que ResolveMaterial,
     /// lecture seule cote bridge). Des absents : dialogue « Matériaux
@@ -891,33 +910,39 @@ public partial class RightPanelViewModel : ObservableObject
         // Reponse obsolete : le preset actif a change pendant l'aller-retour.
         if (presetName != ActivePresetName) return;
 
-        // Garde anti-boucle : ne re-valider qu'au changement de preset ou de
-        // document ("\n" est impossible dans un nom de fichier preset).
-        var key = $"{dto.DocumentKey}\n{presetName}";
-        if (key == _lastValidatedKey) return;
-        _lastValidatedKey = key;
-
-        // DR3-1 : rafraichir EN PLACE les couleurs persistees des materiaux
-        // TROUVES (groupes SOURCES — les clones de la projection de recherche
-        // referencent les memes instances, INPC propage aux pastilles). Au moins
-        // un changement → AutoSave (persiste les couleurs fraiches et rafraichit
-        // la projection si une recherche est active). Idempotent : une
+        // ---- (a) Rafraichissement : TOUJOURS applique (DR6-1) ----
+        // DR3-1 : rafraichir EN PLACE les couleurs et textures persistees des
+        // materiaux TROUVES (groupes SOURCES — les clones de la projection de
+        // recherche referencent les memes instances, INPC propage aux pastilles).
+        // Au moins un changement → AutoSave (persiste les valeurs fraiches et
+        // rafraichit la projection si une recherche est active). Idempotent : une
         // re-validation sans changement ne re-sauvegarde pas.
+        // DR6-1 : ce bloc precede DELIBEREMENT toute garde de fenetre ou de cle —
+        // il ne montre aucune UI, il ne peut donc jamais deranger l'utilisateur.
+        // Le laisser derriere la garde FIA3-02 privait le tout premier chargement
+        // (callback revenu avant que la fenetre soit visible) des couleurs
+        // d'apparence et des textures, jusqu'a un changement de preset.
         int refreshed = PresetMaterialValidation.ApplyRefreshedColors(
             PresetGroups, dto.FoundMaterials);
         if (refreshed > 0)
             AutoSave();
 
-        if (dto.MissingMaterials.Count == 0) return;
-
-        // FIA3-02 : ne jamais ouvrir le dialogue pendant un pick pipette ou quand
-        // la fenetre principale est cachee (il s'afficherait sans owner visible).
-        // Abandonner ET rendre la cle vierge pour re-valider a la prochaine occasion.
-        if (IsPickingMaterials || App.MainWindow?.IsVisible != true)
+        // ---- (b) Dialogue « Matériaux introuvables » : sous conditions ----
+        // FIA3-02 : ne jamais l'ouvrir pendant un pick pipette ou quand la fenetre
+        // principale est cachee (il s'afficherait sans owner visible).
+        if (!PresetMaterialValidation.CanPromptMissingMaterials(
+                dto.MissingMaterials.Count, IsPickingMaterials, App.MainWindow?.IsVisible == true))
         {
-            _lastValidatedKey = null;
+            // DR6-1 : ne PAS memoriser la cle — l'affichage est simplement
+            // replanifie (RevaliderPresetActif au prochain affichage de la fenetre).
             return;
         }
+
+        // Garde anti-boucle : ne re-proposer la purge qu'au changement de preset
+        // ou de document ("\n" est impossible dans un nom de fichier preset).
+        var key = $"{dto.DocumentKey}\n{presetName}";
+        if (key == _lastValidatedKey) return;
+        _lastValidatedKey = key;
 
         // Retrouver les instances preset des introuvables pour la pastille de
         // couleur du dialogue.
