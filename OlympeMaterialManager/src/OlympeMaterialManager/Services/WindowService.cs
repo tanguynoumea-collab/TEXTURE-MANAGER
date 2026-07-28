@@ -23,6 +23,28 @@ public static class WindowService
     public static void ShowMainWindow() => App.MainWindow?.Show();
 
     /// <summary>
+    /// Suspend temporairement le Topmost de la fenetre principale (B9) : un
+    /// dialogue modal Revit (ex. gestionnaire de materiaux) s'ouvrirait derriere
+    /// une fenetre toujours-au-premier-plan. Le Topmost est retabli des que la
+    /// fenetre principale est re-activee. No-op si Topmost n'est pas actif.
+    /// </summary>
+    public static void SuspendTopmostUntilReactivated()
+    {
+        var window = App.MainWindow;
+        if (window is not { Topmost: true }) return;
+
+        window.Topmost = false;
+
+        void RestoreTopmost(object? sender, EventArgs e)
+        {
+            window.Activated -= RestoreTopmost;
+            window.Topmost = true;
+        }
+
+        window.Activated += RestoreTopmost;
+    }
+
+    /// <summary>
     /// Restaure taille/position de la fenetre depuis les settings (UI-M9).
     /// Garde ecran : la fenetre est ramenee dans les limites de l'ecran virtuel
     /// (multi-moniteurs) et ne descend jamais sous MinWidth/MinHeight.

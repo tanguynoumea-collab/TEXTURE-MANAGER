@@ -392,6 +392,17 @@ public partial class RevitEventBridge
     }
 
     /// <summary>
+    /// Poste la commande native « Matériaux » de Revit (B9). Aucune transaction :
+    /// PostCommand programme l'ouverture du dialogue pour le moment ou Revit
+    /// reprend le focus. Garde standard : echec propre si aucun document actif.
+    /// </summary>
+    private static void HandleOpenMaterialsDialog(UIApplication uiApp)
+    {
+        _ = GetActiveDocument(uiApp);
+        uiApp.PostCommand(RevitCommandId.LookupPostableCommandId(PostableCommand.Materials));
+    }
+
+    /// <summary>
     /// Extrait la valeur ARGB (int) de la couleur d'un materiau Revit.
     /// Si la couleur est invalide, retourne le gris par defaut.
     /// </summary>

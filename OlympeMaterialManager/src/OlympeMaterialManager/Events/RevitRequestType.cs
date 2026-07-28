@@ -25,4 +25,7 @@ public enum RevitRequestType
     PickElementInView,             // data=null, returns List<SceneTypeDto> (multi-selection)
     HighlightElementsByType,       // data=long (typeElementIdValue), returns null (selection visuelle)
     GetCompositeSubTypes,          // data=long (typeElementIdValue), returns List<SceneTypeDto> (sous-types d'un composite)
+
+    // Cycle 2 : visualisateur de materiau (B9)
+    OpenMaterialsDialog,           // data=null, returns null (success) or Exception — PostCommand du gestionnaire de materiaux Revit
 }

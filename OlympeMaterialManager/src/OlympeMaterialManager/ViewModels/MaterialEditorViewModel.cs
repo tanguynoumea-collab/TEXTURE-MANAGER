@@ -312,6 +312,54 @@ public partial class MaterialEditorViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Ouvre le gestionnaire de materiaux natif de Revit (B9) :
+    /// (1) copie le nom du materiau au presse-papiers (palliatif a l'absence de
+    /// preselection par API — l'utilisateur le colle dans la recherche Revit),
+    /// (2) suspend le Topmost eventuel de la fenetre pour que le dialogue modal
+    /// Revit ne s'ouvre pas derriere, (3) poste la commande via le bridge —
+    /// le dialogue s'ouvre lorsque Revit reprend le focus.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanOuvrirDansRevit))]
+    private void OuvrirDansRevit()
+    {
+        if (_eventBridge == null || _currentMaterialIdValue < 0) return;
+
+        try
+        {
+            System.Windows.Clipboard.SetText(MaterialName);
+        }
+        catch (Exception ex)
+        {
+            // Presse-papiers verrouille par une autre application : non bloquant,
+            // l'ouverture du dialogue reste utile sans la copie du nom.
+            Services.LogService.Error("Copie du nom de matériau au presse-papiers impossible", ex);
+        }
+
+        Services.WindowService.SuspendTopmostUntilReactivated();
+
+        _eventBridge.MakeRequest(RevitRequestType.OpenMaterialsDialog, null, result =>
+        {
+            // Callback null = succes : la commande est postee, Revit ouvrira le dialogue.
+            if (result is Exception ex)
+            {
+                Services.LogService.Error("Echec d'ouverture du gestionnaire de matériaux Revit", ex);
+                Services.DialogService.ShowError(
+                    $"Échec de l'ouverture du gestionnaire de matériaux Revit :\n{ex.Message}");
+            }
+        });
+    }
+
+    /// <summary>
+    /// Le bouton « Ouvrir dans Revit » n'est actif que si un materiau est selectionne.
+    /// </summary>
+    private bool CanOuvrirDansRevit() => IsVisible && _currentMaterialIdValue >= 0 && _eventBridge != null;
+
+    partial void OnIsVisibleChanged(bool value)
+    {
+        OuvrirDansRevitCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
     /// Declenche automatiquement l'edition de la teinte quand le toggle change (MATEDIT-05).
     /// </summary>
     partial void OnTintEnabledChanged(bool value)

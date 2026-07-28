@@ -160,11 +160,22 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="320">
                     <StackPanel>
 
-                        <!-- Titre de la section -->
-                        <TextBlock Text="Éditeur de matériau"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                   Margin="0,0,0,8" />
+                        <!-- Titre de la section + bouton Ouvrir dans Revit (B9).
+                             L'edition inline est conservee (decision Q2=a) : le
+                             renommage traduit l'usage dominant, pas un retrait. -->
+                        <DockPanel Margin="0,0,0,8">
+                            <Button DockPanel.Dock="Right"
+                                    Content="Ouvrir dans Revit"
+                                    Command="{Binding MaterialEditorVM.OuvrirDansRevitCommand}"
+                                    AutomationProperties.Name="Ouvrir dans le gestionnaire de matériaux Revit"
+                                    ToolTip="Ouvre le gestionnaire de matériaux Revit (le nom du matériau est copié — collez-le dans la recherche). S'ouvre lorsque Revit reprend le focus."
+                                    Padding="8,4"
+                                    Margin="8,0,0,0" />
+                            <TextBlock Text="Visualisateur de matériau"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                        </DockPanel>
 
                         <!-- Preview couleur de surface -->
                         <Rectangle Width="60" Height="60"

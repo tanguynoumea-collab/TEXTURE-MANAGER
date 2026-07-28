@@ -161,6 +161,11 @@ public partial class RevitEventBridge : IExternalEventHandler
                 case RevitRequestType.GetCompositeSubTypes:
                     result = HandleGetCompositeSubTypes(uiApp, (long)data!);
                     break;
+
+                // Cycle 2 : visualisateur de materiau (B9)
+                case RevitRequestType.OpenMaterialsDialog:
+                    HandleOpenMaterialsDialog(uiApp);
+                    break;
             }
         }
         catch (Exception ex)
