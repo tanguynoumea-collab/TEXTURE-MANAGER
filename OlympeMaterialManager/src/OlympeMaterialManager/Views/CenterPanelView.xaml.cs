@@ -15,7 +15,8 @@ namespace Olympe.MaterialManager.Views;
 /// B3 : plomberie du drop d'un materiau preset sur une carte (couche ou
 /// parametre) — la validation et l'application passent par les methodes
 /// publiques de MainWindowViewModel (meme chemin transactionnel que
-/// « Appliquer le matériau », mono-cible).
+/// « Appliquer le matériau »). DR5-2 : le drop porte sur toute la selection
+/// quand la carte visee en fait partie.
 /// </summary>
 public partial class CenterPanelView : UserControl
 {
@@ -65,8 +66,12 @@ public partial class CenterPanelView : UserControl
     }
 
     /// <summary>
-    /// Drop : application immediate au SEUL element cible, via la meme
-    /// mecanique que MainWindowViewModel.AppliquerMateriau (B3).
+    /// Drop : application immediate via la meme mecanique que
+    /// MainWindowViewModel.AppliquerMateriau (B3). DR5-2 : la portee suit la
+    /// convention des explorateurs — deposer sur une carte DE la selection
+    /// applique a toute la selection, deposer hors selection applique a cette
+    /// seule carte sans toucher a la selection. Le choix est delegue a
+    /// DropTargetResolver (logique pure, testee).
     /// </summary>
     private void CardList_Drop(object sender, DragEventArgs e)
     {
@@ -82,13 +87,19 @@ public partial class CenterPanelView : UserControl
         var mainVm = GetMainWindowViewModel();
         if (mainVm == null) return;
 
+        var selection = mainVm.CenterPanelVM.SelectedItems;
+
         switch (item.DataContext)
         {
             case LayerDto layer:
-                mainVm.AppliquerMateriauSurCouche(presetMat, layer);
+                mainVm.AppliquerMateriauSurCouches(
+                    presetMat,
+                    DropTargetResolver.ResolveDropTargets(layer, selection));
                 break;
             case MaterialParamDto param:
-                mainVm.AppliquerMateriauSurParametre(presetMat, param);
+                mainVm.AppliquerMateriauSurParametres(
+                    presetMat,
+                    DropTargetResolver.ResolveDropTargets(param, selection));
                 break;
         }
     }

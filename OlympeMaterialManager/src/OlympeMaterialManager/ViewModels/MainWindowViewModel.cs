@@ -21,6 +21,14 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly RevitEventBridge? _eventBridge;
     private DispatcherTimer? _feedbackTimer;
 
+    /// <summary>
+    /// Nombre de cibles de l'application en cours, et leur libelle au pluriel
+    /// (« couches » / « paramètres »), memorises pour que le feedback de succes
+    /// annonce la portee reelle de l'operation (DR5-2).
+    /// </summary>
+    private int _pendingTargetCount;
+    private string _pendingTargetLabel = string.Empty;
+
     [ObservableProperty]
     private string _titre = "Olympe MaterialManager";
 
@@ -193,22 +201,7 @@ public partial class MainWindowViewModel : ObservableObject
                 .Select(l => l.LayerIndex)
                 .ToArray();
 
-            if (layerIndices == null || layerIndices.Length == 0)
-            {
-                IsSetMatBusy = false;
-                return;
-            }
-
-            var request = new SetMatRequestDto
-            {
-                TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
-                LayerIndices = layerIndices,
-                MaterialIdValue = presetMat.MaterialElementIdValue,
-                // DON-04 : le nom est la cle logique de validation cote handler
-                MaterialName = presetMat.MaterialName
-            };
-
-            _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnLayers, request, OnSetMatResult);
+            EnvoyerSetMatCouches(presetMat, layerIndices ?? []);
         }
         else if (CenterPanelVM.ShowParameters)
         {
@@ -218,22 +211,7 @@ public partial class MainWindowViewModel : ObservableObject
                 .Select(p => p.ParameterDefinitionName)
                 .ToArray();
 
-            if (paramNames == null || paramNames.Length == 0)
-            {
-                IsSetMatBusy = false;
-                return;
-            }
-
-            var request = new SetMatParamRequestDto
-            {
-                TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
-                MaterialIdValue = presetMat.MaterialElementIdValue,
-                ParameterDefinitionNames = paramNames,
-                // DON-04 : le nom est la cle logique de validation cote handler
-                MaterialName = presetMat.MaterialName
-            };
-
-            _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnParameter, request, OnSetMatResult);
+            EnvoyerSetMatParametres(presetMat, paramNames ?? []);
         }
         else
         {
@@ -242,15 +220,16 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Application mono-cible par drag and drop d'un preset sur une carte de
-    /// couche (B3). Meme mecanique transactionnelle que AppliquerMateriau
-    /// (SetMatRequestDto, validation ResolveMaterial par nom, OnSetMatResult :
-    /// feedback + refresh du liseré). Garde anti-reentrance : ignore le drop
-    /// si une application est deja en cours.
+    /// Application par drag and drop d'un preset sur une ou plusieurs couches
+    /// (B3, DR5-2). Chemin transactionnel identique a AppliquerMateriau : une
+    /// seule requete bridge donc une seule transaction Revit, quel que soit le
+    /// nombre de couches. Garde anti-reentrance : ignore le drop si une
+    /// application est deja en cours.
     /// </summary>
-    public void AppliquerMateriauSurCouche(PresetMaterialDto presetMat, LayerDto layer)
+    public void AppliquerMateriauSurCouches(PresetMaterialDto presetMat, IReadOnlyList<LayerDto> layers)
     {
         if (_eventBridge == null) return;
+        if (layers.Count == 0) return;
         if (IsSetMatBusy)
         {
             // FIA3-06 : drop ignore pendant une application en cours — feedback
@@ -260,49 +239,91 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         IsSetMatBusy = true;
+        EnvoyerSetMatCouches(presetMat, layers.Select(l => l.LayerIndex).ToArray());
+    }
+
+    /// <summary>
+    /// Application par drag and drop d'un preset sur un ou plusieurs parametres
+    /// materiaux (B3, DR5-2). Meme mecanique que AppliquerMateriau, en un seul
+    /// batch. Les cartes informatives (« Aucun paramètre matériau », definition
+    /// vide) sont ecartees ; s'il ne reste rien, le drop est sans effet.
+    /// </summary>
+    public void AppliquerMateriauSurParametres(PresetMaterialDto presetMat, IReadOnlyList<MaterialParamDto> parametres)
+    {
+        if (_eventBridge == null) return;
+
+        var paramNames = parametres
+            .Select(p => p.ParameterDefinitionName)
+            .Where(nom => !string.IsNullOrEmpty(nom))
+            .ToArray();
+
+        if (paramNames.Length == 0) return;
+        if (IsSetMatBusy)
+        {
+            // FIA3-06 : drop ignore pendant une application en cours — feedback
+            // au lieu d'un silence (OnSetMatResult/le timer effacera le texte).
+            SetMatStatusText = "Application en cours…";
+            return;
+        }
+
+        IsSetMatBusy = true;
+        EnvoyerSetMatParametres(presetMat, paramNames);
+    }
+
+    /// <summary>
+    /// Envoi unique de la requete Set Mat sur un lot de couches — point de
+    /// passage commun du bouton « Appliquer le matériau » et du drag and drop
+    /// (DR5-2). Un lot vide relache simplement la garde.
+    /// </summary>
+    private void EnvoyerSetMatCouches(PresetMaterialDto presetMat, int[] layerIndices)
+    {
+        if (layerIndices.Length == 0)
+        {
+            IsSetMatBusy = false;
+            return;
+        }
+
+        _pendingTargetCount = layerIndices.Length;
+        _pendingTargetLabel = "couches";
 
         var request = new SetMatRequestDto
         {
             TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
-            LayerIndices = [layer.LayerIndex],
+            LayerIndices = layerIndices,
             MaterialIdValue = presetMat.MaterialElementIdValue,
             // DON-04 : le nom est la cle logique de validation cote handler
             MaterialName = presetMat.MaterialName
         };
 
-        _eventBridge.MakeRequest(RevitRequestType.SetMaterialOnLayers, request, OnSetMatResult);
+        _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnLayers, request, OnSetMatResult);
     }
 
     /// <summary>
-    /// Application mono-cible par drag and drop d'un preset sur une carte de
-    /// parametre materiau (B3). Meme mecanique que AppliquerMateriau
-    /// (SetMatParamRequestDto mono-parametre, OnSetMatResult). Les cartes
-    /// informatives (« Aucun paramètre matériau », definition vide) sont ignorees.
+    /// Envoi unique de la requete Set Mat sur un lot de parametres materiaux —
+    /// point de passage commun du bouton « Appliquer le matériau » et du drag
+    /// and drop (DR5-2). Un lot vide relache simplement la garde.
     /// </summary>
-    public void AppliquerMateriauSurParametre(PresetMaterialDto presetMat, MaterialParamDto param)
+    private void EnvoyerSetMatParametres(PresetMaterialDto presetMat, string[] paramNames)
     {
-        if (_eventBridge == null) return;
-        if (string.IsNullOrEmpty(param.ParameterDefinitionName)) return;
-        if (IsSetMatBusy)
+        if (paramNames.Length == 0)
         {
-            // FIA3-06 : drop ignore pendant une application en cours — feedback
-            // au lieu d'un silence (OnSetMatResult/le timer effacera le texte).
-            SetMatStatusText = "Application en cours…";
+            IsSetMatBusy = false;
             return;
         }
 
-        IsSetMatBusy = true;
+        _pendingTargetCount = paramNames.Length;
+        _pendingTargetLabel = "paramètres";
 
         var request = new SetMatParamRequestDto
         {
             TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
             MaterialIdValue = presetMat.MaterialElementIdValue,
-            ParameterDefinitionNames = [param.ParameterDefinitionName],
+            ParameterDefinitionNames = paramNames,
             // DON-04 : le nom est la cle logique de validation cote handler
             MaterialName = presetMat.MaterialName
         };
 
-        _eventBridge.MakeRequest(RevitRequestType.SetMaterialOnParameter, request, OnSetMatResult);
+        _eventBridge?.MakeRequest(RevitRequestType.SetMaterialOnParameter, request, OnSetMatResult);
     }
 
     /// <summary>
@@ -322,8 +343,12 @@ public partial class MainWindowViewModel : ObservableObject
         }
         else
         {
-            // D-19 : retour visuel succes
-            SetMatStatusText = "Matériau appliqué !";
+            // D-19 : retour visuel succes. DR5-2 : au-dela d'une cible, le texte
+            // annonce la portee reelle — l'utilisateur voit que le drop a couvert
+            // toute sa selection et pas seulement la carte survolee.
+            SetMatStatusText = _pendingTargetCount > 1
+                ? $"Matériau appliqué à {_pendingTargetCount} {_pendingTargetLabel} !"
+                : "Matériau appliqué !";
 
             // D-25 : rafraichir le panneau central pour afficher les nouveaux noms de materiaux
             WeakReferenceMessenger.Default.Send(
@@ -332,6 +357,9 @@ public partial class MainWindowViewModel : ObservableObject
             // Effacer le feedback apres 2 secondes
             StartFeedbackTimer();
         }
+
+        _pendingTargetCount = 0;
+        _pendingTargetLabel = string.Empty;
 
         AppliquerMateriauCommand.NotifyCanExecuteChanged();
     }
