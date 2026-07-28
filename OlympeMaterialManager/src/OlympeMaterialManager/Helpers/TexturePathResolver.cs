@@ -67,6 +67,22 @@ public static class TexturePathResolver
         { ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff" };
 
     /// <summary>
+    /// Vrai si le chemin (brut ou résolu) désigne le PLACEHOLDER générique
+    /// d'Autodesk (« UnifiedBitmap.png », un carré noir marqué BITMAP) que de
+    /// nombreux assets référencent en guise de bouche-trou. Retour terrain DR4 :
+    /// le résoudre pollue les aperçus (image noire) et les moyennes de couleur —
+    /// il doit être traité comme « pas de texture » (fallback couleur d'apparence).
+    /// </summary>
+    public static bool IsGenericPlaceholder(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var normalized = path!.Replace('/', '\\');
+        var fileName = normalized.Substring(normalized.LastIndexOf('\\') + 1);
+        return string.Equals(fileName, "UnifiedBitmap.png", StringComparison.OrdinalIgnoreCase)
+            || normalized.IndexOf(@"Maps\UnifiedBitmap", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    /// <summary>
     /// Résout une valeur brute d'asset vers un fichier image existant, avec cache.
     /// </summary>
     public static string? Resolve(string? rawValue)

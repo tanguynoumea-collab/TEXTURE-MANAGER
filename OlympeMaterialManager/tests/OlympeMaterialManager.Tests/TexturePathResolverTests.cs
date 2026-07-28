@@ -39,6 +39,21 @@ public class TexturePathResolverTests : IDisposable
 
     private string[] Roots => new[] { _root };
 
+    [Theory]
+    [InlineData(@"Maps\UnifiedBitmap\UnifiedBitmap.png", true)]
+    [InlineData(@"lib:?Maps\UnifiedBitmap\UnifiedBitmap.png", true)]
+    [InlineData(@"C:\Program Files (x86)\Common Files\Autodesk Shared\Materials\2023\assetlibrary_base.fbm\Maps\UnifiedBitmap\UnifiedBitmap.png", true)]
+    [InlineData("Maps/UnifiedBitmap/UnifiedBitmap.png", true)]
+    [InlineData(@"UNIFIEDBITMAP.PNG", true)]
+    [InlineData(@"Mats\Brick\Brick_Running.png", false)]
+    [InlineData(@"C:\Textures\MaBrique.jpg", false)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    public void IsGenericPlaceholder_DetecteLePlaceholderAutodesk(string? path, bool attendu)
+    {
+        Assert.Equal(attendu, TexturePathResolver.IsGenericPlaceholder(path));
+    }
+
     [Fact]
     public void Resolve_CheminAbsoluExistant_RetourneTelQuel()
     {

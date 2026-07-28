@@ -98,6 +98,15 @@ public partial class RevitEventBridge
                 resolved = TexturePathResolver.Resolve(rawPath);
             }
 
+            // Ceinture et bretelles (retour terrain DR4) : si la résolution
+            // aboutit malgré tout au placeholder générique (ex. via l'index nom
+            // de fichier), le traiter comme « pas de texture ».
+            if (resolved != null && TexturePathResolver.IsGenericPlaceholder(resolved))
+            {
+                rawPath = null;
+                resolved = null;
+            }
+
             // DR4-1 : chemin présent mais non résolu ALORS QUE l'index nom de
             // fichier n'est pas prêt → verdict provisoire : pas de cache, pas de
             // trace (elle se répéterait à chaque rafraîchissement), le prochain
@@ -187,7 +196,11 @@ public partial class RevitEventBridge
                     val.EndsWith(".tif", StringComparison.OrdinalIgnoreCase) ||
                     val.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
                 {
-                    return val;
+                    // Retour terrain DR4 : ignorer le placeholder générique et
+                    // CONTINUER la marche — la vraie texture peut vivre dans un
+                    // autre canal du même asset.
+                    if (!TexturePathResolver.IsGenericPlaceholder(val))
+                        return val;
                 }
             }
         }
