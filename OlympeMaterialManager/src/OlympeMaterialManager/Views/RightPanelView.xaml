@@ -126,16 +126,18 @@
                         FontSize="16"
                         FontWeight="Bold"
                         Margin="4,0,0,0" />
-                <!-- B2 : pipette materiau — glyphe texte (langage existant, pas
-                     d'icone bitmap), style discret implicite du theme. -->
-                <Button Content="💧"
-                        Command="{Binding RecupererMateriauxCommand}"
+                <!-- B2 : pipette materiau. Cycle 4 : glyphe Path monochrome — la
+                     goutte emoji etait rendue par une police couleur, elle ne
+                     suivait ni le Foreground du bouton ni le theme. -->
+                <Button Command="{Binding RecupererMateriauxCommand}"
                         AutomationProperties.Name="Récupérer les matériaux d'un élément"
                         ToolTip="Cliquez un élément dans la vue 3D pour récupérer ses matériaux dans le preset"
                         Width="32" Height="32"
                         Padding="0"
-                        FontSize="14"
-                        Margin="4,0,0,0" />
+                        Margin="4,0,0,0">
+                    <Path Style="{StaticResource GlyphPathStyle}"
+                          Data="{StaticResource EyedropperGeometry}" />
+                </Button>
             </StackPanel>
 
             <!-- B5-D : recherche de materiaux, sous la rangee « Creer un groupe / + / − ».
@@ -163,14 +165,16 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <!-- Bouton d'effacement, visible quand la recherche n'est pas vide -->
-                <Button Content="✕"
-                        Command="{Binding EffacerRechercheCommand}"
+                <Button Command="{Binding EffacerRechercheCommand}"
                         AutomationProperties.Name="Effacer la recherche"
                         ToolTip="Effacer la recherche"
                         HorizontalAlignment="Right"
                         Width="28" Height="28"
                         Padding="0"
                         Margin="0,2,2,2">
+                    <Path Style="{StaticResource GlyphPathStyle}"
+                          Data="{StaticResource CloseGeometry}"
+                          Width="10" Height="10" />
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                             <Setter Property="Background" Value="Transparent" />

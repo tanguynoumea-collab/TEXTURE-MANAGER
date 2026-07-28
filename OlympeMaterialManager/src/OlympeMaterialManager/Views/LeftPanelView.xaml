@@ -111,14 +111,16 @@
                     </TextBlock.Style>
                 </TextBlock>
                 <!-- Bouton d'effacement, visible quand la recherche n'est pas vide -->
-                <Button Content="✕"
-                        Command="{Binding EffacerRechercheCommand}"
+                <Button Command="{Binding EffacerRechercheCommand}"
                         AutomationProperties.Name="Effacer la recherche"
                         ToolTip="Effacer la recherche"
                         HorizontalAlignment="Right"
                         Width="28" Height="28"
                         Padding="0"
                         Margin="0,2,2,2">
+                    <Path Style="{StaticResource GlyphPathStyle}"
+                          Data="{StaticResource CloseGeometry}"
+                          Width="10" Height="10" />
                     <Button.Style>
                         <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                             <Setter Property="Background" Value="Transparent" />
