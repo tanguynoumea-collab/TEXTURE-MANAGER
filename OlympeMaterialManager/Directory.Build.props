@@ -4,7 +4,7 @@
        et par l'installeur WiX (DefineConstants Version=$(Version) -> Package.wxs).
        Incrementer a chaque livraison pour que MajorUpgrade fonctionne. -->
   <PropertyGroup>
-    <Version>1.4.0</Version>
+    <Version>1.5.0</Version>
   </PropertyGroup>
 
   <!-- ARC-08 + MAINT-15 : analyseurs CA actives (jeu recommande le plus recent)
