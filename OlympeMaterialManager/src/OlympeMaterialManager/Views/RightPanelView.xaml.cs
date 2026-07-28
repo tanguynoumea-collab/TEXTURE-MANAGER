@@ -45,13 +45,13 @@ public partial class RightPanelView : UserControl
         if (treeViewItem?.DataContext is not PresetMaterialDto material) return;
 
         _draggedMaterial = material;
-        var data = new System.Windows.DataObject("PresetMaterial", material);
+        var data = new System.Windows.DataObject(PresetMaterialDto.DragDropFormat, material);
         System.Windows.DragDrop.DoDragDrop(treeViewItem, data, System.Windows.DragDropEffects.Move);
     }
 
     private void PresetTreeView_DragOver(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent("PresetMaterial"))
+        if (!e.Data.GetDataPresent(PresetMaterialDto.DragDropFormat))
         {
             e.Effects = System.Windows.DragDropEffects.None;
             e.Handled = true;
@@ -66,7 +66,7 @@ public partial class RightPanelView : UserControl
 
     private void PresetTreeView_Drop(object sender, DragEventArgs e)
     {
-        if (!e.Data.GetDataPresent("PresetMaterial") || _draggedMaterial == null) return;
+        if (!e.Data.GetDataPresent(PresetMaterialDto.DragDropFormat) || _draggedMaterial == null) return;
 
         var targetGroup = GetTargetGroup(e);
         if (targetGroup == null) return;

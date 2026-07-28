@@ -218,6 +218,56 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Application mono-cible par drag and drop d'un preset sur une carte de
+    /// couche (B3). Meme mecanique transactionnelle que AppliquerMateriau
+    /// (SetMatRequestDto, validation ResolveMaterial par nom, OnSetMatResult :
+    /// feedback + refresh du liseré). Garde anti-reentrance : ignore le drop
+    /// si une application est deja en cours.
+    /// </summary>
+    public void AppliquerMateriauSurCouche(PresetMaterialDto presetMat, LayerDto layer)
+    {
+        if (IsSetMatBusy || _eventBridge == null) return;
+
+        IsSetMatBusy = true;
+
+        var request = new SetMatRequestDto
+        {
+            TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
+            LayerIndices = [layer.LayerIndex],
+            MaterialIdValue = presetMat.MaterialElementIdValue,
+            // DON-04 : le nom est la cle logique de validation cote handler
+            MaterialName = presetMat.MaterialName
+        };
+
+        _eventBridge.MakeRequest(RevitRequestType.SetMaterialOnLayers, request, OnSetMatResult);
+    }
+
+    /// <summary>
+    /// Application mono-cible par drag and drop d'un preset sur une carte de
+    /// parametre materiau (B3). Meme mecanique que AppliquerMateriau
+    /// (SetMatParamRequestDto mono-parametre, OnSetMatResult). Les cartes
+    /// informatives (« Aucun paramètre matériau », definition vide) sont ignorees.
+    /// </summary>
+    public void AppliquerMateriauSurParametre(PresetMaterialDto presetMat, MaterialParamDto param)
+    {
+        if (IsSetMatBusy || _eventBridge == null) return;
+        if (string.IsNullOrEmpty(param.ParameterDefinitionName)) return;
+
+        IsSetMatBusy = true;
+
+        var request = new SetMatParamRequestDto
+        {
+            TargetTypeIdValue = CenterPanelVM.CurrentTypeIdValue,
+            MaterialIdValue = presetMat.MaterialElementIdValue,
+            ParameterDefinitionNames = [param.ParameterDefinitionName],
+            // DON-04 : le nom est la cle logique de validation cote handler
+            MaterialName = presetMat.MaterialName
+        };
+
+        _eventBridge.MakeRequest(RevitRequestType.SetMaterialOnParameter, request, OnSetMatResult);
+    }
+
+    /// <summary>
     /// Callback apres execution de Set Mat par le bridge Revit (D-18, D-19, D-25).
     /// Gere erreur (MessageBox francais + rollback) et succes (feedback + refresh).
     /// </summary>

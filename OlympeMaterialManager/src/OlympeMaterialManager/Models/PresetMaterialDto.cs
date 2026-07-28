@@ -10,6 +10,14 @@ namespace Olympe.MaterialManager.Models;
 /// </summary>
 public class PresetMaterialDto : INotifyPropertyChanged
 {
+    /// <summary>
+    /// Nom du DataFormat WPF du drag and drop d'un materiau preset (B3) :
+    /// source dans RightPanelView (deplacement entre groupes), cible aussi dans
+    /// CenterPanelView (application mono-carte). Constante partagee pour que les
+    /// deux vues ne puissent pas diverger.
+    /// </summary>
+    public const string DragDropFormat = "PresetMaterial";
+
     private string _materialName = string.Empty;
     private long _materialElementIdValue = -1;
     private int _colorArgb;
