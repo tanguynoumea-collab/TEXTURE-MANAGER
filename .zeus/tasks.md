@@ -45,3 +45,7 @@ Plan de design : .zeus/DESIGN_PLAN.md §3bis (delta cycle 3, enchaînement autor
 - [x] B2 : pipette matériau (PickElementForMaterials mono-pick sans surbrillance, matériaux du type via couches/paramètres, dédoublonnage PresetMaterialMerge testé, groupe sélectionné sinon « Autre », AutoSave + StatusMessage, Échap silencieux, fenêtre ré-affichée dans tous les chemins) — commit 336c9da
 - [x] B3 : drag & drop preset → carte (cartes couches ET paramètres, DataFormat partagé PresetMaterialDto.DragDropFormat, bordure accent au survol via propriété attachée DropTargetIndicator, application mono-cible par le chemin AppliquerMateriau + OnSetMatResult, garde IsSetMatBusy, MoveMaterial du panneau droit intact) — commit df680c2
 - Portes passées : net48 0/0, net8.0-windows 0/0, 74 tests verts (67 + 7 PresetMaterialMergeTests)
+
+## Lot D
+- [x] B1 : matériaux absents à l'activation d'un preset (ValidatePresetMaterials lecture seule — un seul collector, même logique id+nom que ResolveMaterial ; dialogue « Matériaux introuvables » liste scrollable + pastilles, Conserver défaut/Échap, Supprimer du preset en style discret ; purge PresetMaterialValidation sur les groupes SOURCES, groupes vides conservés, AutoSave + StatusMessage ; garde-fous : clé document+preset anti-boucle, _presetLoadFailed, aucun document → différé silencieux, erreur bridge → log seul ; import externe même nom rechargé + re-validé)
+- Portes passées : net48 0/0, net8.0-windows 0/0, 82 tests verts (74 + 8 PresetMaterialValidationTests)
