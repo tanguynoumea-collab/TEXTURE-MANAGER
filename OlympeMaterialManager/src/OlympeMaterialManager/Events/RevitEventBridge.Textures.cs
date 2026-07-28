@@ -19,13 +19,22 @@ namespace Olympe.MaterialManager.Events;
 public partial class RevitEventBridge
 {
     /// <summary>
-    /// Cache par session du bridge : AppearanceAssetId → chemin résolu (ou null).
-    /// Les matériaux partageant le même asset (fréquent) ne coûtent qu'une marche.
-    /// Accès uniquement depuis le thread Revit (Execute est séquentiel) —
-    /// pas de synchronisation nécessaire. Un asset édité en cours de session
-    /// peut rester en cache : accepté (coût/bénéfice, cache d'aperçu).
+    /// DR1-3 : issue de la résolution de texture d'un matériau, pour la ligne
+    /// de synthèse de HandleGetAllMaterials. NoBitmap couvre à la fois
+    /// « pas d'asset d'apparence » et « asset sans propriété bitmap ».
     /// </summary>
-    private static readonly Dictionary<long, string?> _texturePathByAssetId = new();
+    private enum TextureResolution { Resolved, NoBitmap, Unresolved }
+
+    /// <summary>
+    /// Cache par session du bridge : AppearanceAssetId → (chemin résolu ou null,
+    /// statut de résolution). Les matériaux partageant le même asset (fréquent)
+    /// ne coûtent qu'une marche. Accès uniquement depuis le thread Revit
+    /// (Execute est séquentiel) — pas de synchronisation nécessaire. Un asset
+    /// édité en cours de session peut rester en cache : accepté (coût/bénéfice,
+    /// cache d'aperçu).
+    /// </summary>
+    private static readonly Dictionary<long, (string? Path, TextureResolution Status)>
+        _texturePathByAssetId = new();
 
     /// <summary>
     /// FIA2-02 : clé (PathName, ou titre si non enregistré) du document ayant
@@ -40,6 +49,16 @@ public partial class RevitEventBridge
     /// fichier existant, ou null (pas d'asset, pas de bitmap, introuvable).
     /// </summary>
     private static string? GetMaterialTexturePath(Document doc, Material material)
+        => GetMaterialTexturePath(doc, material, out _);
+
+    /// <summary>
+    /// Variante avec statut de résolution (DR1-3, synthèse de HandleGetAllMaterials).
+    /// Diagnostic de terrain : UNE ligne LogService.Info par matériau à la première
+    /// résolution de son asset (les matériaux partageant un asset déjà résolu
+    /// passent par le cache, sans nouvelle ligne) — jamais conditionnée au verbose.
+    /// </summary>
+    private static string? GetMaterialTexturePath(Document doc, Material material,
+        out TextureResolution status)
     {
         try
         {
@@ -52,20 +71,48 @@ public partial class RevitEventBridge
             }
 
             var assetId = material.AppearanceAssetId;
-            if (assetId == ElementId.InvalidElementId) return null;
+            if (assetId == ElementId.InvalidElementId)
+            {
+                // Pas d'asset d'apparence : rien à résoudre (pas de ligne de log,
+                // le cas est fréquent et non mis en cache — il serait répété).
+                status = TextureResolution.NoBitmap;
+                return null;
+            }
 
             long cacheKey = ElementIdHelper.GetValue(assetId);
             if (_texturePathByAssetId.TryGetValue(cacheKey, out var cached))
-                return cached;
+            {
+                status = cached.Status;
+                return cached.Path;
+            }
 
+            string? rawPath = null;
             string? resolved = null;
             if (doc.GetElement(assetId) is AppearanceAssetElement assetElem)
             {
-                var rawPath = FindTexturePath(assetElem.GetRenderingAsset());
+                rawPath = FindTexturePath(assetElem.GetRenderingAsset());
                 resolved = TexturePathResolver.Resolve(rawPath);
             }
 
-            _texturePathByAssetId[cacheKey] = resolved;
+            // DR1-3 : trace de terrain à la première résolution — permet de lire
+            // dans olympe.log pourquoi le mode Texture retombe (ou non) en couleur.
+            if (resolved != null)
+            {
+                status = TextureResolution.Resolved;
+                LogService.Info($"Texture '{material.Name}': OK {resolved}");
+            }
+            else if (rawPath == null)
+            {
+                status = TextureResolution.NoBitmap;
+                LogService.Info($"Texture '{material.Name}': asset sans bitmap");
+            }
+            else
+            {
+                status = TextureResolution.Unresolved;
+                LogService.Info($"Texture '{material.Name}': chemin non résolu '{rawPath}'");
+            }
+
+            _texturePathByAssetId[cacheKey] = (resolved, status);
             return resolved;
         }
         catch (Exception ex)
@@ -73,6 +120,7 @@ public partial class RevitEventBridge
             // Best-effort : un asset exotique ne doit jamais faire échouer la requête.
             LogService.Error(
                 $"Lecture du chemin de texture impossible pour \"{material.Name}\"", ex);
+            status = TextureResolution.Unresolved;
             return null;
         }
     }

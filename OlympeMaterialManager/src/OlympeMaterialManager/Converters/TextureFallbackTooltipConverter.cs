@@ -6,10 +6,13 @@ using Olympe.MaterialManager.Services;
 namespace Olympe.MaterialManager.Converters;
 
 /// <summary>
-/// Convertisseur multi-valeurs [PreviewMode, TexturePath] → tooltip de l'aperçu
-/// du visualisateur (B10-UI). En mode Texture, si la texture est introuvable OU
-/// illisible (le cache retourne null), l'échec est expliqué — jamais muet dans
-/// le visualisateur (2.6 du DESIGN_PLAN). Sinon null : pas de tooltip.
+/// Convertisseur multi-valeurs [PreviewMode, TexturePath] → texte d'explication
+/// du fallback de l'aperçu du visualisateur (B10-UI). En mode Texture, si la
+/// texture est introuvable OU illisible (le cache retourne null), l'échec est
+/// expliqué — jamais muet dans le visualisateur (2.6 du DESIGN_PLAN). Sinon
+/// null : rien à dire. Alimente le tooltip du carré d'aperçu ET, depuis DR1-3,
+/// le petit texte secondaire visible sous le carré (le fallback ne doit pas
+/// exiger un hover pour être compris).
 /// </summary>
 public class TextureFallbackTooltipConverter : IMultiValueConverter
 {

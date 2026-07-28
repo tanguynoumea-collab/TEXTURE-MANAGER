@@ -254,10 +254,11 @@
 
                         <!-- Aperçu du matériau : suit le mode (B10-UI) — couleur de
                              surface, ou texture si résolue ; introuvable → couleur +
-                             tooltip explicatif (jamais muet dans le visualisateur). -->
+                             tooltip explicatif ET texte visible sous le carré (DR1-3 :
+                             le fallback ne doit pas exiger un hover pour être compris). -->
                         <Rectangle Width="60" Height="60"
                                    RadiusX="4" RadiusY="4"
-                                   Margin="0,0,0,8">
+                                   Margin="0,0,0,4">
                             <Rectangle.Fill>
                                 <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
                                     <Binding Path="PreviewModeStore.CurrentMode" />
@@ -272,6 +273,37 @@
                                 </MultiBinding>
                             </Rectangle.ToolTip>
                         </Rectangle>
+
+                        <!-- DR1-3 : fallback rendu visible sans hover — en mode Texture,
+                             quand la texture est introuvable ou illisible, le même
+                             converter que le tooltip alimente ce texte secondaire ;
+                             null (pas de fallback) → masqué. -->
+                        <TextBlock FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontStyle="Italic"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8">
+                            <TextBlock.Text>
+                                <MultiBinding Converter="{StaticResource TextureFallbackTooltip}">
+                                    <Binding Path="PreviewModeStore.CurrentMode" />
+                                    <Binding Path="MaterialEditorVM.TexturePath" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}"
+                                                     Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}"
+                                                     Value="">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
                         <!-- Nom (D-02, MATEDIT-02) -->
                         <TextBlock Text="Nom :"

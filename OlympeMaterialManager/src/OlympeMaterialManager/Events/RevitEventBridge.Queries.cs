@@ -278,18 +278,37 @@ public partial class RevitEventBridge
         // sur des centaines de matériaux : le cache par AppearanceAssetId évite
         // de re-marcher les assets partagés, et TexturePathResolver met en cache
         // les sondes disque par chemin brut.
-        return new FilteredElementCollector(doc)
-            .OfClass(typeof(Material))
-            .Cast<Material>()
-            .Select(m => new PresetMaterialDto
+        // DR1-3 : comptage des issues de résolution pour la ligne de synthèse
+        // (diagnostic de terrain, toujours écrite dans olympe.log).
+        int resolved = 0, noBitmap = 0, unresolved = 0;
+        var result = new List<PresetMaterialDto>();
+
+        foreach (var m in new FilteredElementCollector(doc)
+                     .OfClass(typeof(Material))
+                     .Cast<Material>())
+        {
+            var texturePath = GetMaterialTexturePath(doc, m, out var status);
+            switch (status)
+            {
+                case TextureResolution.Resolved: resolved++; break;
+                case TextureResolution.NoBitmap: noBitmap++; break;
+                default: unresolved++; break;
+            }
+
+            result.Add(new PresetMaterialDto
             {
                 MaterialName = m.Name,
                 MaterialElementIdValue = ElementIdHelper.GetValue(m.Id),
                 ColorArgb = ExtractColorArgb(m),
-                TexturePath = GetMaterialTexturePath(doc, m)
-            })
-            .OrderBy(m => m.MaterialName)
-            .ToList();
+                TexturePath = texturePath
+            });
+        }
+
+        LogService.Info(
+            $"Textures: {resolved} résolues / {noBitmap} sans bitmap / " +
+            $"{unresolved} non résolues sur {result.Count}");
+
+        return result.OrderBy(m => m.MaterialName).ToList();
     }
 
     /// <summary>

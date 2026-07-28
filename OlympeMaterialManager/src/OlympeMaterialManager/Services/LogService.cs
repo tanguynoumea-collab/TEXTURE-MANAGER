@@ -45,6 +45,18 @@ public static class LogService
     }
 
     /// <summary>
+    /// DR1-3 : information de diagnostic de terrain, TOUJOURS ecrite quel que
+    /// soit VerboseEnabled. Reservee aux traces peu volumineuses et bornees
+    /// (ex. resolution de texture : une ligne par asset et par session, plus
+    /// une synthese par requete GetAllMaterials) — le tout-venant par requete
+    /// reste dans Log (verbose).
+    /// </summary>
+    public static void Info(string message)
+    {
+        Write(message);
+    }
+
+    /// <summary>
     /// Erreur : TOUJOURS ecrite, quel que soit VerboseEnabled (FIA-11).
     /// </summary>
     public static void Error(string message, Exception? ex = null)

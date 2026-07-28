@@ -42,8 +42,13 @@ public static class TextureBrushCache
             bitmap.Freeze();
             return bitmap;
         }
-        catch
+        catch (Exception ex)
         {
+            // DR1-3 : l'échec de décodage reste non bloquant (fallback couleur),
+            // mais il est tracé — une seule fois par chemin grâce au cache — pour
+            // que le diagnostic de terrain distingue « chemin non résolu » (bridge)
+            // de « fichier résolu mais illisible » (UI).
+            LogService.Error($"Échec de décodage de la texture '{path}'", ex);
             return null;
         }
     }
