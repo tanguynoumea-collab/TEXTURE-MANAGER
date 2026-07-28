@@ -303,7 +303,8 @@ public partial class RevitEventBridge
                     MaterialName = l.MaterialName,
                     MaterialElementIdValue = l.MaterialElementIdValue,
                     ColorArgb = l.ColorArgb ?? System.Drawing.Color.Gray.ToArgb(),
-                    AppearanceColorArgb = l.AppearanceColorArgb
+                    AppearanceColorArgb = l.AppearanceColorArgb,
+                    TexturePath = l.TexturePath
                 })
                 .ToList();
             LogService.Log($"HandlePickElementForMaterials: {fromLayers.Count} materiaux depuis {layers.Count} couches");
@@ -318,7 +319,8 @@ public partial class RevitEventBridge
                 MaterialName = p.CurrentMaterialName,
                 MaterialElementIdValue = p.CurrentMaterialIdValue,
                 ColorArgb = p.ColorArgb ?? System.Drawing.Color.Gray.ToArgb(),
-                AppearanceColorArgb = p.AppearanceColorArgb
+                AppearanceColorArgb = p.AppearanceColorArgb,
+                TexturePath = p.TexturePath
             })
             .ToList();
         LogService.Log($"HandlePickElementForMaterials: {fromParams.Count} materiaux depuis {matParams.Count} parametres");

@@ -25,4 +25,11 @@ public class LayerDto
     /// couleur → fallback couleur graphique cote UI.
     /// </summary>
     public int? AppearanceColorArgb { get; set; }
+
+    /// <summary>
+    /// Chemin resolu de la texture bitmap du materiau (DR4-1, mode Réaliste
+    /// opportuniste). Null = pas d'asset, pas de bitmap ou introuvable →
+    /// fallback couleur d'apparence puis couleur graphique cote UI.
+    /// </summary>
+    public string? TexturePath { get; set; }
 }

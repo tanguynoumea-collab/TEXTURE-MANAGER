@@ -21,4 +21,11 @@ public class MaterialDetailsDto
     /// couleur → fallback couleur graphique.
     /// </summary>
     public int? AppearanceColorArgb { get; set; }
+
+    /// <summary>
+    /// Chemin resolu de la texture bitmap (DR4-1) : aperçu ImageBrush du
+    /// visualisateur en mode Réaliste. Null = pas de bitmap ou introuvable →
+    /// fallback couleur d'apparence puis couleur graphique.
+    /// </summary>
+    public string? TexturePath { get; set; }
 }

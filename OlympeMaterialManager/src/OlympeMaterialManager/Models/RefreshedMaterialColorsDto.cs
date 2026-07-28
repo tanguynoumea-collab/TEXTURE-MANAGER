@@ -13,4 +13,11 @@ public class RefreshedMaterialColorsDto
     public string MaterialName { get; set; } = string.Empty;
     public int ColorArgb { get; set; }
     public int? AppearanceColorArgb { get; set; }
+
+    /// <summary>
+    /// Chemin resolu de la texture bitmap (DR4-1/DR3-1 : le rafraichissement a
+    /// l'activation transporte aussi le TexturePath frais). Null = pas de
+    /// bitmap ou introuvable.
+    /// </summary>
+    public string? TexturePath { get; set; }
 }

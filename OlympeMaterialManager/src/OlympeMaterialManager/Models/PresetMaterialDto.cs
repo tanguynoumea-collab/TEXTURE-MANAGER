@@ -22,6 +22,7 @@ public class PresetMaterialDto : INotifyPropertyChanged
     private long _materialElementIdValue = -1;
     private int _colorArgb;
     private int? _appearanceColorArgb;
+    private string? _texturePath;
 
     public string MaterialName
     {
@@ -51,6 +52,19 @@ public class PresetMaterialDto : INotifyPropertyChanged
     {
         get => _appearanceColorArgb;
         set { _appearanceColorArgb = value; OnPropertyChanged(); }
+    }
+
+    /// <summary>
+    /// Chemin resolu de la texture bitmap (DR4-1), pour la pastille en mode
+    /// Réaliste (couleur moyenne de l'image). Null = pas de bitmap ou
+    /// introuvable → fallback couleur d'apparence puis couleur graphique.
+    /// Champ additif dans les fichiers preset : les fichiers existants sans ce
+    /// champ restent lisibles.
+    /// </summary>
+    public string? TexturePath
+    {
+        get => _texturePath;
+        set { _texturePath = value; OnPropertyChanged(); }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

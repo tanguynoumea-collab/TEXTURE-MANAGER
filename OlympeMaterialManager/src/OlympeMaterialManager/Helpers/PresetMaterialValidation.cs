@@ -114,6 +114,13 @@ public static class PresetMaterialValidation
                     mat.AppearanceColorArgb = fresh.AppearanceColorArgb;
                     materialChanged = true;
                 }
+                // DR4-1 : le TexturePath frais suit le meme rafraichissement en
+                // place (y compris texture → null, verite fraiche).
+                if (!string.Equals(mat.TexturePath, fresh.TexturePath, StringComparison.OrdinalIgnoreCase))
+                {
+                    mat.TexturePath = fresh.TexturePath;
+                    materialChanged = true;
+                }
 
                 if (materialChanged)
                     changed++;

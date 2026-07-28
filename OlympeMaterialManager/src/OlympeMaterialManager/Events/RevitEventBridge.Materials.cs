@@ -107,7 +107,10 @@ public partial class RevitEventBridge
                 ElementIdValue = mat.ElementIdValue,
                 MaterialName = mat.MaterialName,
                 ColorArgb = ExtractColorArgb(resolved),
-                AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, resolved)
+                AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, resolved),
+                // DR4-1/DR3-1 : le rafraichissement transporte aussi le
+                // TexturePath frais.
+                TexturePath = GetMaterialTexturePath(doc, resolved)
             });
         }
 
@@ -238,9 +241,10 @@ public partial class RevitEventBridge
                 MaterialName = duplicate.Name,
                 MaterialElementIdValue = ElementIdHelper.GetValue(duplicate.Id),
                 ColorArgb = ExtractColorArgb(duplicate),
-                // DR2-1 : l'AppearanceAsset est partage par reference -> meme
-                // couleur d'apparence
-                AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, duplicate)
+                // DR2-1/DR4-1 : l'AppearanceAsset est partage par reference ->
+                // memes couleur d'apparence et texture
+                AppearanceColorArgb = GetMaterialAppearanceColorArgb(doc, duplicate),
+                TexturePath = GetMaterialTexturePath(doc, duplicate)
             };
         }
         catch
