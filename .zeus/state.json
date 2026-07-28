@@ -1,10 +1,10 @@
 {
   "$schema_note": "État du pipeline ZEUS — commité avec le projet. Mis à jour à chaque transition de phase.",
   "projet": "Olympe MaterialManager",
-  "version_courante": "1.5.0 (Alpha 1.5)",
+  "version_courante": "1.6.0 (Alpha 1.6)",
   "route": "audit",
-  "phase": "DESIGN-REVIEW (cycle 4)",
-  "phase_status": "attente_check_visuel_revit",
+  "phase": "IDLE",
+  "phase_status": "cycles_3_et_4_clos",
   "cycle": {
     "numero": 3,
     "demarre_le": "2026-07-28",
@@ -74,6 +74,8 @@
     "2026-07-28 — CYCLE 2 lance (B8/B9/B10/B5). LLM-COUNCIL 5 membres + 5 relecteurs aveugles : classement unanime, synthese rendue (Realiste reporte phase 2, lisere ImageBrush tuile, string tolerant settings, FilteredGroups, FindTexturePath restaure de git). Daedalus EVOLUTION : DESIGN_PLAN.md produit (contrat retro-ingenere + delta). -> CHECKPOINT HUMAIN 1 : validation du plan + Q1 (segment Realiste grise ou absent) + Q2 (edition inline vs Visualisateur).",
     "2026-07-28 — Plan valide (Q1=a grise, Q2=a edition conservee). GSD : Lot A (B5-G/B5-D/B9) 3/3 + Lot B (B10-S/TX/UI, B8) 4/4. GATE 75/75. Re-verification council ciblee (fiabilite + autodesk avec sondes 4 surfaces) : 0 Bloquant/0 Majeur, 5 Mineurs -> micro-passe durcissement 5/5 (UNC, cache/document, profondeur, constantes typees, anti double-clic). Tests 77/77, 0 warning. -> DESIGN-REVIEW : attente captures/validation Revit utilisateur (critere n1 : lisibilite motif tuile 6px, repli = diffuse asset ; + course focus Topmost FIA2-06 a observer).",
     "2026-07-28 — DESIGN-REVIEW 2 iterations : DR1 (lisere double face, affordance presse-papiers, diagnostic texture) puis DR2 sur diagnostic terrain (0 texture resolvable -> mode Texture supprime, Realiste ACTIF = couleur d'apparence, infra bitmap supprimee, clipboard retry). Deploiements via protocole a chaque iteration. Validation utilisateur : OK. GO publication ('passe a la suite'). Release v1.5.0 publiee (tag + MSI + notes). CYCLE 2 CLOS. Tests 67/67. Prochain : cycle 3 (B2 pipette + B3 drag&drop + B1 + D1 CI).",
-    "2026-07-28 — CYCLE 3 ('lance tous les cycles suivants') : D1 CI posee et VERTE des le 1er run (build 2 TFM + tests + MSI artefact). Lot C : B2 pipette (pick sans surbrillance, dedoublonnage teste, groupe Autre) + B3 drag&drop preset->carte (indicateur accent, mono-cible via ResolveMaterial). Lot D : B1 dialogue materiaux introuvables (validation a l'activation, purge confirmee sur sources, garde fichier partage). Gate 82/82. Re-verification fiabilite : 0 Bloquant/0 Majeur, 3 Mineurs + 2 Infos -> micro-passe 5/5. Deploye via protocole (spot-checks OK). -> attente validation Revit utilisateur avant publication 1.6.0."
+    "2026-07-28 — CYCLE 3 ('lance tous les cycles suivants') : D1 CI posee et VERTE des le 1er run (build 2 TFM + tests + MSI artefact). Lot C : B2 pipette (pick sans surbrillance, dedoublonnage teste, groupe Autre) + B3 drag&drop preset->carte (indicateur accent, mono-cible via ResolveMaterial). Lot D : B1 dialogue materiaux introuvables (validation a l'activation, purge confirmee sur sources, garde fichier partage). Gate 82/82. Re-verification fiabilite : 0 Bloquant/0 Majeur, 3 Mineurs + 2 Infos -> micro-passe 5/5. Deploye via protocole (spot-checks OK). -> attente validation Revit utilisateur avant publication 1.6.0.",
+    "2026-07-28 — CYCLE 4 identite visuelle : 18 maquettes de palettes proposees -> choix utilisateur 'Graphite & Sauge' (12) en DEUX themes commutables ; logo refait de zero (concepts organiques, choix J2 palette) genere en PNG 16/32/64 clair+sombre + SVG source. Implementation : ThemeDark/ThemeLight + DynamicResource, ThemeStore persiste, bouton bascule, logo ruban adapte a UIThemeManager, glyphes emoji -> Path monochromes. Design-review 6 iterations (DR1-DR6) : lisere double face, presse-papiers, mode Realiste = couleur d'apparence puis textures opportunistes (racines Materials\\Textures corrigees, placeholder UnifiedBitmap + cartes de relief filtres), groupe 'Autres', pastilles rafraichies, selecteur en haut a droite, logo 32px, drop multiselection, chargement initial repare + prechauffage index. Tests 82 -> 167. Validation utilisateur OK sur tout. RELEASE v1.6.0 publiee en LATEST (non prerelease). CYCLES 3 ET 4 CLOS.",
+    "2026-07-28 — Reste ouvert (non bloquant) : regle proposee non appliquee — ignorer la couleur d'apparence #505050 (valeur par defaut du schema Revit) quand aucune texture n'est resolue, et retomber sur Material.Color ; concerne les materiaux sans texture (acier, aluminium, asphalte) qui s'affichent en gris terne."
   ]
 }
