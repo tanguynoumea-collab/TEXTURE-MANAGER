@@ -26,8 +26,10 @@
   <!-- Identite visuelle embarquee (cycle 4).
        Deux jeux d'icones de ruban : sans suffixe = corps fonce (ruban Revit
        clair), suffixe -dark = corps clair (ruban Revit sombre). App.cs choisit
-       le jeu selon UIThemeManager.CurrentTheme. Les logos 256 px et le SVG
-       source sont embarques pour les usages hors ruban (a-propos, installeur). -->
+       le jeu selon UIThemeManager.CurrentTheme. DR5-1 : le ruban consomme
+       exactement le 32 px (LargeImage) et le 16 px (Image) — Revit n'adapte pas
+       une image plus grande, il la rogne. Le 64 px, les logos 256 px et le SVG
+       source restent embarques pour les usages hors ruban (a-propos, installeur). -->
   <ItemGroup>
     <Resource Include="Resources\olympe-icon-16.png" />
     <Resource Include="Resources\olympe-icon-32.png" />

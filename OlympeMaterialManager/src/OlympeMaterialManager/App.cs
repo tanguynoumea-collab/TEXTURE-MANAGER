@@ -49,9 +49,10 @@ public class App : IExternalApplication
             commandTypeName)
         {
             ToolTip = "Ouvrir l'éditeur de matériaux Olympe",
-            // 64 px en grande icone : Revit met a l'echelle vers le bas et sert
-            // le rendu net des ecrans haute densite.
-            LargeImage = LoadIcon($"olympe-icon-64{suffix}.png"),
+            // DR5-1 : Revit n'adapte pas une image plus grande que l'emplacement,
+            // il l'affiche a sa taille native puis la rogne. Les tailles attendues
+            // sont donc exactes : 32x32 pour LargeImage, 16x16 pour Image.
+            LargeImage = LoadIcon($"olympe-icon-32{suffix}.png"),
             Image = LoadIcon($"olympe-icon-16{suffix}.png")
         };
         panel.AddItem(buttonData);
@@ -104,13 +105,21 @@ public class App : IExternalApplication
     /// <summary>
     /// Charge une icone embarquee. Renvoie null plutot que de lever : une icone
     /// manquante donne un bouton sans image, jamais un add-in qui ne charge pas.
+    /// DR5-1 : <c>OnLoad</c> decode immediatement et libere la source, <c>Freeze</c>
+    /// rend l'image partageable entre threads sans verrou.
     /// </summary>
     private static BitmapImage? LoadIcon(string fileName)
     {
         try
         {
             var uri = new Uri($"pack://application:,,,/OlympeMaterialManager;component/Resources/{fileName}");
-            return new BitmapImage(uri);
+            var icon = new BitmapImage();
+            icon.BeginInit();
+            icon.UriSource = uri;
+            icon.CacheOption = BitmapCacheOption.OnLoad;
+            icon.EndInit();
+            icon.Freeze();
+            return icon;
         }
         catch (Exception ex)
         {
