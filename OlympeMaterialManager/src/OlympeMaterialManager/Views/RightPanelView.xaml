@@ -17,13 +17,52 @@
     <Border Background="{StaticResource BackgroundBrush}" Padding="8">
         <DockPanel>
 
-            <!-- Section 1 : Titre du panneau -->
-            <TextBlock DockPanel.Dock="Top"
-                       Text="{Binding PanelTitle}"
-                       FontSize="14"
-                       FontWeight="SemiBold"
-                       Foreground="{StaticResource TextPrimaryBrush}"
-                       Margin="0,0,0,8" />
+            <!-- Section 1 : Titre du panneau + sélecteur du mode d'aperçu (DR3-2).
+                 Le sélecteur segmenté Couleur│Réaliste vit sur la ligne du titre,
+                 aligné à droite : visible en permanence, indépendant de la
+                 sélection d'un matériau. Persistance immédiate + diffusion via
+                 PreviewModeStore (B10-S). Le label « Aperçu : » est porté par les
+                 tooltips (place limitée à côté du titre). Chevauchement de 1 px
+                 entre segments : bordures fusionnées, le segment actif (ZIndex)
+                 passe devant avec sa bordure accent. -->
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                <StackPanel DockPanel.Dock="Right"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="8,0,0,0">
+                    <RadioButton Content="Couleur"
+                                 GroupName="PreviewModeSegments"
+                                 Style="{StaticResource SegmentButtonStyle}"
+                                 AutomationProperties.Name="Aperçu en couleur uniforme"
+                                 ToolTip="Aperçu par la couleur de surface du matériau"
+                                 IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
+                                             Converter={StaticResource PreviewModeToBool},
+                                             ConverterParameter=UniformColor}">
+                        <RadioButton.Tag>
+                            <CornerRadius>4,0,0,4</CornerRadius>
+                        </RadioButton.Tag>
+                    </RadioButton>
+                    <RadioButton Content="Réaliste"
+                                 GroupName="PreviewModeSegments"
+                                 Style="{StaticResource SegmentButtonStyle}"
+                                 Margin="-1,0,0,0"
+                                 AutomationProperties.Name="Aperçu réaliste par la couleur d'apparence"
+                                 ToolTip="Aperçu par la couleur d'apparence du matériau (couleur graphique si absente)"
+                                 IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
+                                             Converter={StaticResource PreviewModeToBool},
+                                             ConverterParameter=Realistic}">
+                        <RadioButton.Tag>
+                            <CornerRadius>0,4,4,0</CornerRadius>
+                        </RadioButton.Tag>
+                    </RadioButton>
+                </StackPanel>
+                <TextBlock Text="{Binding PanelTitle}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+            </DockPanel>
 
             <!-- Section 1b : Selecteur de preset + bouton creation + bouton dossier -->
             <StackPanel DockPanel.Dock="Top"
@@ -210,42 +249,6 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-
-                        <!-- B10-UI : sélecteur segmenté du mode d'aperçu, sous le titre.
-                             Persistance immédiate + diffusion via PreviewModeStore (B10-S).
-                             Chevauchement de 1 px entre segments : bordures fusionnées,
-                             le segment actif (ZIndex) passe devant avec sa bordure accent. -->
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                            <TextBlock Text="Aperçu :"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center"
-                                       Margin="0,0,8,0" />
-                            <RadioButton Content="Couleur"
-                                         GroupName="PreviewModeSegments"
-                                         Style="{StaticResource SegmentButtonStyle}"
-                                         AutomationProperties.Name="Aperçu en couleur uniforme"
-                                         ToolTip="Aperçu par la couleur de surface du matériau"
-                                         IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
-                                                     Converter={StaticResource PreviewModeToBool},
-                                                     ConverterParameter=UniformColor}">
-                                <RadioButton.Tag>
-                                    <CornerRadius>4,0,0,4</CornerRadius>
-                                </RadioButton.Tag>
-                            </RadioButton>
-                            <RadioButton Content="Réaliste"
-                                         GroupName="PreviewModeSegments"
-                                         Style="{StaticResource SegmentButtonStyle}"
-                                         Margin="-1,0,0,0"
-                                         AutomationProperties.Name="Aperçu réaliste par la couleur d'apparence"
-                                         ToolTip="Aperçu par la couleur d'apparence du matériau (couleur graphique si absente)"
-                                         IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
-                                                     Converter={StaticResource PreviewModeToBool},
-                                                     ConverterParameter=Realistic}">
-                                <RadioButton.Tag>
-                                    <CornerRadius>0,4,4,0</CornerRadius>
-                                </RadioButton.Tag>
-                            </RadioButton>
-                        </StackPanel>
 
                         <!-- Aperçu du matériau : suit le mode (B10-UI/DR2-2) — couleur
                              de surface, ou couleur d'apparence en mode Réaliste ;
