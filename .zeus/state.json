@@ -3,24 +3,25 @@
   "projet": "Olympe MaterialManager",
   "version_courante": "1.5.0 (Alpha 1.5)",
   "route": "audit",
-  "phase": "IDLE",
-  "phase_status": "cycle_2_clos",
+  "phase": "GSD",
+  "phase_status": "en_cours",
   "cycle": {
-    "numero": 2,
+    "numero": 3,
     "demarre_le": "2026-07-28",
     "idees": [
-      "B8 lisere couleur materiau sur cartes de couches (dynamique selon mode)",
-      "B9 Visualisateur de materiau + bouton ouverture menu Materiaux natif Revit",
-      "B10 trois modes d'apercu Couleur/Texture/Realiste persistes en settings",
-      "B5 recherche/filtre panneaux types et presets + etat aucun resultat"
+      "B2 pipette materiau (cumul avec ajout par liste, rangement groupe actif sinon 'Autre')",
+      "B3 drag&drop d'un materiau preset directement sur une carte de couche",
+      "B1 gestion materiaux absents a l'activation d'un preset (message + purge avec confirmation)",
+      "D1 CI GitHub Actions (build 2 TFM + tests + MSI artefact)"
     ],
     "impact_ui": true,
-    "mode_daedalus": "EVOLUTION"
+    "mode_daedalus": "EVOLUTION",
+    "note": "Enchainement autorise par l'utilisateur ('lance tous les cycles suivants') : council allege + validation du plan reportee a la design-review Revit finale - consigne."
   },
   "iterations": {
-    "design_review": 1,
+    "design_review": 0,
     "design_review_max": 3,
-    "dev_council": 1,
+    "dev_council": 0,
     "dev_council_max": 3
   },
   "checkpoints": {

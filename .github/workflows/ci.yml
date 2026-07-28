@@ -1,0 +1,41 @@
+# D1 — CI de confirmation : rebuild independant de la machine locale.
+# Deux TFM buildes SEPAREMENT (echec CS2001 connu du multi-target WPF simultane).
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installer le SDK .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build net48 (Revit 2023/2024)
+        run: dotnet build "OlympeMaterialManager/src/OlympeMaterialManager" -c Release -f net48
+
+      - name: Build net8.0-windows (Revit 2025/2026)
+        run: dotnet build "OlympeMaterialManager/src/OlympeMaterialManager" -c Release -f net8.0-windows
+
+      - name: Tests
+        run: dotnet test "OlympeMaterialManager/tests/OlympeMaterialManager.Tests" -c Release
+
+      - name: Build MSI (WiX)
+        run: dotnet build "OlympeMaterialManager/installer/OlympeMaterialManager.Installer/OlympeMaterialManager.Installer.wixproj" -c Release
+
+      - name: Publier le MSI en artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OlympeMaterialManager-Setup-msi
+          path: OlympeMaterialManager/installer/OlympeMaterialManager.Installer/bin/Release/**/*.msi
+          if-no-files-found: error

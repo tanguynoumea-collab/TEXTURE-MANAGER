@@ -111,6 +111,24 @@ Barre segmentée **2 positions** dans l'en-tête du visualisateur, sous le titre
 - **Principe de Chanel — retiré du plan** : l'indicateur « aperçu couleur » sur chaque *liseré* en fallback (bruit sur 6 px, le tooltip du visualisateur suffit) ; l'idée d'un liseré sur les en-têtes de groupes du panneau droit (décoration sans donnée nouvelle).
 - **Points faibles assumés** : la lisibilité d'un motif tuilé dans 6 px n'est prouvable que sur capture réelle → critère explicite de la design-review (repli prévu : couleur diffuse d'asset) ; le mode ne change pas la vue 3D Revit elle-même (hors périmètre — le réglage aligne l'add-in sur le style que l'utilisateur a choisi dans Revit, il ne le pilote pas).
 
+## 3bis. Delta du cycle 3 (B2/B3/B1 — 2026-07-28, enchaînement autorisé)
+
+### B2 — Pipette matériau (panneau droit)
+- Bouton « pipette » (glyphe, 32×32, style discret, AutomationProperties « Récupérer les matériaux d'un élément ») dans la rangée « Créer un groupe / + / − » du panneau droit. Tooltip : « Cliquez un élément dans la vue 3D pour récupérer ses matériaux dans le preset ».
+- Comportement (spec utilisateur, décision d'approche consignée) : pick d'UN élément (réutilise l'infra PickObject/masquage de fenêtre existante) → lecture des matériaux du type (couches CompoundStructure ou paramètres matériaux) → **ajout automatique sans dialogue** de tous les matériaux valides (dédoublonnés par rapport au groupe cible) dans le **groupe sélectionné ou actif**, sinon dans un groupe **« Autre »** créé au besoin. Feedback : StatusMessage « N matériau(x) ajouté(s) au groupe ‹X› » (les « Par catégorie » et doublons sont ignorés, comptés dans le message si utile).
+- Alternative rejetée : dialogue de sélection à cocher — contredit le « automatiquement » de la spec utilisateur ; la suppression d'un matériau indésirable reste à un clic (menu contextuel).
+
+### B3 — Drag & drop preset → carte de couche (panneau central)
+- Les cartes de couches ET de paramètres acceptent le drop d'un matériau preset (source de drag existante du panneau droit). Survol d'une cible valide → la carte prend la bordure accent (même vocabulaire que la sélection) ; drop → application immédiate à CETTE couche/paramètre (même chemin transactionnel que « Appliquer », mono-cible), liseré mis à jour par le refresh existant.
+- Le bouton « Appliquer le matériau » reste l'action primaire pour le multi-couches — le drop est un raccourci mono-couche, aucun changement de hiérarchie.
+
+### B1 — Matériaux absents à l'activation d'un preset
+- À l'activation d'un preset (changement de ComboBox, chargement initial, import externe), validation des matériaux via le bridge (id+nom, même logique que ResolveMaterial). S'il y a des absents : dialogue listant TOUS les matériaux introuvables + message « Ces matériaux n'existent pas dans ce document. Réimportez votre matériauthèque, ou supprimez-les du preset. » Boutons : « Supprimer du preset » (⚠️ garde actée : c'est une confirmation explicite — le preset est un fichier partagé d'équipe) / « Conserver » (défaut). Suppression → purge + sauvegarde ; conservation → comportement actuel (échec propre à l'application).
+- États : aucun document ouvert → validation différée sans message.
+
+### Journal cycle 3
+- Choix rejeté : dialogue à cocher pour la pipette (voir B2). Purge automatique sans confirmation pour B1 (rejetée dès le triage roadmap — fichier partagé).
+
 ## 4. Journal des choix rejetés
 
 - Couleur moyenne de texture pour le liseré — rejetée (brun indiscriminant, council unanime après arbitrage).
