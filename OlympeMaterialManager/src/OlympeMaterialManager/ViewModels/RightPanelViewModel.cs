@@ -41,6 +41,15 @@ public partial class RightPanelViewModel : ObservableObject
     /// </summary>
     private string? _lastValidatedKey;
 
+    /// <summary>
+    /// Jeton de generation des validations B1 (FIA3-04). Incremente a chaque
+    /// ValiderMateriauxPreset ; le callback capture sa generation et l'ignore
+    /// si une validation plus recente a ete lancee entre-temps (ex. : re-import
+    /// du meme preset pendant l'aller-retour bridge, ou pendant la modalite du
+    /// dialogue « Matériaux introuvables »).
+    /// </summary>
+    private int _validationGeneration;
+
     [ObservableProperty]
     private string _panelTitle = "Matériaux Preset";
 
@@ -846,9 +855,12 @@ public partial class RightPanelViewModel : ObservableObject
         var refs = PresetMaterialValidation.BuildMaterialRefs(PresetGroups);
         if (refs.Count == 0) return;
 
+        // FIA3-04 : chaque validation invalide les callbacks des precedentes.
+        int generation = ++_validationGeneration;
+
         var request = new ValidatePresetMaterialsRequestDto { Materials = refs };
         _eventBridge.MakeRequest(RevitRequestType.ValidatePresetMaterials, request,
-            result => OnMateriauxValides(presetName!, result));
+            result => OnMateriauxValides(presetName!, generation, result));
     }
 
     /// <summary>
@@ -857,8 +869,12 @@ public partial class RightPanelViewModel : ObservableObject
     /// toujours sur les groupes SOURCES (PresetGroups EST _collection.Groups),
     /// jamais sur les clones de la projection de recherche.
     /// </summary>
-    private void OnMateriauxValides(string presetName, object? result)
+    private void OnMateriauxValides(string presetName, int generation, object? result)
     {
+        // FIA3-04 : callback d'une generation anterieure — une validation plus
+        // recente (import du meme preset, changement de preset) fait foi.
+        if (generation != _validationGeneration) return;
+
         if (result is Exception ex)
         {
             // Requete bridge en echec : silencieux pour l'utilisateur (log seul)
@@ -911,6 +927,10 @@ public partial class RightPanelViewModel : ObservableObject
 
         if (dialog.ShowDialog() != true)
             return; // « Conserver » : aucun changement (echec propre a l'application)
+
+        // FIA3-04 : la modalite du dialogue pompe le dispatcher — si une validation
+        // plus recente a ete lancee pendant l'attente, ne pas purger un etat obsolete.
+        if (generation != _validationGeneration) return;
 
         int removed = PresetMaterialValidation.RemoveMaterials(PresetGroups, dto.MissingMaterials);
         if (removed == 0) return;
