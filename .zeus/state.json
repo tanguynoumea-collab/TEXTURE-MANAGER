@@ -3,8 +3,8 @@
   "projet": "Olympe MaterialManager",
   "version_courante": "1.5.0 (Alpha 1.5)",
   "route": "audit",
-  "phase": "DESIGN-REVIEW",
-  "phase_status": "attente_validation_revit_cycle3",
+  "phase": "DESIGN-REVIEW (cycle 4)",
+  "phase_status": "attente_check_visuel_revit",
   "cycle": {
     "numero": 3,
     "demarre_le": "2026-07-28",
