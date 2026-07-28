@@ -78,14 +78,22 @@ public partial class RevitEventBridge
     }
 
     /// <summary>
+    /// FIA2-03 : profondeur maximale de la marche récursive sur les assets
+    /// connectés. Les schémas d'apparence légitimes tiennent en 2-3 niveaux ;
+    /// la garde évite un StackOverflow fatal (non rattrapable) sur un graphe
+    /// d'assets cyclique produit par un contenu tiers.
+    /// </summary>
+    private const int MaxAssetWalkDepth = 8;
+
+    /// <summary>
     /// Cherche recursivement un chemin de texture bitmap dans un Asset Revit
     /// (restauré de f337be7^). Parcourt les proprietes de type Asset (connectes)
     /// et String pour trouver "unifiedbitmap_Bitmap" ou tout chemin finissant
-    /// par une extension image.
+    /// par une extension image. Profondeur bornée par MaxAssetWalkDepth (FIA2-03).
     /// </summary>
-    private static string? FindTexturePath(Asset? asset)
+    private static string? FindTexturePath(Asset? asset, int depth = 0)
     {
-        if (asset == null) return null;
+        if (asset == null || depth >= MaxAssetWalkDepth) return null;
 
         for (int i = 0; i < asset.Size; i++)
         {
@@ -99,7 +107,7 @@ public partial class RevitEventBridge
                 {
                     if (prop.GetConnectedProperty(c) is Asset connectedAsset)
                     {
-                        var found = FindTexturePath(connectedAsset);
+                        var found = FindTexturePath(connectedAsset, depth + 1);
                         if (found != null) return found;
                     }
                 }
