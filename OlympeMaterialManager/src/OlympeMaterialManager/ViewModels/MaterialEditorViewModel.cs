@@ -45,6 +45,13 @@ public partial class MaterialEditorViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasAppearanceAsset;
 
+    /// <summary>
+    /// Chemin resolu de la texture du materiau affiche (B10-UI), pour l'aperçu
+    /// en mode Texture. Null = introuvable → fallback couleur + tooltip.
+    /// </summary>
+    [ObservableProperty]
+    private string? _texturePath;
+
     [ObservableProperty]
     private bool _tintEnabled;
 
@@ -149,6 +156,7 @@ public partial class MaterialEditorViewModel : ObservableObject
         ColorArgb = dto.ColorArgb;
         PatternName = dto.PatternName;
         HasAppearanceAsset = dto.HasAppearanceAsset;
+        TexturePath = dto.TexturePath;
 
         // Extraire les composantes RGB de la couleur de surface
         (_, ColorR, ColorG, ColorB) = ArgbUtils.UnpackArgb(dto.ColorArgb);

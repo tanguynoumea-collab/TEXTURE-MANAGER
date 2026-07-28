@@ -585,6 +585,61 @@
         </Setter>
     </Style>
 
+    <!-- === Style segment du selecteur de mode d'apercu (B10-UI) ===
+         RadioButton (sous-classe de ToggleButton) : un clic sur le segment actif
+         ne le decoche pas, aucun etat intermediaire possible. Segment actif =
+         fond Surface + bordure accent (pattern « selection », PAS de fond ambre
+         plein) ; inactifs discrets ; cible >= 32 px ; focus clavier visible.
+         Le CornerRadius par segment (gauche/milieu/droite) est fourni via Tag
+         (objet CornerRadius declare dans la vue). === -->
+    <Style x:Key="SegmentButtonStyle" TargetType="RadioButton">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource OlympeFocusVisualStyle}" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="MinWidth" Value="72" />
+        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background"
+                                    Value="{StaticResource SurfaceHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="border" Property="Background"
+                                    Value="{StaticResource SurfaceBrush}" />
+                            <Setter TargetName="border" Property="BorderBrush"
+                                    Value="{StaticResource AccentBrush}" />
+                            <Setter Property="Foreground"
+                                    Value="{StaticResource TextPrimaryBrush}" />
+                            <!-- Le segment actif passe devant : sa bordure accent
+                                 recouvre le chevauchement de 1 px des voisins -->
+                            <Setter Property="Panel.ZIndex" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- === Style bouton destructif (UI-M4) : hover borde ErrorBrush pour distinguer
          les boutons de suppression des boutons de creation adjacents. === -->
     <Style x:Key="DangerButtonStyle" TargetType="Button"

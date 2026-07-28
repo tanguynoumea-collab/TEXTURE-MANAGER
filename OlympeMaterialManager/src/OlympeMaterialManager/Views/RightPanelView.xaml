@@ -8,6 +8,10 @@
     <UserControl.Resources>
         <converters:ArgbToColorConverter x:Key="ArgbToColorConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <!-- B10-UI : mode d'aperçu (sélecteur segmenté + aperçu/pastilles) -->
+        <converters:PreviewModeToBoolConverter x:Key="PreviewModeToBool" />
+        <converters:MaterialPreviewBrushConverter x:Key="MaterialPreviewBrush" />
+        <converters:TextureFallbackTooltipConverter x:Key="TextureFallbackTooltip" />
     </UserControl.Resources>
 
     <Border Background="{StaticResource BackgroundBrush}" Padding="8">
@@ -177,13 +181,76 @@
                                        Foreground="{StaticResource TextPrimaryBrush}" />
                         </DockPanel>
 
-                        <!-- Preview couleur de surface -->
+                        <!-- B10-UI : sélecteur segmenté du mode d'aperçu, sous le titre.
+                             Persistance immédiate + diffusion via PreviewModeStore (B10-S).
+                             Chevauchement de 1 px entre segments : bordures fusionnées,
+                             le segment actif (ZIndex) passe devant avec sa bordure accent. -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <TextBlock Text="Aperçu :"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <RadioButton Content="Couleur"
+                                         GroupName="PreviewModeSegments"
+                                         Style="{StaticResource SegmentButtonStyle}"
+                                         AutomationProperties.Name="Aperçu en couleur uniforme"
+                                         ToolTip="Aperçu par la couleur de surface du matériau"
+                                         IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
+                                                     Converter={StaticResource PreviewModeToBool},
+                                                     ConverterParameter=UniformColor}">
+                                <RadioButton.Tag>
+                                    <CornerRadius>4,0,0,4</CornerRadius>
+                                </RadioButton.Tag>
+                            </RadioButton>
+                            <RadioButton Content="Texture"
+                                         GroupName="PreviewModeSegments"
+                                         Style="{StaticResource SegmentButtonStyle}"
+                                         Margin="-1,0,0,0"
+                                         AutomationProperties.Name="Aperçu par la texture"
+                                         ToolTip="Aperçu par la texture de l'asset d'apparence (couleur si introuvable)"
+                                         IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
+                                                     Converter={StaticResource PreviewModeToBool},
+                                                     ConverterParameter=Texture}">
+                                <RadioButton.Tag>
+                                    <CornerRadius>0</CornerRadius>
+                                </RadioButton.Tag>
+                            </RadioButton>
+                            <RadioButton Content="Réaliste"
+                                         GroupName="PreviewModeSegments"
+                                         Style="{StaticResource SegmentButtonStyle}"
+                                         Margin="-1,0,0,0"
+                                         IsEnabled="False"
+                                         AutomationProperties.Name="Aperçu réaliste — disponible en phase 2"
+                                         ToolTip="Disponible en phase 2"
+                                         ToolTipService.ShowOnDisabled="True"
+                                         IsChecked="{Binding PreviewModeStore.CurrentMode, Mode=TwoWay,
+                                                     Converter={StaticResource PreviewModeToBool},
+                                                     ConverterParameter=Realistic}">
+                                <RadioButton.Tag>
+                                    <CornerRadius>0,4,4,0</CornerRadius>
+                                </RadioButton.Tag>
+                            </RadioButton>
+                        </StackPanel>
+
+                        <!-- Aperçu du matériau : suit le mode (B10-UI) — couleur de
+                             surface, ou texture si résolue ; introuvable → couleur +
+                             tooltip explicatif (jamais muet dans le visualisateur). -->
                         <Rectangle Width="60" Height="60"
                                    RadiusX="4" RadiusY="4"
                                    Margin="0,0,0,8">
                             <Rectangle.Fill>
-                                <SolidColorBrush Color="{Binding MaterialEditorVM.ColorArgb, Converter={StaticResource ArgbToColorConverter}}" />
+                                <MultiBinding Converter="{StaticResource MaterialPreviewBrush}">
+                                    <Binding Path="PreviewModeStore.CurrentMode" />
+                                    <Binding Path="MaterialEditorVM.ColorArgb" />
+                                    <Binding Path="MaterialEditorVM.TexturePath" />
+                                </MultiBinding>
                             </Rectangle.Fill>
+                            <Rectangle.ToolTip>
+                                <MultiBinding Converter="{StaticResource TextureFallbackTooltip}">
+                                    <Binding Path="PreviewModeStore.CurrentMode" />
+                                    <Binding Path="MaterialEditorVM.TexturePath" />
+                                </MultiBinding>
+                            </Rectangle.ToolTip>
                         </Rectangle>
 
                         <!-- Nom (D-02, MATEDIT-02) -->
