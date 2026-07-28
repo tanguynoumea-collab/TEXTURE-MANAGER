@@ -8,13 +8,13 @@
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
 
-    <Border Background="{StaticResource BackgroundBrush}" Padding="8">
+    <Border Background="{DynamicResource BackgroundBrush}" Padding="8">
         <DockPanel>
 
             <!-- Section 6: Message d'erreur (bas) -->
             <TextBlock DockPanel.Dock="Bottom"
                        Text="{Binding ErrorMessage}"
-                       Foreground="{StaticResource ErrorBrush}"
+                       Foreground="{DynamicResource ErrorBrush}"
                        Margin="0,4,0,0"
                        TextWrapping="Wrap">
                 <TextBlock.Style>
@@ -34,7 +34,7 @@
                        Text="{Binding PanelTitle}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
                        Margin="0,0,0,8" />
 
             <!-- Section 2: Selecteur de scene + bouton creation (SCENE-01, SCENE-02) -->
@@ -100,7 +100,7 @@
                            IsHitTestVisible="False">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Text, ElementName=TypeSearchBox}" Value="">
@@ -158,9 +158,9 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsPickMode}" Value="True">
                                     <Setter Property="Content" Value="Sélection en cours — cliquez dans la vue" />
-                                    <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                    <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}" />
+                                    <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -203,7 +203,7 @@
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            FontWeight="SemiBold"
                                            Padding="4,2" />
                             </DataTemplate>
@@ -221,7 +221,7 @@
                                 <Run Text="{Binding TypeName, Mode=OneWay}" />
                             </TextBlock>
                             <TextBlock Text="  [Composé]"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontStyle="Italic"
                                        FontSize="11">
                                 <TextBlock.Style>
@@ -239,7 +239,7 @@
                         <!-- Sous-types d'un type composite -->
                         <HierarchicalDataTemplate.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Foreground="{StaticResource TextPrimaryBrush}">
+                                <TextBlock Foreground="{DynamicResource TextPrimaryBrush}">
                                     <Run Text="  " />
                                     <Run Text="{Binding FamilyName, Mode=OneWay}" />
                                     <Run Text=" : " />
@@ -273,7 +273,7 @@
                         VerticalAlignment="Center"
                         Visibility="{Binding IsSearchNoResult, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="Aucun type ne correspond à la recherche"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            FontStyle="Italic"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,8" />

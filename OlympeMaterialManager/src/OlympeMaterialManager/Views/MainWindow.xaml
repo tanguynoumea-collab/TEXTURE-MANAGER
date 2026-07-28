@@ -25,15 +25,15 @@
 
         <!-- Barre d'en-tete : repertoire de projet + boutons Ouvrir / Migrer -->
         <Border Grid.Row="0"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="8,6">
             <DockPanel>
                 <TextBlock DockPanel.Dock="Left"
                            Text="Répertoire de projet :"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            Margin="0,0,8,0" />
                 <Button DockPanel.Dock="Right"
                         Content="Migrer"
@@ -49,7 +49,7 @@
                         Margin="4,0,0,0" />
                 <TextBlock Text="{Binding ProjectDirectoryPath}"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            TextTrimming="CharacterEllipsis"
                            ToolTip="{Binding ProjectDirectoryPath}"
                            Margin="0,0,8,0" />
@@ -91,8 +91,8 @@
 
         <!-- Barre Set Mat : bouton proemirent entre les panneaux (D-14, UI-05) -->
         <Border Grid.Row="2"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="0,1,0,0"
                 Padding="8,6">
             <DockPanel>
@@ -103,7 +103,7 @@
                         Margin="8,0,0,0" />
                 <TextBlock Text="{Binding SetMatStatusText}"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource AccentBrush}"
+                           Foreground="{DynamicResource AccentTextBrush}"
                            FontWeight="SemiBold"
                            Margin="8,0,0,0" />
             </DockPanel>

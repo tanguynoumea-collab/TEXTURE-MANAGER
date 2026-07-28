@@ -27,7 +27,7 @@
         <!-- Label -->
         <TextBlock Grid.Row="0"
                    Text="Choisir le groupe de destination :"
-                   Foreground="{StaticResource TextSecondaryBrush}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
                    Margin="0,0,0,6" />
 
         <!-- ComboBox de selection de groupe -->
@@ -44,7 +44,7 @@
             <Button Content="OK"
                     Click="Ok_Click"
                     IsDefault="True"
-                    Background="{StaticResource AccentBrush}"
+                    Style="{StaticResource PrimaryButtonStyle}"
                     MinWidth="70"
                     Margin="0,0,8,0" />
             <Button Content="Annuler"

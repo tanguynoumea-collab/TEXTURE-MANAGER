@@ -14,7 +14,7 @@
         <converters:AppearanceFallbackIndicatorConverter x:Key="AppearanceFallbackIndicator" />
     </UserControl.Resources>
 
-    <Border Background="{StaticResource BackgroundBrush}" Padding="8">
+    <Border Background="{DynamicResource BackgroundBrush}" Padding="8">
         <DockPanel>
 
             <!-- Section 1 : Titre du panneau + sélecteur du mode d'aperçu (DR3-2).
@@ -61,7 +61,7 @@
                            FontWeight="SemiBold"
                            TextTrimming="CharacterEllipsis"
                            VerticalAlignment="Center"
-                           Foreground="{StaticResource TextPrimaryBrush}" />
+                           Foreground="{DynamicResource TextPrimaryBrush}" />
             </DockPanel>
 
             <!-- Section 1b : Selecteur de preset + bouton creation + bouton dossier -->
@@ -152,7 +152,7 @@
                            IsHitTestVisible="False">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Text, ElementName=MaterialSearchBox}" Value="">
@@ -189,7 +189,7 @@
             <!-- Section 4 : Message de statut -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding StatusMessage}"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        FontSize="11"
                        Margin="0,0,0,4">
                 <TextBlock.Style>
@@ -206,7 +206,7 @@
 
             <!-- Section 6 : Editeur de materiau (D-01, D-02, MATEDIT-01 a MATEDIT-08) -->
             <Border DockPanel.Dock="Bottom"
-                    Background="{StaticResource SurfaceBrush}"
+                    Background="{DynamicResource SurfaceBrush}"
                     Padding="8"
                     Margin="0,8,0,0"
                     Visibility="{Binding MaterialEditorVM.IsVisible, Converter={StaticResource BoolToVis}}">
@@ -227,7 +227,7 @@
                             <TextBlock Text="Visualisateur de matériau"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
                         </DockPanel>
 
                         <!-- DR1-2 : affordance presse-papiers apres le clic sur
@@ -235,7 +235,7 @@
                              preselectionner le materiau, le nom est copie et ce
                              texte le dit a l'ecran (efface apres ~6 s par le VM). -->
                         <TextBlock Text="{Binding MaterialEditorVM.ClipboardFeedback}"
-                                   Foreground="{StaticResource AccentBrush}"
+                                   Foreground="{DynamicResource AccentTextBrush}"
                                    FontSize="11"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,8">
@@ -282,7 +282,7 @@
                              le même converter que le tooltip alimente ce texte
                              secondaire ; null (pas de fallback) → masqué. -->
                         <TextBlock FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontStyle="Italic"
                                    TextWrapping="Wrap"
                                    Margin="0,0,0,8">
@@ -311,7 +311,7 @@
 
                         <!-- Nom (D-02, MATEDIT-02) -->
                         <TextBlock Text="Nom :"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,0,0,2" />
                         <TextBox Text="{Binding MaterialEditorVM.MaterialName, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                  Margin="0,0,0,8">
@@ -324,7 +324,7 @@
 
                         <!-- Description (D-02, MATEDIT-03) -->
                         <TextBlock Text="Description :"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,0,0,2" />
                         <TextBox Text="{Binding MaterialEditorVM.Description, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                  Margin="0,0,0,8"
@@ -340,15 +340,15 @@
 
                         <!-- Motif (D-02, lecture seule) -->
                         <TextBlock Text="Motif :"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,0,0,2" />
                         <TextBlock Text="{Binding MaterialEditorVM.PatternName}"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
                                    Margin="0,0,0,8" />
 
                         <!-- Couleur de surface (D-02, MATEDIT-04) -->
                         <TextBlock Text="Couleur de surface :"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,0,0,2" />
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                             <!-- Petit carre couleur -->
@@ -369,7 +369,7 @@
                                     VerticalAlignment="Center"
                                     ToolTip="Choisir la couleur de surface" />
                             <!-- Valeurs R/V/B compactes -->
-                            <TextBlock Text="R" Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Text="R" Foreground="{DynamicResource TextSecondaryBrush}"
                                        VerticalAlignment="Center" Margin="8,0,4,0" />
                             <TextBox Text="{Binding MaterialEditorVM.ColorR, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                      Width="36" Margin="0,0,4,0">
@@ -379,7 +379,7 @@
                                     </b:EventTrigger>
                                 </b:Interaction.Triggers>
                             </TextBox>
-                            <TextBlock Text="V" Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Text="V" Foreground="{DynamicResource TextSecondaryBrush}"
                                        VerticalAlignment="Center" Margin="0,0,4,0" />
                             <TextBox Text="{Binding MaterialEditorVM.ColorG, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                      Width="36" Margin="0,0,4,0">
@@ -389,7 +389,7 @@
                                     </b:EventTrigger>
                                 </b:Interaction.Triggers>
                             </TextBox>
-                            <TextBlock Text="B" Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Text="B" Foreground="{DynamicResource TextSecondaryBrush}"
                                        VerticalAlignment="Center" Margin="0,0,4,0" />
                             <TextBox Text="{Binding MaterialEditorVM.ColorB, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                      Width="36">
@@ -406,7 +406,7 @@
                             <!-- Label "Teinte non disponible" quand pas d'AppearanceAsset (D-06) -->
                             <TextBlock Text="Teinte non disponible"
                                        FontStyle="Italic"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,0,0,4">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
@@ -425,7 +425,7 @@
                                 <CheckBox Content="Activer la teinte"
                                           IsChecked="{Binding MaterialEditorVM.TintEnabled, Mode=TwoWay}"
                                           IsEnabled="{Binding MaterialEditorVM.HasAppearanceAsset}"
-                                          Foreground="{StaticResource TextPrimaryBrush}"
+                                          Foreground="{DynamicResource TextPrimaryBrush}"
                                           Margin="0,0,0,4" />
 
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
@@ -448,7 +448,7 @@
                                             IsEnabled="{Binding MaterialEditorVM.TintEnabled}"
                                             ToolTip="Choisir la couleur de teinte" />
                                     <!-- Valeurs R/V/B teinte compactes -->
-                                    <TextBlock Text="R" Foreground="{StaticResource TextSecondaryBrush}"
+                                    <TextBlock Text="R" Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" Margin="8,0,4,0" />
                                     <TextBox Text="{Binding MaterialEditorVM.TintR, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                              Width="36" Margin="0,0,4,0"
@@ -459,7 +459,7 @@
                                             </b:EventTrigger>
                                         </b:Interaction.Triggers>
                                     </TextBox>
-                                    <TextBlock Text="V" Foreground="{StaticResource TextSecondaryBrush}"
+                                    <TextBlock Text="V" Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,4,0" />
                                     <TextBox Text="{Binding MaterialEditorVM.TintG, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                              Width="36" Margin="0,0,4,0"
@@ -470,7 +470,7 @@
                                             </b:EventTrigger>
                                         </b:Interaction.Triggers>
                                     </TextBox>
-                                    <TextBlock Text="B" Foreground="{StaticResource TextSecondaryBrush}"
+                                    <TextBlock Text="B" Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" Margin="0,0,4,0" />
                                     <TextBox Text="{Binding MaterialEditorVM.TintB, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                              Width="36"
@@ -518,13 +518,13 @@
                 <TreeView.ItemTemplate>
                     <!-- Template groupe : meme style que les categories du panneau gauche -->
                     <HierarchicalDataTemplate ItemsSource="{Binding Materials}">
-                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                        <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontWeight="SemiBold"
                                    Padding="4,2">
                             <Run Text="{Binding GroupName, Mode=OneWay}" />
-                            <Run Text=" (" Foreground="{StaticResource TextSecondaryBrush}" />
-                            <Run Text="{Binding Materials.Count, Mode=OneWay}" Foreground="{StaticResource TextSecondaryBrush}" />
-                            <Run Text=")" Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Run Text=" (" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <Run Text="{Binding Materials.Count, Mode=OneWay}" Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <Run Text=")" Foreground="{DynamicResource TextSecondaryBrush}" />
                         </TextBlock>
 
                         <!-- Template enfant : meme style que les types du panneau gauche -->
@@ -563,7 +563,7 @@
                                     </Rectangle>
 
                                     <TextBlock Text="{Binding MaterialName}"
-                                               Foreground="{StaticResource TextPrimaryBrush}" />
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
                                 </StackPanel>
                             </DataTemplate>
                         </HierarchicalDataTemplate.ItemTemplate>
@@ -584,7 +584,7 @@
                         VerticalAlignment="Center"
                         Visibility="{Binding IsSearchNoResult, Converter={StaticResource BoolToVis}}">
                 <TextBlock Text="Aucun matériau ne correspond à la recherche"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            FontStyle="Italic"
                            HorizontalAlignment="Center"
                            Margin="0,0,0,8" />

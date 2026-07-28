@@ -1,0 +1,58 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ================================================================
+         Olympe — jeu de couleurs CLAIR « Craie & Sauge » (cycle 4)
+         Miroir de ThemeDark : l'ordre des VALEURS s'inverse, la hierarchie
+         non (fenetre -> panneau -> carte reste du plus lointain au plus proche).
+         CONTRAT : mêmes x:Key que ThemeDark.xaml, aucune cle manquante.
+         ================================================================ -->
+
+    <!-- === Couleurs === -->
+
+    <Color x:Key="BackgroundColor">#EFEFEF</Color>
+    <Color x:Key="SurfaceColor">#FAFAFA</Color>
+    <Color x:Key="SurfaceHoverColor">#E7E7E7</Color>
+
+    <!-- En clair, la carte est le blanc pur : elle ne peut plus se detacher
+         par la valeur seule, d'ou une bordure legere (miroir de profondeur). -->
+    <Color x:Key="CardColor">#FFFFFF</Color>
+    <Color x:Key="CardHoverColor">#F2F2F2</Color>
+    <Color x:Key="CardSelectedColor">#EAEAEA</Color>
+    <Color x:Key="CardBorderColor">#E3E3E3</Color>
+
+    <Color x:Key="AccentColor">#5F8168</Color>
+    <Color x:Key="AccentHoverColor">#4A6852</Color>
+    <!-- Texte pose SUR un aplat d'accent. -->
+    <Color x:Key="AccentForegroundColor">#FFFFFF</Color>
+    <!-- Texte accentue pose sur Surface/Background : un cran plus sombre que
+         l'accent, sinon la lisibilite sur #FAFAFA est trop juste. -->
+    <Color x:Key="AccentTextColor">#4A6852</Color>
+
+    <!-- Anneau de focus clavier : un cran plus soutenu que l'accent (UI-C1). -->
+    <Color x:Key="FocusColor">#3F5A46</Color>
+
+    <Color x:Key="TextPrimaryColor">#1C1C1C</Color>
+    <Color x:Key="TextSecondaryColor">#616161</Color>
+    <Color x:Key="BorderColor">#D8D8D8</Color>
+    <Color x:Key="ErrorColor">#B33232</Color>
+
+    <!-- === Pinceaux === -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="SurfaceHoverBrush" Color="{StaticResource SurfaceHoverColor}" />
+    <SolidColorBrush x:Key="CardBrush" Color="{StaticResource CardColor}" />
+    <SolidColorBrush x:Key="CardHoverBrush" Color="{StaticResource CardHoverColor}" />
+    <SolidColorBrush x:Key="CardSelectedBrush" Color="{StaticResource CardSelectedColor}" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="{StaticResource CardBorderColor}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
+    <SolidColorBrush x:Key="AccentForegroundBrush" Color="{StaticResource AccentForegroundColor}" />
+    <SolidColorBrush x:Key="AccentTextBrush" Color="{StaticResource AccentTextColor}" />
+    <SolidColorBrush x:Key="FocusBrush" Color="{StaticResource FocusColor}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryColor}" />
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+
+</ResourceDictionary>

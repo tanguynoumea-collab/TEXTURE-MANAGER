@@ -32,10 +32,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ListBoxItem">
                         <Border x:Name="Card"
-                                Background="{StaticResource CardBrush}"
+                                Background="{DynamicResource CardBrush}"
                                 CornerRadius="6"
                                 BorderThickness="2"
-                                BorderBrush="Transparent"
+                                BorderBrush="{DynamicResource CardBorderBrush}"
                                 Cursor="Hand">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -79,18 +79,18 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                                <Setter TargetName="Card" Property="Background" Value="{StaticResource CardSelectedBrush}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource CardSelectedBrush}" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Card" Property="Background" Value="{StaticResource CardHoverBrush}" />
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource CardHoverBrush}" />
                             </Trigger>
                             <!-- B3 : cible de drop survolee pendant un drag de preset —
                                  bordure accent (meme vocabulaire que la selection),
                                  posee par le code-behind via la propriete attachee.
                                  Dernier trigger : prioritaire sur hover/selection. -->
                             <Trigger Property="helpers:DropTargetIndicator.IsDropTarget" Value="True">
-                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -99,7 +99,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource BackgroundBrush}" Padding="8">
+    <Border Background="{DynamicResource BackgroundBrush}" Padding="8">
         <DockPanel>
 
             <!-- Section 1 : Titre du panneau -->
@@ -107,14 +107,14 @@
                        Text="{Binding PanelTitle}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
                        Margin="0,0,0,8" />
 
             <!-- Section 2 : Nom du type selectionne -->
             <!-- UI-03: BasedOn added for theme consistency -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding SelectedTypeName}"
-                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
                        FontWeight="Medium"
                        Margin="0,0,0,4">
                 <TextBlock.Style>
@@ -132,7 +132,7 @@
             <!-- UI-03: BasedOn added for theme consistency -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding ModeLabel}"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        FontStyle="Italic"
                        Margin="0,0,0,8">
                 <TextBlock.Style>
@@ -149,13 +149,13 @@
             <!-- Section 4 : Placeholder (aucun type selectionne) -->
             <TextBlock DockPanel.Dock="Top"
                        Text="Sélectionnez un type pour voir ses couches"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        Visibility="{Binding ShowPlaceholder, Converter={StaticResource BoolToVis}}" />
 
             <!-- Section 4b : Message type compose -->
             <TextBlock DockPanel.Dock="Top"
                        Text="Type composé — sélectionnez un sous-type pour éditer ses couches"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        FontStyle="Italic"
                        TextWrapping="Wrap"
                        Margin="0,8,0,0"
@@ -164,7 +164,7 @@
             <!-- Section 5 : Indicateur de chargement -->
             <TextBlock DockPanel.Dock="Top"
                        Text="Chargement..."
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        FontStyle="Italic"
                        Visibility="{Binding IsLoading, Converter={StaticResource BoolToVis}}" />
 
@@ -172,7 +172,7 @@
             <!-- UI-03: BasedOn added for theme consistency -->
             <TextBlock DockPanel.Dock="Top"
                        Text="{Binding ErrorMessage}"
-                       Foreground="{StaticResource ErrorBrush}"
+                       Foreground="{DynamicResource ErrorBrush}"
                        TextWrapping="Wrap"
                        Margin="0,0,0,4">
                 <TextBlock.Style>
@@ -193,7 +193,7 @@
                  B3 : accepte le drop d'un materiau preset (application mono-couche) -->
             <ListBox ItemsSource="{Binding Layers}"
                      SelectionMode="Extended"
-                     Background="{StaticResource BackgroundBrush}"
+                     Background="{DynamicResource BackgroundBrush}"
                      BorderThickness="0"
                      Visibility="{Binding ShowLayers, Converter={StaticResource BoolToVis}}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -223,11 +223,11 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Column="0" Grid.Row="0"
                                        Text="{Binding Function}"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
                                        FontSize="14" />
                             <TextBlock Grid.Column="1" Grid.Row="0"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        HorizontalAlignment="Right"
                                        FontSize="13">
                                 <Run Text="{Binding Width, StringFormat={}{0:F1}}" />
@@ -235,7 +235,7 @@
                             </TextBlock>
                             <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
                                        Text="{Binding MaterialName}"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontSize="12"
                                        Margin="0,4,0,0" />
                         </Grid>
@@ -247,7 +247,7 @@
                  B3 : accepte le drop d'un materiau preset (application mono-parametre) -->
             <ListBox ItemsSource="{Binding MaterialParams}"
                      SelectionMode="Extended"
-                     Background="{StaticResource BackgroundBrush}"
+                     Background="{DynamicResource BackgroundBrush}"
                      BorderThickness="0"
                      Visibility="{Binding ShowParameters, Converter={StaticResource BoolToVis}}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -273,12 +273,12 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0"
                                        Text="{Binding ParameterName}"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
                                        FontSize="14" />
                             <TextBlock Grid.Row="1"
                                        Text="{Binding CurrentMaterialName}"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontSize="12"
                                        Margin="0,4,0,0" />
                         </Grid>

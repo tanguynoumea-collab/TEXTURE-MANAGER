@@ -29,13 +29,13 @@
         <TextBlock x:Name="MessageText"
                    Grid.Row="0"
                    TextWrapping="Wrap"
-                   Foreground="{StaticResource TextSecondaryBrush}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
                    Margin="0,0,0,12" />
 
         <!-- Liste scrollable des materiaux introuvables (pastille + nom) -->
         <Border Grid.Row="1"
-                Background="{StaticResource SurfaceBrush}"
-                BorderBrush="{StaticResource BorderBrush}"
+                Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1"
                 CornerRadius="4">
             <ScrollViewer VerticalScrollBarVisibility="Auto"
@@ -57,7 +57,7 @@
                                     </Rectangle.Fill>
                                 </Rectangle>
                                 <TextBlock Text="{Binding MaterialName}"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis" />
                             </StackPanel>

@@ -36,7 +36,7 @@
                        IsHitTestVisible="False">
                 <TextBlock.Style>
                     <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                         <Setter Property="Visibility" Value="Collapsed" />
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
@@ -51,7 +51,7 @@
         <!-- Row 1 : Liste des materiaux + etat "aucun resultat" (UI-m14) -->
         <Grid Grid.Row="1">
         <ListBox x:Name="MaterialList"
-                 Background="{StaticResource SurfaceBrush}"
+                 Background="{DynamicResource SurfaceBrush}"
                  BorderThickness="0"
                  SelectionMode="Extended">
             <ListBox.ItemTemplate>
@@ -63,18 +63,18 @@
                             </Rectangle.Fill>
                         </Rectangle>
                         <TextBlock Text="{Binding MaterialName}"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <!-- UI-03: BasedOn added for theme consistency -->
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                     <Style.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-                            <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource AccentForegroundBrush}" />
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -82,7 +82,7 @@
         </ListBox>
         <TextBlock x:Name="NoResultText"
                    Text="Aucun matériau ne correspond à la recherche"
-                   Foreground="{StaticResource TextSecondaryBrush}"
+                   Foreground="{DynamicResource TextSecondaryBrush}"
                    FontStyle="Italic"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
@@ -93,7 +93,7 @@
         <!-- Row 2 : Groupe cible + boutons -->
         <StackPanel Grid.Row="2" Margin="0,8,0,0">
             <TextBlock Text="Groupe cible :"
-                       Foreground="{StaticResource TextSecondaryBrush}"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="0,0,0,4" />
             <ComboBox x:Name="GroupCombo"
                       DisplayMemberPath="GroupName"
@@ -102,7 +102,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Ajouter"
                         Click="Ajouter_Click"
-                        Background="{StaticResource AccentBrush}"
+                        Style="{StaticResource PrimaryButtonStyle}"
                         Margin="0,0,8,0" />
                 <Button Content="Annuler"
                         Click="Annuler_Click" />
