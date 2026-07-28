@@ -57,19 +57,19 @@ En-tête de la section basse du panneau droit :
 - Au clic : nom copié au presse-papiers + `PostCommand` via bridge + Topmost temporairement désactivé.
 - **Question ouverte au checkpoint (Q2)** : la section conserve aujourd'hui l'édition inline (nom, description, couleur, teinte). Options : (a) garder l'édition sous le nom « Visualisateur » (le terme couvre l'usage dominant, l'édition reste un bonus) ; (b) garder l'édition et titrer « Matériau » tout court ; (c) retirer l'édition inline (Revit devient le seul éditeur). **Recommandation Daedalus : (a)** — ne pas retirer de fonctionnalité (iso-fonctionnalité), le renommage traduit l'intention d'usage.
 
-### 2.3 B10 — Sélecteur de mode d'aperçu
+### 2.3 B10 — Sélecteur de mode d'aperçu (révisé DR2)
 
-Barre segmentée 3 positions dans l'en-tête du visualisateur, sous le titre :
+Barre segmentée **2 positions** dans l'en-tête du visualisateur, sous le titre :
 
 ```
 │ Visualisateur de matériau      [Ouvrir dans Revit ⧉] │
-│ Aperçu :  [ Couleur ]│[ Texture ]│[ Réaliste ]        │
+│ Aperçu :  [ Couleur ]│[ Réaliste ]                    │
 ```
 
 - Style ToggleButton segmenté aux tokens existants : segment actif = fond Surface + bordure accent (pattern « sélection », PAS fond ambre plein) ; inactifs discrets. Cibles ≥ 32 px de haut.
-- Le mode s'applique : au carré d'aperçu du visualisateur, aux pastilles des matériaux preset, au liseré B8. Persisté immédiatement.
-- Mode Texture : le carré d'aperçu affiche la texture (ImageBrush) ; texture introuvable → couleur + tooltip « Texture introuvable — aperçu couleur » (échec expliqué, jamais muet).
-- **Question ouverte au checkpoint (Q1)** : mode « Réaliste » reporté en phase 2 (unanimité du council). Présentation : (a) segment visible mais désactivé, tooltip « Disponible en phase 2 » ; (b) segment absent (ajouté quand il existera). **Recommandation Daedalus : (a)** — les trois modes validés restent visibles, la promesse est explicite et honnête.
+- Le mode s'applique : au carré d'aperçu du visualisateur, aux pastilles des matériaux preset, au liseré B8. Persisté immédiatement (valeur historique « Texture » mappée vers Réaliste à la lecture, sans quarantaine).
+- Mode Réaliste (DR2) : **couleur d'apparence** du matériau — la diffuse/albedo de l'asset d'apparence, celle que la vue 3D Réaliste de Revit affiche pour un matériau sans texture. Absente → fallback couleur graphique + indicateur « Pas d'apparence — couleur graphique » (échec expliqué, jamais muet dans le visualisateur).
+- Historique Q1 : le segment « Réaliste » avait été livré désactivé (« Disponible en phase 2 ») aux côtés d'un mode « Texture » par bitmap. Après diagnostic terrain (itération 2 de la design-review), le mode Texture est supprimé et Réaliste devient actif — voir §4.
 
 ### 2.4 B8 — Liseré matériau sur les cartes (l'élément signature)
 
@@ -80,11 +80,11 @@ Barre segmentée 3 positions dans l'en-tête du visualisateur, sous le titre :
 └────────────────────────────────────┘
 ```
 
-- Bande verticale de **6 px** sur toute la hauteur du bord gauche de chaque carte (couches ET paramètres matériaux), intégrée au `CardItemStyle`.
-- Mode Couleur → `SolidColorBrush` de la couleur du matériau. Mode Texture → **ImageBrush tuilé** de la texture (miniature) ; introuvable → couleur. Matériau « Par catégorie » → liseré transparent (aucune matière = aucune bande, pas de gris menteur).
+- Bande verticale de **6 px** sur toute la hauteur du bord gauche de chaque carte (couches ET paramètres matériaux), intégrée au `CardItemStyle` (DR1-1 : bande miroir aussi sur le bord droit).
+- Mode Couleur → `SolidColorBrush` de la couleur graphique du matériau. Mode Réaliste (DR2) → `SolidColorBrush` de la **couleur d'apparence** ; absente → couleur graphique. Matériau « Par catégorie » sans apparence → liseré transparent (aucune matière = aucune bande, pas de gris menteur).
 - La sélection de carte reste la bordure accent périphérique existante — le liseré vit À L'INTÉRIEUR de cette bordure, les deux ne se confondent pas (accent = état, liseré = donnée).
 - Après « Appliquer », le rafraîchissement existant met à jour le liseré — le changement de matériau devient visible instantanément : c'est le cœur de la demande.
-- Les pastilles 12 px du panneau droit suivent le même mode (couleur/texture) pour la cohérence.
+- Les pastilles 12 px du panneau droit suivent le même mode (couleur graphique/couleur d'apparence) pour la cohérence.
 
 ### 2.5 Mapping fonctionnalités → emplacements (iso-fonctionnalité)
 
@@ -93,14 +93,14 @@ Barre segmentée 3 positions dans l'en-tête du visualisateur, sous le titre :
 | B5 recherche types | Panneau gauche, sous sélecteur de scène | Nouveau |
 | B5 recherche matériaux | Panneau droit, sous boutons groupe | Nouveau |
 | B9 renommage + Ouvrir dans Revit | En-tête visualisateur | Nouveau |
-| B10 sélecteur 3 modes | En-tête visualisateur | Nouveau |
+| B10 sélecteur 2 modes (Couleur/Réaliste, DR2) | En-tête visualisateur | Nouveau |
 | B8 liseré | Cartes du panneau central + pastilles droite | Nouveau |
 | Toutes fonctions 1.4.0 | Inchangées — aucun déplacement | Préservé |
 
 ### 2.6 États non-nominaux du delta
 
 - Recherche sans résultat : message + « Effacer la recherche » (les deux panneaux, même formulation).
-- Texture introuvable / schéma PBR sans bitmap : fallback couleur + tooltip explicatif sur l'aperçu (jamais silencieux dans le visualisateur ; silencieux sur le liseré — 6 px ne portent pas de tooltip fiable).
+- Mode Réaliste sans couleur d'apparence (pas d'asset, ou asset sans couleur exploitable) : fallback couleur graphique + indicateur « Pas d'apparence — couleur graphique » sur l'aperçu, tooltip + texte visible (jamais silencieux dans le visualisateur ; silencieux sur le liseré — 6 px ne portent pas de tooltip fiable).
 - « Par catégorie » : liseré transparent, aperçu du visualisateur inchangé (comportement actuel).
 - Chargement des couches : inchangé (« Chargement… »).
 
@@ -114,6 +114,7 @@ Barre segmentée 3 positions dans l'en-tête du visualisateur, sous le titre :
 ## 4. Journal des choix rejetés
 
 - Couleur moyenne de texture pour le liseré — rejetée (brun indiscriminant, council unanime après arbitrage).
+- **Mode Texture par bitmap — supprimé après diagnostic terrain (DR2, itération 2 de la design-review)** : olympe.log sur les données réelles de l'utilisateur a montré ZÉRO texture bitmap résolvable (placeholders UnifiedBitmap.png par défaut, chemins d'une autre machine, bibliothèques absentes). Le mode entier (FindTexturePath, TexturePathResolver, TextureBrushCache, branche ImageBrush) est retiré ; remplacé par « Réaliste » = couleur d'apparence (diffuse/albedo de l'asset), lecture mémoire pure sans I/O disque.
 - Restauration immédiate du pipeline de rendu pour « Réaliste » — rejetée (mutation du document, gel, findings ré-ouverts) → phase 2 sur cache disque à la demande.
 - Liseré en contour complet de carte — rejeté (entrerait en collision avec la bordure accent de sélection ; bord gauche = lecture verticale rapide en colonne).
 - Champ de recherche dans la barre d'en-tête globale — rejeté (la recherche est par panneau, pas globale).
