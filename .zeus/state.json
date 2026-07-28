@@ -29,16 +29,19 @@
   "pending": {
     "findings_critiques": [],
     "validations_dues": [
-      "Install MSI machine vierge + Revit 2025 (cloture definitive PKG-01/05/06)",
-      "Session Revit reelle : partials bridge + design-review Phase 2 sur captures",
-      "Decision : AssemblyVersion 2.0->1.4 (applique, ajustable dans Directory.Build.props)"
+      "Install MSI machine vierge (cloture definitive PKG-01/05/06) - non confirmee explicitement",
+      "AssemblyVersion 1.4.0 conservee (pas d'objection utilisateur)"
     ],
+    "validation_revit": "2026-07-28 - utilisateur : fonctionnement OK en session Revit reelle",
     "reportes_beta": [
       "SEC-02 signature (certificat a acheter)", "PKG-09 archivage MSI (phase PUBLICATION)",
       "UI-m12 progression determinee", "UI-m15 MessageBox themees", "Refactor DI complet (arbitrage ARC-03)"
     ],
     "pour_roadmap": [
-      "Voir .zeus/reports/ameliorations-1.md (A1-A4 consolidation, B1-B7 UX, C1-C5 ambitieux, D1-D6 technique)"
+      "Voir .zeus/reports/ameliorations-1.md (A1-A4 consolidation, B1-B7 UX, C1-C5 ambitieux, D1-D6 technique)",
+      "B8 liseré couleur matériau sur cartes de couches (idee utilisateur 2026-07-28)",
+      "B9 Visualisateur de matériau + bouton ouverture menu Materiaux natif Revit (idee utilisateur 2026-07-28)",
+      "B10 trois modes d'apercu Couleur/Texture/Realiste persistes, pilotant aussi B8 (idee utilisateur 2026-07-28)"
     ]
   },
   "artefacts": {

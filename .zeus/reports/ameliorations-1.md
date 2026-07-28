@@ -23,6 +23,14 @@ Candidats pour la roadmap, nourris par l'audit UI (Daedalus) et l'audit code (de
 | B6 | **Aperçu matériau réel** : re-brancher (ou re-concevoir en plus simple) la preview — le rendu Revit existe côté bridge mais est débranché ; décision à prendre : supprimer (A4) OU rebrancher en vignette dans l'éditeur | Trancher PRT-01 en décision produit | 1-2 sessions si rebranché |
 | B7 | **Appliquer à plusieurs types d'un coup** : multi-sélection dans le panneau gauche + application du preset aux couches homologues (même fonction de couche) de tous les types sélectionnés | Multiplie la valeur du geste central | 1-2 sessions |
 
+## B-bis. Idées utilisateur (dictées le 2026-07-28, après validation fonctionnelle de l'Alpha 1.4)
+
+| # | Idée | Détail | Notes techniques |
+|---|---|---|---|
+| B8 | **Liseré couleur matériau sur les cartes de couches** | Chaque carte de couche du panneau central reçoit une ligne de contour reprenant la couleur du matériau associé → on voit d'un coup d'œil la couleur de chaque matériau et son changement après application | La couleur est déjà disponible côté bridge (`MaterialDetailsDto`) ; il faudra l'ajouter au `LayerDto`. Le liseré suit dynamiquement le mode d'affichage choisi (voir B10) |
+| B9 | **« Éditeur de matériau » → « Visualisateur de matériau » + ouverture dans Revit** | Renommer la section du panneau droit, et ajouter un bouton qui ouvre le matériau dans l'interface native Revit (menu Matériaux) pour le modifier en direct | API : `PostableCommand.Materials` ouvre le dialogue Matériaux natif ; la présélection du matériau exact est à investiguer (pas d'API directe connue — piste : sélection préalable ou presse-papier du nom) |
+| B10 | **Trois modes de visualisation des aperçus** : Couleur uniforme / Texture / Réaliste | L'aperçu couleur du visualisateur (et les pastilles/liserés) s'adapte au style d'affichage utilisé dans la vue 3D : couleur uniforme (`Material.Color`), texture (bitmap de l'appearance asset), réaliste (rendu d'apparence). Le mode choisi est **persisté** (settings) | Le mode pilote aussi le liseré B8. « Texture »/« Réaliste » nécessitent la lecture de l'appearance asset (chemin bitmap — attention schémas PBR, cf. ADK-02) voire un rendu ; le pipeline de rendu supprimé en LOT 3a (sphère) peut servir de référence via l'historique git |
+
 ## C. Ajouts plus ambitieux (candidats bêta / v2)
 
 | # | Idée | Détail |
